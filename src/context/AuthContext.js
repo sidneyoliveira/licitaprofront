@@ -1,8 +1,9 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+// src/context/AuthContext.js
+
+import { createContext, useState, useContext, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import axios from 'axios';
-import axiosInstance from '../api/AxiosInstance'; 
+import axiosInstance from '../api/AxiosInstance';
 
 const AuthContext = createContext();
 
@@ -14,7 +15,8 @@ export const AuthProvider = ({ children }) => {
     
     const navigate = useNavigate();
 
-    const loginUser = async (username, password) => {
+    // useCallback "memoriza" a função, evitando que ela seja recriada em cada renderização.
+    const loginUser = useCallback(async (username, password) => {
         const response = await axiosInstance.post('/token/', { username, password });
         if (response.status === 200) {
             const data = response.data;
@@ -23,23 +25,27 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('authTokens', JSON.stringify(data));
             navigate('/');
         }
-    };
+    }, [navigate]); // A função só será recriada se 'navigate' mudar (o que não acontece)
 
-    const logoutUser = () => {
+    // useCallback para a função de logout
+    const logoutUser = useCallback(() => {
         setAuthTokens(null);
         setUser(null);
         localStorage.removeItem('authTokens');
         navigate('/login');
-    };
+    }, [navigate]);
 
-    const contextData = {
+    // useMemo "memoriza" o objeto contextData.
+    // Ele só será recriado se uma de suas dependências (user, authTokens, etc.) mudar.
+    // Isso é o que quebra o loop infinito de renderização.
+    const contextData = useMemo(() => ({
         user,
-        setUser, // Adicionado para que outros componentes possam atualizar o usuário
+        setUser,
         authTokens,
-        setAuthTokens, // Adicionado para que o hook useAxios possa atualizar os tokens
+        setAuthTokens,
         loginUser,
         logoutUser,
-    };
+    }), [user, authTokens, loginUser, logoutUser]);
 
     return (
         <AuthContext.Provider value={contextData}>

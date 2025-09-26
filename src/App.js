@@ -1,11 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// A importação do 'Router' foi removida, pois ela deve estar no seu arquivo index.js
+import { Routes, Route, Navigate } from 'react-router-dom';
 
-import PrivateRoute from './utils/PrivateRoute';
+// 1. O import da rota protegida foi comentado
+// import PrivateRoute from './utils/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 
 // Layouts e Páginas
-import Sidebar from './components/Sidebar';
+// A importação do Sidebar foi removida, pois ele já é usado dentro do DashboardLayout
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Inicio from './pages/Inicio';
@@ -20,12 +22,15 @@ function App() {
   return (
         <AuthProvider>
             <Routes>
-                {/* Rotas Públicas */}
+                {/* Rotas Públicas continuam acessíveis */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 
-                {/* Agrupa todas as rotas privadas sob o PrivateRoute */}
-                <Route element={<PrivateRoute />}>
+                {/* --- PROTEÇÃO REMOVIDA TEMPORARIAMENTE --- */}
+                {/* A rota <PrivateRoute> foi comentada para permitir acesso direto ao dashboard. */}
+                {/* Para reativar a proteção, descomente a linha <Route element={<PrivateRoute />}> e a linha de fechamento </Route> abaixo. */}
+
+                {/* <Route element={<PrivateRoute />}> */}
                     <Route path="/*" element={
                         <DashboardLayout>
                             <Routes>
@@ -39,7 +44,7 @@ function App() {
                             </Routes>
                         </DashboardLayout>
                     } />
-                </Route>
+                {/* </Route> */}
             </Routes>
         </AuthProvider>
   );
