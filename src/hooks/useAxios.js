@@ -3,7 +3,7 @@
 import { useContext, useMemo } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import AuthContext from '../context/AuthContext';
-import axiosInstance from '../api/axiosInstance'; // <-- Importa nossa instância base
+import axiosInstance from '../api/AxiosInstance'; // <-- Importa nossa instância base
 
 const useAxios = () => {
     const { authTokens, setUser, setAuthTokens, logoutUser } = useContext(AuthContext);
