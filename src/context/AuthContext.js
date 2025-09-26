@@ -1,9 +1,9 @@
-// src/context/AuthContext.js
+// frontend/src/context/AuthContext.js
 
-import { createContext, useState, useContext, useMemo, useCallback } from 'react';
+import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import axiosInstance from '../api/AxiosInstance';
+import axiosInstance from '../api/axiosInstance';
 
 const AuthContext = createContext();
 
@@ -12,11 +12,12 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [authTokens, setAuthTokens] = useState(() => localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null);
     const [user, setUser] = useState(() => localStorage.getItem('authTokens') ? jwtDecode(JSON.parse(localStorage.getItem('authTokens')).access) : null);
-    
     const navigate = useNavigate();
 
-    // useCallback "memoriza" a função, evitando que ela seja recriada em cada renderização.
     const loginUser = useCallback(async (username, password) => {
+
+        console.log(`[AuthContext] Tentando fazer login na URL: ${axiosInstance.defaults.baseURL}/token/`);
+
         const response = await axiosInstance.post('/token/', { username, password });
         if (response.status === 200) {
             const data = response.data;
@@ -25,9 +26,8 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('authTokens', JSON.stringify(data));
             navigate('/');
         }
-    }, [navigate]); // A função só será recriada se 'navigate' mudar (o que não acontece)
+    }, [navigate]);
 
-    // useCallback para a função de logout
     const logoutUser = useCallback(() => {
         setAuthTokens(null);
         setUser(null);
@@ -35,9 +35,6 @@ export const AuthProvider = ({ children }) => {
         navigate('/login');
     }, [navigate]);
 
-    // useMemo "memoriza" o objeto contextData.
-    // Ele só será recriado se uma de suas dependências (user, authTokens, etc.) mudar.
-    // Isso é o que quebra o loop infinito de renderização.
     const contextData = useMemo(() => ({
         user,
         setUser,

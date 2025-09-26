@@ -8,6 +8,9 @@ const baseURL = isDevelopment
     ? process.env.REACT_APP_API_BASE_URL_LOCAL 
     : process.env.REACT_APP_API_BASE_URL_DEPLOY;
 
+
+console.log(`[axiosInstance] Modo: ${process.env.NODE_ENV}. Base URL da API: ${baseURL}`);
+   
 const axiosInstance = axios.create({
     baseURL: baseURL,
     timeout: 20000,
