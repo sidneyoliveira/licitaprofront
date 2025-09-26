@@ -1,19 +1,22 @@
+// frontend/src/index.js
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
+
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { ToastProvider } from './context/ToastContext'; // Importação correta
+import { ToastProvider } from './context/ToastContext';
 import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+    {/* O Router deve ser o componente mais externo */}
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          {/* O ToastProvider deve envolver o App para que o hook useToast funcione em todos os componentes filhos */}
           <ToastProvider>
             <App />
           </ToastProvider>
@@ -22,4 +25,3 @@ root.render(
     </Router>
   </React.StrictMode>
 );
-

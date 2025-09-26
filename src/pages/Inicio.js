@@ -1,8 +1,7 @@
 // src/pages/Inicio.js
 import React, { useState, useEffect } from 'react';
 import useAxios from '../hooks/useAxios';
-import Card from '../components/Card'; // Importe nosso novo card
-
+import Card from '../components/Card'; 
 const StatItem = ({ title, value }) => (
     <div>
         <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">{title}</p>
