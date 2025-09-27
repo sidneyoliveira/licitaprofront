@@ -1,7 +1,9 @@
 // src/components/ProcessoCard.jsx
-import React from 'react';
-import { BuildingLibraryIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 
+import React from 'react';
+import { BuildingLibraryIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+
+// Componente para os itens de informação dentro do card
 const InfoPill = ({ label, value }) => (
   <div>
     <p className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">{label}</p>
@@ -9,10 +11,11 @@ const InfoPill = ({ label, value }) => (
   </div>
 );
 
-const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => { // Adicionado onView
+const ProcessoCard = ({ processo, onEdit, onDelete }) => {
 
+  // Função para determinar o estilo da "pílula" de situação
   const getSituacaoStyle = (situacao) => {
-    const baseStyle = "px-2.5 py-1 text-xs font-bold rounded-md border inline-block";
+    const baseStyle = "px-2 py-1 text-xs font-bold rounded-full border inline-block";
     switch (situacao) {
       case 'Aberto':
       case 'Publicado':
@@ -30,7 +33,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => { // Adicionado
     }
   };
 
-  // --- Dicionário e Função de Estilo para a Tag do Certame ---
+  // --- DICIONÁRIO E FUNÇÃO DE ESTILO PARA A TAG DO CERTAME ---
   const modalidadeMap = {
     'Pregão Eletrônico': { sigla: 'PE', color: 'purple' },
     'Concorrência Eletrônica': { sigla: 'CE', color: 'teal' },
@@ -55,12 +58,15 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => { // Adicionado
     return colorClasses[color];
   };
   
+  // Lógica para formatar o número do certame
   const anoCertame = processo.numero_certame?.split('/')[1] || new Date().getFullYear();
+  const numeroCertame = processo.numero_certame?.split('/')[0];
   const siglaModalidade = modalidadeMap[processo.modalidade]?.sigla || '';
   
   return (
-    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-md border border-light-border dark:border-dark-border p-4 shadow-sm transition-shadow hover:shadow-lg">
+    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl border border-light-border dark:border-dark-border p-4 shadow-sm transition-shadow hover:shadow-lg">
       
+      {/* Cabeçalho do Card */}
       <header className="flex flex-wrap gap-2 items-center justify-between pb-3 border-b border-light-border dark:border-dark-border">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-xs font-medium text-accent-blue bg-accent-blue/10 px-2 py-1 rounded-full">
@@ -68,25 +74,17 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => { // Adicionado
             <span className="truncate max-w-xs">{processo.municipio_nome || 'Município'} / {processo.orgao_nome || 'Órgão'}</span>
           </div>
         </div>
-        {/* --- BOTÕES DE AÇÃO ATUALIZADOS --- */}
         <div className="flex items-center gap-2">
             <button 
-              onClick={() => onView(processo.id)}
-              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md border border-green-500 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
-            >
-                <EyeIcon className="w-4 h-4" />
-                <span>Visualizar</span>
-            </button>
-            <button 
               onClick={() => onEdit(processo)} 
-              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md border border-yellow-500 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-border dark:hover:bg-dark-border hover:text-light-text-primary dark:hover:text-dark-text-primary transition-colors"
             >
                 <PencilIcon className="w-4 h-4" />
                 <span>Editar</span>
             </button>
             <button 
               onClick={() => onDelete(processo.id)} 
-              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md border border-red-500 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-red-500 hover:bg-red-500/10 transition-colors"
             >
                 <TrashIcon className="w-4 h-4" />
                 <span>Remover</span>
@@ -94,21 +92,20 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => { // Adicionado
         </div>
       </header>
 
-      
       {/* Corpo do Card */}
       <div className="py-4">
         <div className="flex justify-between items-start gap-4">
-            {/* Título Principal */}
+            {/* Lado Esquerdo: Título e Classificação */}
             <div className="flex-grow">
                 <h3 className="font-bold text-lg text-light-text-primary dark:text-dark-text-primary">
                     {processo.modalidade} | Nº {processo.numero_processo}
                 </h3>
                 <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-3">{processo.classificacao}</p>
             </div>
-            {/* Tag do Certame */}
+            {/* Lado Direito: Tag do Certame */}
             {processo.numero_certame && (
                 <div className={getCertameTagStyle(processo.modalidade)}>
-                    Nº {processo.numero_certame}
+                    Nº {numeroCertame}/{anoCertame}-{siglaModalidade}
                 </div>
             )}
         </div>
