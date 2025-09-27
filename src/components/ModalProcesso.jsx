@@ -13,26 +13,57 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             objeto: '', numero_processo: '', numero_certame: '', modalidade: 'Pregão Eletrônico', classificacao: 'Compras',
             tipo_organizacao: 'Lote', vigencia_meses: '', situacao: 'Aberto', registro_precos: false, 
             data_publicacao: '', data_abertura: '', valor_referencia: '',
-            municipio: '', orgao: ''
+            entidade: '', orgao: '' // Corrigido de 'municipio' para 'entidade'
         }
     );
-    const [municipios, setMunicipios] = useState([]);
+    const [entidades, setEntidades] = useState([]);
     const [orgaos, setOrgaos] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const api = useAxios();
 
-    useEffect(() => { api.get('/municipios/').then(res => setMunicipios(res.data)); }, [api]);
+    // 1. Busca todas as entidades ao montar o componente
     useEffect(() => {
-        if (formData.municipio) { api.get(`/orgaos/?municipio=${formData.municipio}`).then(res => setOrgaos(res.data)); } 
-        else { setOrgaos([]); }
-    }, [formData.municipio, api]);
+        api.get('/entidades/').then(res => setEntidades(res.data));
+    }, [api]);
+
+    // 2. Busca os órgãos sempre que uma entidade é selecionada
+    useEffect(() => {
+        if (formData.entidade) {
+            api.get(`/orgaos/?entidade=${formData.entidade}`).then(res => setOrgaos(res.data));
+        } else {
+            setOrgaos([]);
+        }
+    }, [formData.entidade, api]);
+
+    // 3. Lógica para preencher os campos em modo de EDIÇÃO
+    useEffect(() => {
+        if (isEditing && initialData.orgao) {
+            // Busca os detalhes do órgão para encontrar sua entidade-mãe
+            api.get(`/orgaos/${initialData.orgao}/`).then(response => {
+                const orgaoData = response.data;
+                // Atualiza o formulário com a entidade e o órgão corretos
+                setFormData(prev => ({
+                    ...prev,
+                    entidade: orgaoData.entidade, // Define a entidade
+                    orgao: orgaoData.id // Garante que o órgão está selecionado
+                }));
+            }).catch(err => {
+                console.error("Erro ao buscar detalhes do órgão", err);
+                showToast("Não foi possível carregar os detalhes da entidade/órgão.", "error");
+            });
+        }
+    }, [isEditing, initialData, api, showToast]);
+
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         const finalValue = name === 'registro_precos' ? (value === 'true') : (type === 'checkbox' ? checked : value);
         const newFormData = { ...formData, [name]: finalValue };
 
-        if (name === 'municipio') newFormData.orgao = '';
+        // Se o utilizador mudar a entidade, limpa o órgão selecionado
+        if (name === 'entidade') {
+            newFormData.orgao = '';
+        }
         setFormData(newFormData);
     };
 
@@ -62,8 +93,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
     const organizacoes = ['Lote', 'Item'];
 
-    // Estilos base para os inputs para evitar repetição
-    const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-accent-blue";
+    const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary";
     const labelStyle = "text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary";
 
     return (
@@ -101,19 +131,19 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                     </div>
                      <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <label className={labelStyle}>Município *</label>
-                             <select name="municipio" value={formData.municipio} onChange={handleChange} className={`${inputStyle} mt-1`} required>
-                                <option value="">Selecione...</option>
-                                {municipios.map(m => <option key={m.id} value={m.id}>{m.nome} - {m.uf}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className={labelStyle}>Órgão *</label>
-                            <select name="orgao" value={formData.orgao} onChange={handleChange} className={`${inputStyle} mt-1`} required disabled={!formData.municipio}>
-                                <option value="">Selecione...</option>
-                                {orgaos.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
-                            </select>
-                        </div>
+                        <label className={labelStyle}>Entidade *</label>
+                         <select name="entidade" value={formData.entidade} onChange={handleChange} className={`${inputStyle} mt-1`} required>
+                            <option value="">Selecione...</option>
+                            {entidades.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className={labelStyle}>Órgão *</label>
+                        <select name="orgao" value={formData.orgao} onChange={handleChange} className={`${inputStyle} mt-1`} required disabled={!formData.entidade}>
+                            <option value="">Selecione uma entidade primeiro...</option>
+                            {orgaos.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+                        </select>
+                    </div>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
