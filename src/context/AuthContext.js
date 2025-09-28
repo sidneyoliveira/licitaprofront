@@ -1,9 +1,7 @@
-// frontend/src/context/AuthContext.js
-
 import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import axiosInstance from '../api/AxiosInstance';
+import axiosInstance from '../api/axiosInstance';
 
 const AuthContext = createContext();
 
@@ -15,10 +13,7 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
 
     const loginUser = useCallback(async (username, password) => {
-
-        console.log(`[AuthContext] Tentando fazer login na URL: ${axiosInstance.defaults.baseURL}/token/`);
-
-        const response = await axiosInstance.post('/token/', { username, password });
+        const response = await axiosInstance.post('/api/token/', { username, password });
         if (response.status === 200) {
             const data = response.data;
             setAuthTokens(data);
