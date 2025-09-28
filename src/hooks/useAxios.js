@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import AuthContext from '../context/AuthContext';
 
 // Importa a instância base para obter a URL, garantindo consistência
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../api/AxiosInstance';
 const baseURL = axiosInstance.defaults.baseURL;
 
 const useAxios = () => {
