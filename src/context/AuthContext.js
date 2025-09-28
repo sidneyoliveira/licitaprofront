@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
 
     const loginUser = useCallback(async (username, password) => {
-        const response = await axiosInstance.post('/api/token/', { username, password });
+        const response = await axiosInstance.post('/token/', { username, password });
         if (response.status === 200) {
             const data = response.data;
             setAuthTokens(data);
