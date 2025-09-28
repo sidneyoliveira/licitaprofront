@@ -101,9 +101,9 @@ const Header = () => {
                         className="flex items-center gap-2 px-3 py-2 rounded-md border border-light-border dark:border-dark-border hover:bg-light-border dark:hover:bg-dark-border"
                     >
                         <UserCircleIcon className="w-6 h-6 text-light-text-secondary dark:text-dark-text-secondary" />
-                        {/* --- ALTERAÇÃO AQUI --- */}
+                        {/* --- CORREÇÃO APLICADA AQUI --- */}
                         <span className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-                            {(user?.username || 'Utilizador').toUpperCase()}
+                            {user?.username.toUpperCase()}
                         </span>
                         <ChevronDownIcon className={`w-4 h-4 text-light-text-secondary dark:text-dark-text-secondary transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
