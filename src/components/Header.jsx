@@ -100,7 +100,7 @@ const Header = () => {
                         {/* Verifica se o utilizador existe antes de tentar aceder ao seu nome */}
                         {user && (
                             <span className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-                                {(user.first_name || user.username).toUpperCase()}
+                            {(user?.first_name || user?.username || 'Carregando...').toUpperCase()}
                             </span>
                         )}
                         
