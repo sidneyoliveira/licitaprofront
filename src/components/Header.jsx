@@ -1,6 +1,5 @@
 // frontend/src/components/Header.jsx
 
-
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
@@ -27,11 +26,8 @@ const useClickOutside = (ref, handler) => {
 const Header = () => {
     const { user, logoutUser } = useContext(AuthContext);
 
-    // Estados para controlar a visibilidade dos dropdowns
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
-
-    // Dados de exemplo para as notificações
     const [notifications, setNotifications] = useState([
         { id: 1, text: 'Novo processo "Pregão Eletrônico 123/2025" foi adicionado.', read: false },
         { id: 2, text: 'A data de abertura do certame 012/2025 foi alterada.', read: false },
@@ -40,11 +36,9 @@ const Header = () => {
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    // Referências para os elementos dos dropdowns
     const notificationsRef = useRef(null);
     const userMenuRef = useRef(null);
 
-    // Usar o hook para fechar os dropdowns ao clicar fora
     useClickOutside(notificationsRef, () => setNotificationsOpen(false));
     useClickOutside(userMenuRef, () => setUserMenuOpen(false));
 
@@ -67,7 +61,6 @@ const Header = () => {
                         )}
                     </button>
 
-                    {/* Dropdown de Notificações */}
                     {notificationsOpen && (
                         <div className="absolute right-0 mt-2 w-80 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-10">
                             <div className="p-3 border-b border-light-border dark:border-dark-border flex justify-between items-center">
@@ -99,13 +92,21 @@ const Header = () => {
                 <div className="relative" ref={userMenuRef}>
                     <button
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center px-3 py-2 rounded-md border border-light-border dark:border-dark-border hover:bg-light-border dark:hover:bg-dark-border"
+                        className="flex items-center gap-2 px-3 py-2 rounded-md border border-light-border dark:border-dark-border hover:bg-light-border dark:hover:bg-dark-border"
                     >
-                        <span className="text-sm font-medium text-light-text-primary dark:text-dark-text-primary"> {user?.username.toUpperCase()}</span>
-                        <ChevronDownIcon className={`w-4 h-4 text-light-text-secondary dark:text-dark-text-secondary ml-2 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                        <UserCircleIcon className="w-6 h-6 text-light-text-secondary dark:text-dark-text-secondary" />
+                        
+                        {/* --- CORREÇÃO APLICADA AQUI --- */}
+                        {/* Verifica se o utilizador existe antes de tentar aceder ao seu nome */}
+                        {user && (
+                            <span className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
+                                {(user.first_name || user.username).toUpperCase()}
+                            </span>
+                        )}
+                        
+                        <ChevronDownIcon className={`w-4 h-4 text-light-text-secondary dark:text-dark-text-secondary transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {/* Dropdown do Utilizador */}
                     {userMenuOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-10 py-1">
                             <Link to="/perfil" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-light-text-primary dark:text-dark-text-primary hover:bg-light-border dark:hover:bg-dark-border">
