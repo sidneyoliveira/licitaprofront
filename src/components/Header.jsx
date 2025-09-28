@@ -126,10 +126,7 @@ const Header = () => {
                 </div>
             </div>
         </header>
-<<<<<<< Updated upstream
     );
 };
 
 export default Header;
-=======
->>>>>>> Stashed changes
