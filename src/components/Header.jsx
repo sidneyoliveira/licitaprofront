@@ -98,14 +98,10 @@ const Header = () => {
                 <div className="relative" ref={userMenuRef}>
                     <button
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-md border border-light-border dark:border-dark-border hover:bg-light-border dark:hover:bg-dark-border"
+                        className="flex items-center px-3 py-2 rounded-md border border-light-border dark:border-dark-border hover:bg-light-border dark:hover:bg-dark-border"
                     >
-                        <UserCircleIcon className="w-6 h-6 text-light-text-secondary dark:text-dark-text-secondary" />
-                        {/* --- CORREÇÃO APLICADA AQUI --- */}
-                        <span className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-                            {user?.username.toUpperCase()}
-                        </span>
-                        <ChevronDownIcon className={`w-4 h-4 text-light-text-secondary dark:text-dark-text-secondary transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                        <span className="text-sm font-medium text-light-text-primary dark:text-dark-text-primary"> {user?.username.toUpperCase()}</span>
+                        <ChevronDownIcon className={`w-4 h-4 text-light-text-secondary dark:text-dark-text-secondary ml-2 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {/* Dropdown do Utilizador */}
