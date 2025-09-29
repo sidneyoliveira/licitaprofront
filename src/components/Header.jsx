@@ -1,132 +1,99 @@
 // frontend/src/components/Header.jsx
 
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Bell, User, Menu, Settings, ArchiveBox, ArrowRightOnRectangle } from 'lucide-react'; // Ícones do novo modelo
 import AuthContext from '../context/AuthContext';
-import { BellIcon, UserCircleIcon, ChevronDownIcon, ArchiveBoxIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { useTheme } from '../context/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
-// Hook customizado para detetar cliques fora de um elemento (para fechar os dropdowns)
+// Hook customizado para detetar cliques fora de um elemento
 const useClickOutside = (ref, handler) => {
     useEffect(() => {
         const listener = (event) => {
-            if (!ref.current || ref.current.contains(event.target)) {
-                return;
-            }
+            if (!ref.current || ref.current.contains(event.target)) return;
             handler(event);
         };
         document.addEventListener('mousedown', listener);
-        document.addEventListener('touchstart', listener);
-        return () => {
-            document.removeEventListener('mousedown', listener);
-            document.removeEventListener('touchstart', listener);
-        };
+        return () => document.removeEventListener('mousedown', listener);
     }, [ref, handler]);
 };
 
-const Header = () => {
+const Header = ({ toggleSidebar }) => {
     const { user, logoutUser } = useContext(AuthContext);
+    const { isDark, toggleTheme } = useTheme();
 
-    const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
-    const [notifications, setNotifications] = useState([
-        { id: 1, text: 'Novo processo "Pregão Eletrônico 123/2025" foi adicionado.', read: false },
-        { id: 2, text: 'A data de abertura do certame 012/2025 foi alterada.', read: false },
-        { id: 3, text: 'Você tem 3 propostas a serem enviadas.', read: false },
-    ]);
-
-    const unreadCount = notifications.filter(n => !n.read).length;
-
-    const notificationsRef = useRef(null);
     const userMenuRef = useRef(null);
-
-    useClickOutside(notificationsRef, () => setNotificationsOpen(false));
     useClickOutside(userMenuRef, () => setUserMenuOpen(false));
-
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
-    };
+    
+    // Adicione a sua lógica de notificações aqui se necessário
 
     return (
-        <header className="h-16 flex items-center justify-end px-6 bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border flex-shrink-0">
-            <div className="flex items-center space-x-4">
-                {/* Ícone de Notificações */}
-                <div className="relative" ref={notificationsRef}>
-                    <button
-                        onClick={() => setNotificationsOpen(!notificationsOpen)}
-                        className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-border dark:hover:bg-dark-border transition-colors"
-                    >
-                        <BellIcon className="w-6 h-6" />
-                        {unreadCount > 0 && (
-                            <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-yellow-400 ring-2 ring-white dark:ring-dark-bg-secondary"></span>
-                        )}
+        <motion.header
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            // Efeito de "vidro fosco" que funciona nos dois temas
+            className="sticky top-0 z-40 bg-light-bg-secondary/80 dark:bg-dark-bg-secondary/80 backdrop-blur-lg border-b border-light-border dark:border-dark-border"
+        >
+            <div className="flex items-center justify-between p-4 h-16">
+                {/* Lado Esquerdo: Botão de Menu e Título da Página */}
+                <div className="flex items-center gap-4">
+                    <button onClick={toggleSidebar} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <Menu className="w-5 h-5" />
                     </button>
-
-                    {notificationsOpen && (
-                        <div className="absolute right-0 mt-2 w-80 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-10">
-                            <div className="p-3 border-b border-light-border dark:border-dark-border flex justify-between items-center">
-                                <h3 className="font-semibold text-sm">Notificações</h3>
-                                {unreadCount > 0 && (
-                                    <button onClick={markAllAsRead} className="text-xs text-accent-blue hover:underline">
-                                        Marcar todas como lidas
-                                    </button>
-                                )}
-                            </div>
-                            <div className="max-h-80 overflow-y-auto">
-                                {unreadCount > 0 ? (
-                                    notifications.filter(n => !n.read).map(notification => (
-                                        <a href="#" key={notification.id} className="block p-3 hover:bg-light-border dark:hover:bg-dark-border border-b border-light-border dark:border-dark-border last:border-b-0">
-                                            <p className="text-sm">{notification.text}</p>
-                                        </a>
-                                    ))
-                                ) : (
-                                    <div className="p-4 text-center text-sm text-light-text-secondary dark:text-dark-text-secondary">
-                                        Nenhuma notificação nova.
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
-                {/* Menu do Utilizador */}
-                <div className="relative" ref={userMenuRef}>
-                    <button
-                        onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-md border border-light-border dark:border-dark-border hover:bg-light-border dark:hover:bg-dark-border"
-                    >
-                        <UserCircleIcon className="w-6 h-6 text-light-text-secondary dark:text-dark-text-secondary" />
-                        
-                        {/* --- CORREÇÃO APLICADA AQUI --- */}
-                        {/* Verifica se o utilizador existe antes de tentar aceder ao seu nome */}
-                        {user && (
-                            <span className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-                            {(user?.first_name || user?.username || 'Carregando...').toUpperCase()}
-                            </span>
-                        )}
-                        
-                        <ChevronDownIcon className={`w-4 h-4 text-light-text-secondary dark:text-dark-text-secondary transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                {/* Lado Direito: Ações */}
+                <div className="flex items-center gap-3">
+                    <button onClick={toggleTheme} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                     </button>
 
-                    {userMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-10 py-1">
-                            <Link to="/perfil" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-light-text-primary dark:text-dark-text-primary hover:bg-light-border dark:hover:bg-dark-border">
-                                <UserCircleIcon className="w-5 h-5" />
-                                Minha Conta
-                            </Link>
-                            <Link to="/arquivos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm text-light-text-primary dark:text-dark-text-primary hover:bg-light-border dark:hover:bg-dark-border">
-                                <ArchiveBoxIcon className="w-5 h-5" />
-                                Meus Arquivos
-                            </Link>
-                            <div className="border-t border-light-border dark:border-dark-border my-1"></div>
-                            <button onClick={() => { logoutUser(); setUserMenuOpen(false); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50">
-                                <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                                Sair
-                            </button>
-                        </div>
-                    )}
+                    <button className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative">
+                        <Bell className="w-5 h-5" />
+                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-light-bg-secondary dark:border-dark-bg-secondary"></span>
+                    </button>
+
+                    {/* Menu do Utilizador */}
+                    <div className="relative" ref={userMenuRef}>
+                        <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 rounded-md hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                            <span className="font-semibold text-sm">
+                                {(user?.first_name || user?.username || '').toUpperCase()}
+                            </span>
+                            <User className="w-5 h-5" />
+                        </button>
+
+                        {/* Dropdown do Utilizador */}
+                        {userMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute right-0 mt-2 w-56 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-50 py-1"
+                            >
+                                <div className="px-4 py-2 border-b dark:border-dark-border">
+                                    <p className="text-sm font-semibold">{(user?.first_name || user?.username)}</p>
+                                    <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary truncate">{user?.email}</p>
+                                </div>
+                                <Link to="/perfil" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-light-border dark:hover:bg-dark-border">
+                                    <User className="w-4 h-4" /> Minha Conta
+                                </Link>
+                                <Link to="/arquivos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-light-border dark:hover:bg-dark-border">
+                                    <ArchiveBox className="w-4 h-4" /> Meus Arquivos
+                                </Link>
+                                <div className="border-t border-light-border dark:border-dark-border my-1"></div>
+                                <button onClick={() => { logoutUser(); setUserMenuOpen(false); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50">
+                                    <ArrowRightOnRectangle className="w-4 h-4" /> Sair
+                                </button>
+                            </motion.div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </header>
+        </motion.header>
     );
 };
 
