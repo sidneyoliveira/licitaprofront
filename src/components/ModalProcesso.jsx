@@ -32,7 +32,7 @@ const ModalProcesso = ({ closeModal, onSave, initialData }) => {
     const api = useAxios();
 
     useEffect(() => {
-        api.get('/entidade/').then(res => setEntidades(res.data));
+        api.get('/entidades/').then(res => setEntidades(res.data));
     }, [api]);
 
     useEffect(() => {
@@ -60,11 +60,11 @@ const ModalProcesso = ({ closeModal, onSave, initialData }) => {
         try {
             let savedData;
             if (isEditing) {
-                const response = await api.put(`/processo/${initialData.id}/`, formData);
+                const response = await api.put(`/processos/${initialData.id}/`, formData);
                 savedData = response.data;
                 showToast('Processo atualizado com sucesso!', 'success');
             } else {
-                const response = await api.post('/processo/', formData);
+                const response = await api.post('/processos/', formData);
                 savedData = response.data;
                 showToast('Processo criado com sucesso!', 'success');
             }

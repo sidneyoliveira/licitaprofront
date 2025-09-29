@@ -23,7 +23,7 @@ const ModalPublicacao = ({ processo, closeModal, onPublished }) => {
         setIsLoading(true);
         try {
             // Usamos PATCH para atualizar apenas os campos necessários
-            await api.patch(`/processo/${processo.id}/`, {
+            await api.patch(`/processos/${processo.id}/`, {
                 ...formData,
                 situacao: 'Publicado', // Garante que o status final é 'Publicado'
             });
