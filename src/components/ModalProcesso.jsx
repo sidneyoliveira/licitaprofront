@@ -5,25 +5,33 @@ import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
+// Função para obter a data de hoje no formato YYYY-MM-DD
+const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const isEditing = initialData && initialData.id;
     const { showToast } = useToast();
     
-    // O estado inicial agora começa com os campos de seleção vazios
+    // O estado inicial agora inclui a data_cadastro e os valores padrão corretos
     const [formData, setFormData] = useState(
         initialData || {
-            objeto: '',
-            numero_processo: '',
-            numero_certame: '',
-            modalidade: '', // Começa em branco
-            classificacao: '', // Começa em branco
-            data_processo: '', // Novo campo de data para o utilizador preencher
+            objeto: '', numero_processo: '', numero_certame: '', 
+            modalidade: 'Pregão Eletrônico', // Valor padrão para evitar erro
+            classificacao: 'Compras', // Valor padrão para evitar erro
+            data_cadastro: getTodayDate(), // Campo obrigatório com valor padrão
             orgao: '',
-            tipo_organizacao: '',
-            vigencia_meses: '',
-            situacao: '',
-            registro_precos: false,
-            data_abertura: '',
+            tipo_organizacao: 'Lote', 
+            vigencia_meses: '', 
+            situacao: 'Aberto', 
+            registro_precos: false, 
+            data_publicacao: '', // "Data do Processo", opcional
+            data_abertura: '', // Opcional
             valor_referencia: '',
             entidade: '',
         }
@@ -45,7 +53,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             setOrgaos([]);
         }
     }, [formData.entidade, api]);
-
+    
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         const finalValue = name === 'registro_precos' ? (value === 'true') : (type === 'checkbox' ? checked : value);
@@ -95,41 +103,36 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                         <label className={labelStyle}>Objeto *</label>
                         <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1`} rows="3" required />
                     </div>
-                    
                     <div className="grid md:grid-cols-3 gap-4">
                         <div>
                             <label className={labelStyle}>Número do Processo *</label>
                             <input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={`${inputStyle} mt-1`} required />
                         </div>
                         <div>
-                           <label className={labelStyle}>Data do Processo</label>
-                           <input name="data_processo" type="date" value={formData.data_processo || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
-                        </div>
-                         <div>
                             <label className={labelStyle}>Número do Certame *</label>
                             <input name="numero_certame" value={formData.numero_certame} onChange={handleChange} className={`${inputStyle} mt-1`} required />
                         </div>
+                        <div>
+                            <label className={labelStyle}>Abertura da Contratação</label>
+                            <input name="data_abertura" type="datetime-local" value={formData.data_abertura || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
+                        </div>
                     </div>
-
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <label className={labelStyle}>Modalidade *</label>
                             <select name="modalidade" value={formData.modalidade} onChange={handleChange} className={`${inputStyle} mt-1`} required>
-                                <option value="">Selecione...</option>
                                 {modalidades.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className={labelStyle}>Classificação *</label>
                             <select name="classificacao" value={formData.classificacao} onChange={handleChange} className={`${inputStyle} mt-1`} required>
-                                <option value="">Selecione...</option>
                                 {classificacoes.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
                     </div>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                         <div>
+                     <div className="grid md:grid-cols-2 gap-4">
+                        <div>
                             <label className={labelStyle}>Entidade *</label>
                              <select name="entidade" value={formData.entidade} onChange={handleChange} className={`${inputStyle} mt-1`} required>
                                 <option value="">Selecione...</option>
@@ -144,8 +147,17 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                             </select>
                         </div>
                     </div>
-                    
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                           <label className={labelStyle}>Data do Processo</label>
+                           <input name="data_publicacao" type="date" value={formData.data_publicacao || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
+                        </div>
+                        <div>
+                           <label className={labelStyle}>Data de Cadastro *</label>
+                           <input name="data_cadastro" type="date" value={formData.data_cadastro || ''} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                        </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                            <label className={labelStyle}>Organização dos Itens</label>
                            <select name="tipo_organizacao" value={formData.tipo_organizacao || ''} onChange={handleChange} className={`${inputStyle} mt-1`}>
@@ -172,7 +184,6 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                            <input name="vigencia_meses" type="number" value={formData.vigencia_meses || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
                         </div>
                     </div>
-
                     <div className="flex justify-end gap-4 mt-6">
                         <button type="button" onClick={closeModal} className="py-2 px-4 rounded-lg text-sm">Cancelar</button>
                         <button type="submit" disabled={isLoading} className="py-2 px-4 bg-accent-blue text-white rounded-lg text-sm">
