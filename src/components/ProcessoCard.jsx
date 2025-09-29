@@ -122,7 +122,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete }) => {
             {processo.situacao || '-'}
           </span>
         </div>
-        <InfoPill label="Data de Cadastro" value={new Date(processo.data_cadastro + 'T00:00:00').toLocaleDateString('pt-BR')} />
+        <InfoPill label="Data de Cadastro" value={new Date(processo.data_processo + 'T00:00:00').toLocaleDateString('pt-BR')} />
         <InfoPill label="Abertura do Certame" value={processo.data_abertura ? new Date(processo.data_abertura).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'} />
         <InfoPill label="Reg. Preços" value={processo.registro_precos ? 'Sim' : 'Não'} />
         <InfoPill label="Organização" value={processo.tipo_organizacao} />
