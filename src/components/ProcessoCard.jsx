@@ -15,7 +15,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
 
   // Função para determinar o estilo da "pílula" de situação
   const getSituacaoStyle = (situacao) => {
-    const baseStyle = "px-2 py-1 text-xs font-bold rounded-full border inline-block";
+    const baseStyle = "px-2 py-1 text-xs font-semibold rounded-md border inline-block uppercase";
     switch (situacao) {
       case 'Aberto':
       case 'Publicado':
@@ -129,7 +129,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 items-center gap-4 py-4 border-t border-light-border dark:border-dark-border">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider">Situação</p>
-          <span className={getSituacaoStyle(processo.situacao)}>
+          <span className={getSituacaoStyle(processo.situacao)} >
             {processo.situacao || '-'}
           </span>
         </div>
