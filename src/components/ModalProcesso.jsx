@@ -5,7 +5,7 @@ import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
-const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
+const ModalProcesso = ({ closeModal, onSave, initialData }) => {
     const isEditing = initialData && initialData.id;
     const { showToast } = useToast();
     
@@ -14,17 +14,14 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         initialData || {
             objeto: '',
             numero_processo: '',
-            numero_certame: '',
-            modalidade: '', // Começa em branco
-            classificacao: '', // Começa em branco
-            data_processo: '', // Novo campo de data para o utilizador preencher
+            modalidade: '', 
+            classificacao: '', 
+            data_processo: '', 
             orgao: '',
             tipo_organizacao: '',
             vigencia_meses: '',
             situacao: '',
             registro_precos: false,
-            data_abertura: '',
-            valor_referencia: '',
             entidade: '',
         }
     );
@@ -61,22 +58,24 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         e.preventDefault();
         setIsLoading(true);
         try {
+            let savedData;
             if (isEditing) {
-                await api.put(`/processos/${initialData.id}/`, formData);
+                const response = await api.put(`/processos/${initialData.id}/`, formData);
+                savedData = response.data;
                 showToast('Processo atualizado com sucesso!', 'success');
             } else {
-                await api.post('/processos/', formData);
+                const response = await api.post('/processos/', formData);
+                savedData = response.data;
                 showToast('Processo criado com sucesso!', 'success');
             }
-            refreshProcessos();
-            closeModal();
+            onSave(savedData);
         } catch (error) {
-            console.error('Erro ao salvar processo:', error.response?.data);
-            showToast('Erro ao salvar processo. Verifique os campos.', 'error');
+            showToast('Erro ao salvar processo.', 'error');
         } finally {
             setIsLoading(false);
         }
     };
+
 
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
     const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
@@ -104,10 +103,6 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                         <div>
                            <label className={labelStyle}>Data do Processo</label>
                            <input name="data_processo" type="date" value={formData.data_processo || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
-                        </div>
-                         <div>
-                            <label className={labelStyle}>Número do Certame *</label>
-                            <input name="numero_certame" value={formData.numero_certame} onChange={handleChange} className={`${inputStyle} mt-1`} required />
                         </div>
                     </div>
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '../hooks/useAxios';
 import ProcessoCard from '../components/ProcessoCard';
 import ModalProcesso from '../components/ModalProcesso';
+import ModalPublicacao from '../components/ModalPublicacao';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 
@@ -22,6 +23,7 @@ const Processos = () => {
     const [processos, setProcessos] = useState([]);
     const [editingProcess, setEditingProcess] = useState(null);
     const [deletingProcessId, setDeletingProcessId] = useState(null);
+    const [publishingProcess, setPublishingProcess] = useState(null);
     const [activeStatus, setActiveStatus] = useState('');
     const [filters, setFilters] = useState({ search: '', modalidade: '', situacao: '' });
     const [isLoading, setIsLoading] = useState(true);
@@ -83,7 +85,30 @@ const Processos = () => {
             setDeletingProcessId(null);
         }
     };
+
+     const handleSaveProcess = (savedData) => {
+        setEditingProcess(null); // Fecha o modal principal
+        fetchProcessos(); // Atualiza a lista
+
+        // Se o status for "Publicado" (ou posterior) e não houver número de certame, abre o segundo modal
+        const isPublishedOrLater = ['Publicado', 'Em Contratação', 'Adjudicado/Homologado'].includes(savedData.situacao);
+        if (isPublishedOrLater && !savedData.numero_certame) {
+            setPublishingProcess(savedData);
+        }
+    };
+
+     // Função para fechar todos os modais e atualizar a lista
+    const handlePublicationSave = () => {
+        setPublishingProcess(null);
+        fetchProcessos();
+    };
     
+    const closeAllModals = () => {
+        setEditingProcess(null);
+        setPublishingProcess(null);
+        setDeletingProcessId(null);
+    };
+
     const handleView = (processoId) => {
         const url = window.location.origin + `/processos/visualizar/${processoId}`;
         window.open(url, '_blank');
@@ -97,8 +122,24 @@ const Processos = () => {
 
     return (
         <div>
-            {editingProcess && <ModalProcesso closeModal={() => setEditingProcess(null)} refreshProcessos={fetchProcessos} initialData={editingProcess} />}
-            
+            {/* Modal principal de Edição/Criação */}
+            {editingProcess && (
+                <ModalProcesso 
+                    closeModal={() => setEditingProcess(null)} 
+                    onSave={handleSaveProcess}
+                    initialData={editingProcess} 
+                />
+            )}
+
+            {/* Novo modal de Publicação */}
+            {publishingProcess && (
+                <ModalPublicacao 
+                    processo={publishingProcess}
+                    closeModal={() => setPublishingProcess(null)}
+                    onPublished={handlePublicationSave}
+                />
+            )}
+
             {deletingProcessId && (
                 <ConfirmDeleteModal
                     onConfirm={confirmDelete}

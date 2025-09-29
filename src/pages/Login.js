@@ -66,7 +66,7 @@ const Login = () => {
         </form>
         <div className="text-center mt-6">
             <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-                Não tem uma conta?{' '}
+                Não tem uma conta? {' '}
                 <Link to="/register" className="font-medium text-accent-blue hover:underline">
                     Cadastre-se
                 </Link>
