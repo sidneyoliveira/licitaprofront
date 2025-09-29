@@ -1,19 +1,12 @@
 // frontend/src/components/Header.jsx
 
-import React, { useState, useContext, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
 import { motion } from 'framer-motion';
-import AuthContext from '../context/AuthContext';
+import { Menu, Bell, User, Sun, Moon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { 
-    Bell, 
-    User, 
-    Menu, 
-    Sun, 
-    Moon,
-    Archive as ArchiveIcon,
-    LogOut as LogOutIcon
-} from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 
 // Hook customizado para detetar cliques fora de um elemento
 const useClickOutside = (ref, handler) => {
@@ -23,17 +16,14 @@ const useClickOutside = (ref, handler) => {
             handler(event);
         };
         document.addEventListener('mousedown', listener);
-        document.addEventListener('touchstart', listener);
-        return () => {
-            document.removeEventListener('mousedown', listener);
-            document.removeEventListener('touchstart', listener);
-        };
+        return () => document.removeEventListener('mousedown', listener);
     }, [ref, handler]);
 };
 
 const Header = ({ toggleSidebar }) => {
     const { user, logoutUser } = useContext(AuthContext);
     const { isDark, toggleTheme } = useTheme();
+
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
     useClickOutside(userMenuRef, () => setUserMenuOpen(false));
@@ -45,25 +35,29 @@ const Header = ({ toggleSidebar }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            // Efeito de "vidro fosco" que funciona nos dois temas
             className="sticky top-0 z-40 bg-light-bg-secondary/80 dark:bg-dark-bg-secondary/80 backdrop-blur-lg border-b border-light-border dark:border-dark-border"
         >
             <div className="flex items-center justify-between p-4 h-16">
+                {/* Lado Esquerdo: Botão de Menu e Título da Página */}
                 <div className="flex items-center gap-4">
                     <button onClick={toggleSidebar} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
                         <Menu className="w-5 h-5" />
                     </button>
                 </div>
 
+                {/* Lado Direito: Ações */}
                 <div className="flex items-center gap-3">
                     <button onClick={toggleTheme} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
                         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                     </button>
 
-                    <Link to="/notificacoes" className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative">
+                    <button className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative">
                         <Bell className="w-5 h-5" />
                         <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-light-bg-secondary dark:border-dark-bg-secondary"></span>
-                    </Link>
+                    </button>
 
+                    {/* Menu do Utilizador */}
                     <div className="relative" ref={userMenuRef}>
                         <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 rounded-md hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
                             <span className="font-semibold text-sm">
@@ -72,6 +66,7 @@ const Header = ({ toggleSidebar }) => {
                             <User className="w-5 h-5" />
                         </button>
 
+                        {/* Dropdown do Utilizador */}
                         {userMenuOpen && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
@@ -87,11 +82,11 @@ const Header = ({ toggleSidebar }) => {
                                     <User className="w-4 h-4" /> Minha Conta
                                 </Link>
                                 <Link to="/arquivos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-light-border dark:hover:bg-dark-border">
-                                    <ArchiveIcon className="w-4 h-4" /> Meus Arquivos
+                                    <ArchiveBox className="w-4 h-4" /> Meus Arquivos
                                 </Link>
                                 <div className="border-t border-light-border dark:border-dark-border my-1"></div>
                                 <button onClick={() => { logoutUser(); setUserMenuOpen(false); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50">
-                                    <LogOutIcon className="w-4 h-4" /> Sair
+                                    <ArrowRightOnRectangle className="w-4 h-4" /> Sair
                                 </button>
                             </motion.div>
                         )}

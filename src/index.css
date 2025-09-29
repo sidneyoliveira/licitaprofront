@@ -1,72 +1,27 @@
-/* frontend/src/index.css */
-
-/* 1. Importa os estilos base do Tailwind */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* 2. Define as variáveis de cor para o tema */
-@layer base {
-  :root {
-    /* MODO CLARO (PADRÃO) */
-    --background: 210 40% 96.1%; /* Cor de fundo principal, ex: #F3F4F6 */
-    --foreground: 222 47.4% 11.2%; /* Cor do texto principal, ex: #1F2937 */
-    --card: 0 0% 100%; /* Cor do fundo de cards, ex: #FFFFFF */
-    --card-foreground: 222.2 84.2% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84.2% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%; /* Cor das bordas, ex: #E5E7EB */
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84.2% 4.9%;
-    --radius: 0.5rem; /* Arredondamento padrão dos cantos */
-  }
- 
-  .dark {
-    /* MODO ESCURO */
-    --background: 224 71% 4%; /* Nossa cor dark-bg-primary: #0A0E1E */
-    --foreground: 222 18% 92%; /* Nossa cor dark-text-primary: #EAEFFB */
-    --card: 222 47% 15%; /* Nossa cor dark-bg-secondary: #152137 */
-    --card-foreground: 210 40% 96.1%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 96.1%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 224 23% 44%; /* Nossa cor dark-border: #5D647E */
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+@font-face {
+  font-family: 'Goldplay';
+  src: url('./assets/fonts/Goldplay-Regular.woff2') format('woff2');
+  font-weight: 400; /* Regular */
+  font-style: normal;
 }
 
-/* 3. Estilos base adicionais para a aplicação */
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "cv03", "cv04", "cv11"; /* Funcionalidades opcionais da fonte para melhor legibilidade */
-  }
+@font-face {
+  font-family: 'Goldplay';
+  src: url('./assets/fonts/Goldplay-Medium.woff2') format('woff2');
+  font-weight: 500; /* Medium */
+  font-style: normal;
 }
-
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
 
 @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Sora:wght@100..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos base simples */
+body {
+  @apply bg-light-bg-primary dark:bg-dark-bg-primary;
+  @apply text-light-text-primary dark:text-dark-text-primary;
+}
