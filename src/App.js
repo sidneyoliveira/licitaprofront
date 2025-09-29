@@ -33,6 +33,15 @@ function App() {
               <Route path="/fornecedores" element={<Fornecedores />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              
+              {/* Rota Placeholder para Meus Arquivos */}
+              <Route path="/arquivos" element={
+                <div className="p-6">
+                  <h1 className="text-3xl font-bold">Meus Arquivos</h1>
+                  <p className="mt-4">Esta página está em construção.</p>
+                </div>
+              } />
+              
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </DashboardLayout>

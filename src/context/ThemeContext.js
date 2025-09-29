@@ -1,45 +1,53 @@
-// src/context/ThemeContext.js
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
 
-const ThemeContext = createContext();
+const ToastContext = createContext();
 
-export const useTheme = () => useContext(ThemeContext);
+export const useToast = () => useContext(ToastContext);
 
-export const ThemeProvider = ({ children }) => {
-    const [isDark, setIsDark] = useState(() => {
-        const savedTheme = localStorage.getItem('theme');
-        // Adicionando logs para ver o que está acontecendo
-        console.log("PASSO 1: Valor lido do localStorage:", savedTheme);
+const Toast = ({ message, type, onClose }) => {
+  const baseStyle = "flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse rounded-lg shadow-lg text-sm transition-all duration-300 animate-in fade-in slide-in-from-top-5";
+  const typeStyles = {
+    success: "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-200 divide-green-200 dark:divide-green-700",
+    error: "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-200 divide-red-200 dark:divide-red-700",
+  };
 
-        if (savedTheme) {
-            // AQUI ESTÁ O PONTO CRÍTICO
-            const initialIsDark = savedTheme === 'dark';
-            console.log(`PASSO 2: A condição "savedTheme === 'dark'" resultou em:`, initialIsDark);
-            return initialIsDark;
-        }
-        
-        console.log("PASSO 2: Nenhum tema salvo, usando o padrão 'false' (claro).");
-        return false;
-    });
+  return (
+    <div className={`${baseStyle} ${typeStyles[type]}`} role="alert">
+      <div className="text-xl">
+        {type === 'success' ? '✔' : '✖'}
+      </div>
+      <div className="ps-4 flex-1">{message}</div>
+      <button onClick={onClose} className="p-1 -m-1 text-xl opacity-70 hover:opacity-100">&times;</button>
+    </div>
+  );
+};
 
-    useEffect(() => {
-        console.log("PASSO 3: Aplicando o tema. O estado 'isDark' é:", isDark);
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
-    }, [isDark]);
+export const ToastProvider = ({ children }) => {
+  const [toasts, setToasts] = useState([]);
 
-    const toggleTheme = () => {
-        setIsDark(prevIsDark => !prevIsDark);
-    };
+  const removeToast = useCallback((id) => {
+    setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
+  }, []);
 
-    return (
-        <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+  const showToast = useCallback((message, type = 'success') => {
+    const id = Date.now();
+    setToasts(prevToasts => [...prevToasts, { id, message, type }]);
+    
+    setTimeout(() => {
+      removeToast(id);
+    }, 4000);
+  }, [removeToast]);
+
+  const value = useMemo(() => ({ showToast }), [showToast]);
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      <div className="fixed top-5 right-5 z-[9999] space-y-2">
+        {toasts.map(toast => (
+          <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
 };
