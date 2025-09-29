@@ -1,7 +1,7 @@
 // src/components/ProcessoCard.jsx
 
 import React from 'react';
-import { BuildingLibraryIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { BuildingLibraryIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 // Componente para os itens de informação dentro do card
 const InfoPill = ({ label, value }) => (
@@ -11,7 +11,7 @@ const InfoPill = ({ label, value }) => (
   </div>
 );
 
-const ProcessoCard = ({ processo, onEdit, onDelete }) => {
+const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
 
   // Função para determinar o estilo da "pílula" de situação
   const getSituacaoStyle = (situacao) => {
@@ -67,24 +67,35 @@ const ProcessoCard = ({ processo, onEdit, onDelete }) => {
     <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl border border-light-border dark:border-dark-border p-4 shadow-sm transition-shadow hover:shadow-lg">
       
       {/* Cabeçalho do Card */}
-      <header className="flex flex-wrap gap-2 items-center justify-between pb-3 border-b border-light-border dark:border-dark-border">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs font-medium text-accent-blue bg-accent-blue/10 px-2 py-1 rounded-full">
-            <BuildingLibraryIcon className="w-4 h-4" />
-            <span className="truncate max-w-xs">{processo.municipio_nome || 'Município'} / {processo.orgao_nome || 'Órgão'}</span>
+       {/* --- CABEÇALHO DO CARD COM LAYOUT RECURSIVO --- */}
+      <header className="flex items-center justify-between gap-4 pb-3 border-b border-light-border dark:border-dark-border">
+        
+        {/* Lado Esquerdo: Esta div agora cresce para ocupar o espaço disponível */}
+        <div className="flex items-center gap-3 flex-grow min-w-0">
+          <div className="flex items-center gap-2 text-xs font-medium text-accent-blue bg-accent-blue/10 px-1 py-1 rounded-md border truncate">
+            <BuildingLibraryIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{processo.entidade_nome || 'Entidade'} / {processo.orgao_nome || 'Órgão'}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+            <button 
+              onClick={() => onView(processo.id)}
+              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/50 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+            >
+                <EyeIcon className="w-4 h-4" />
+                <span>Visualizar</span>
+            </button>
             <button 
               onClick={() => onEdit(processo)} 
-              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-border dark:hover:bg-dark-border hover:text-light-text-primary dark:hover:text-dark-text-primary transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-yellow-600 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/50 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors"
             >
                 <PencilIcon className="w-4 h-4" />
                 <span>Editar</span>
             </button>
             <button 
               onClick={() => onDelete(processo.id)} 
-              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-red-500 hover:bg-red-500/10 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-md text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/50 hover:bg-red-100 dark:hover:bg-red-900 transition-colors"
             >
                 <TrashIcon className="w-4 h-4" />
                 <span>Remover</span>
