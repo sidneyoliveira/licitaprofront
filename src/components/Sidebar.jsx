@@ -1,10 +1,12 @@
+// frontend/src/components/Sidebar.jsx
+
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   FileText, 
-  ArchiveBox,
+  Archive, // <-- Corrigido de ArchiveBox para Archive
   Users, 
   Bell, 
   Settings,
@@ -50,11 +52,10 @@ const NavItem = ({ item, isOpen, isActive }) => {
 const Sidebar = ({ isOpen }) => {
   const location = useLocation();
 
-  // A nossa lista de menus com as rotas e ícones corretos
   const menuItems = [
     { icon: LayoutDashboard, label: 'Início', path: '/' },
     { icon: FileText, label: 'Processos', path: '/processos' },
-    { icon: ArchiveBox, label: 'Cadastros', path: '/cadastros' },
+    { icon: Archive, label: 'Cadastros', path: '/cadastros' }, // <-- Corrigido
     { icon: Building, label: 'Fornecedores', path: '/fornecedores' },
     { icon: Users, label: 'Usuários', path: '/usuarios' },
     { icon: Bell, label: 'Notificações', path: '/notificacoes' },
@@ -67,11 +68,11 @@ const Sidebar = ({ isOpen }) => {
       initial={false}
       animate={isOpen ? "open" : "closed"}
       variants={{
-        open: { width: '16rem' }, // 256px
-        closed: { width: '5rem' }, // 80px
+        open: { width: '16rem' },
+        closed: { width: '5rem' },
       }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-full bg-black/20 backdrop-blur-xl border-r border-white/20 z-50 flex flex-col"
+      className="fixed left-0 top-0 h-full bg-light-bg-secondary dark:bg-dark-bg-secondary border-r border-light-border dark:border-dark-border z-50 flex flex-col"
     >
       <div className="p-6 flex flex-col h-full">
         <div className="flex items-center gap-3 mb-8 flex-shrink-0">

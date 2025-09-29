@@ -2,10 +2,18 @@
 
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import AuthContext from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { motion } from 'framer-motion';
-import { Bell, User, Menu, Sun, Moon, ArchiveBox as ArchiveBoxIcon, ArrowRightOnRectangle as ArrowRightOnRectangleIcon } from 'lucide-react';
+import { 
+    Bell, 
+    User, 
+    Menu, 
+    Sun, 
+    Moon,
+    Archive as ArchiveBoxIcon, // <-- Corrigido de ArchiveBox para Archive e renomeado
+    ArrowRightOnRectangle as ArrowRightOnRectangleIcon // Renomeado para consistência
+} from 'lucide-react';
 
 // Hook customizado para detetar cliques fora de um elemento
 const useClickOutside = (ref, handler) => {
@@ -26,13 +34,10 @@ const useClickOutside = (ref, handler) => {
 const Header = ({ toggleSidebar }) => {
     const { user, logoutUser } = useContext(AuthContext);
     const { isDark, toggleTheme } = useTheme();
-
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
     useClickOutside(userMenuRef, () => setUserMenuOpen(false));
     
-    // Adicione a sua lógica de notificações aqui se necessário
-
     return (
         <motion.header
             initial={{ opacity: 0, y: -20 }}
