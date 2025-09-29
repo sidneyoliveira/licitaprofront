@@ -28,6 +28,10 @@ const Header = () => {
     const { user, logoutUser } = useContext(AuthContext);
     const { isDark, toggleTheme } = useTheme(); // 2. Usar o hook do tema
 
+    useEffect(() => {
+        console.log("Dados do utilizador no Header:", user);
+    }, [user]);
+
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [notifications, setNotifications] = useState([
@@ -48,11 +52,12 @@ const Header = () => {
         setNotifications(notifications.map(n => ({ ...n, read: true })));
     };
 
+
     return (
         <header className="h-16 flex items-center justify-end px-6 bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border flex-shrink-0">
             <div className="flex items-center space-x-4">
                 
-                {/* --- BOTÃO DE TEMA RESTAURADO --- */}
+                {/* --- BOTÃO DE TEMA--- */}
                 <button 
                   onClick={toggleTheme} 
                   className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-border dark:hover:bg-dark-border transition-colors"
@@ -76,8 +81,28 @@ const Header = () => {
                     </button>
 
                     {notificationsOpen && (
-                        <div className="absolute right-0 mt-2 w-80 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-10">
-                            {/* ... (conteúdo do dropdown de notificações) ... */}
+                         <div className="absolute right-0 mt-2 w-80 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-10">
+                            <div className="p-3 border-b border-light-border dark:border-dark-border flex justify-between items-center">
+                                <h3 className="font-semibold text-sm">Notificações</h3>
+                                {unreadCount > 0 && (
+                                    <button onClick={markAllAsRead} className="text-xs text-accent-blue hover:underline">
+                                        Marcar todas como lidas
+                                    </button>
+                                )}
+                            </div>
+                            <div className="max-h-80 overflow-y-auto">
+                                {unreadCount > 0 ? (
+                                    notifications.filter(n => !n.read).map(notification => (
+                                        <a href="#" key={notification.id} className="block p-3 hover:bg-light-border dark:hover:bg-dark-border border-b border-light-border dark:border-dark-border last:border-b-0">
+                                            <p className="text-sm">{notification.text}</p>
+                                        </a>
+                                    ))
+                                ) : (
+                                    <div className="p-4 text-center text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                                        Nenhuma notificação nova.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -92,7 +117,7 @@ const Header = () => {
                         
                         {user && (
                             <span className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-                            {(user?.first_name || user?.username || 'Carregando...').toUpperCase()}
+                            {(user?.first_name || user?.username)}
                             </span>
                         )}
                         
