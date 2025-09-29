@@ -1,7 +1,5 @@
-// frontend/src/components/Sidebar.jsx
-
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
@@ -10,22 +8,24 @@ import {
   Users, 
   Bell, 
   Settings,
-  Gavel
+  Gavel,
+  Building
 } from 'lucide-react';
 
 const NavItem = ({ item, isOpen, isActive }) => {
   const { icon: Icon, label, path } = item;
   const textVariants = {
-    open: { opacity: 1, x: 0, transition: { duration: 0.3, delay: 0.1 } },
+    open: { opacity: 1, x: 0, transition: { duration: 0.2, delay: 0.1 } },
     closed: { opacity: 0, x: -10 },
   };
 
   return (
-    <Link
+    <NavLink
       to={path}
+      end={path === '/'}
       className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 ${
         isActive
-          ? 'bg-gradient-to-r from-purple-500/30 to-indigo-500/30 text-white border border-purple-500/50'
+          ? 'bg-gradient-to-r from-purple-500/30 to-indigo-500/30 text-white border border-purple-500/50 shadow-lg'
           : 'text-dark-text-secondary hover:text-white hover:bg-white/10'
       }`}
     >
@@ -43,17 +43,19 @@ const NavItem = ({ item, isOpen, isActive }) => {
           </motion.span>
         )}
       </AnimatePresence>
-    </Link>
+    </NavLink>
   );
 };
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation();
 
+  // A nossa lista de menus com as rotas e ícones corretos
   const menuItems = [
     { icon: LayoutDashboard, label: 'Início', path: '/' },
     { icon: FileText, label: 'Processos', path: '/processos' },
     { icon: ArchiveBox, label: 'Cadastros', path: '/cadastros' },
+    { icon: Building, label: 'Fornecedores', path: '/fornecedores' },
     { icon: Users, label: 'Usuários', path: '/usuarios' },
     { icon: Bell, label: 'Notificações', path: '/notificacoes' },
   ];
@@ -65,11 +67,11 @@ const Sidebar = ({ isOpen }) => {
       initial={false}
       animate={isOpen ? "open" : "closed"}
       variants={{
-        open: { width: '16rem' },
-        closed: { width: '5rem' },
+        open: { width: '16rem' }, // 256px
+        closed: { width: '5rem' }, // 80px
       }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-full bg-light-bg-secondary dark:bg-dark-bg-secondary border-r border-light-border dark:border-dark-border z-50 flex flex-col"
+      className="fixed left-0 top-0 h-full bg-black/20 backdrop-blur-xl border-r border-white/20 z-50 flex flex-col"
     >
       <div className="p-6 flex flex-col h-full">
         <div className="flex items-center gap-3 mb-8 flex-shrink-0">
