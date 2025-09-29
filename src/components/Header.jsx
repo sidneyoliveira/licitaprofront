@@ -11,8 +11,8 @@ import {
     Menu, 
     Sun, 
     Moon,
-    Archive as ArchiveBoxIcon, // <-- Corrigido de ArchiveBox para Archive e renomeado
-    ArrowRightOnRectangle as ArrowRightOnRectangleIcon // Renomeado para consistência
+    Archive as ArchiveIcon,
+    LogOut as LogOutIcon // <-- Corrigido de ArrowRightOnRectangle para LogOut
 } from 'lucide-react';
 
 // Hook customizado para detetar cliques fora de um elemento
@@ -38,6 +38,8 @@ const Header = ({ toggleSidebar }) => {
     const userMenuRef = useRef(null);
     useClickOutside(userMenuRef, () => setUserMenuOpen(false));
     
+    // Adicione a sua lógica de notificações aqui se necessário
+
     return (
         <motion.header
             initial={{ opacity: 0, y: -20 }}
@@ -85,11 +87,11 @@ const Header = ({ toggleSidebar }) => {
                                     <User className="w-4 h-4" /> Minha Conta
                                 </Link>
                                 <Link to="/arquivos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-light-border dark:hover:bg-dark-border">
-                                    <ArchiveBoxIcon className="w-4 h-4" /> Meus Arquivos
+                                    <ArchiveIcon className="w-4 h-4" /> Meus Arquivos
                                 </Link>
                                 <div className="border-t border-light-border dark:border-dark-border my-1"></div>
                                 <button onClick={() => { logoutUser(); setUserMenuOpen(false); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50">
-                                    <ArrowRightOnRectangleIcon className="w-4 h-4" /> Sair
+                                    <LogOutIcon className="w-4 h-4" /> Sair
                                 </button>
                             </motion.div>
                         )}
@@ -99,5 +101,3 @@ const Header = ({ toggleSidebar }) => {
         </motion.header>
     );
 };
-
-export default Header;
