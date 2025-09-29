@@ -12,7 +12,7 @@ import {
     Sun, 
     Moon,
     Archive as ArchiveIcon,
-    LogOut as LogOutIcon // <-- Corrigido de ArrowRightOnRectangle para LogOut
+    LogOut as LogOutIcon
 } from 'lucide-react';
 
 // Hook customizado para detetar cliques fora de um elemento
@@ -101,3 +101,5 @@ const Header = ({ toggleSidebar }) => {
         </motion.header>
     );
 };
+
+export default Header;
