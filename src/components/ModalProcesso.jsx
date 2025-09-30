@@ -95,13 +95,13 @@ const ModalProcesso = ({ closeModal, onSave, initialData }) => {
                         <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1`} rows="3" required />
                     </div>
                     
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <label className={labelStyle}>Número do Processo *</label>
                             <input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={`${inputStyle} mt-1`} required />
                         </div>
                         <div>
-                           <label className={labelStyle}>Data do Processo</label>
+                           <label className={labelStyle}>Data do Processo *</label>
                            <input name="data_processo" type="date" value={formData.data_processo || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
                         </div>
                     </div>
