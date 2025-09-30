@@ -1,8 +1,14 @@
+// frontend/src/context/ToastContext.jsx
+
 import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
 
 const ToastContext = createContext();
 
 export const useToast = () => useContext(ToastContext);
+
+// --- CORREÇÃO AQUI: Criamos um contador fora do componente ---
+let toastIdCounter = 0;
+// -----------------------------------------------------------
 
 const Toast = ({ message, type, onClose }) => {
   const baseStyle = "flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse divide-x rtl:divide-x-reverse rounded-lg shadow-lg text-sm transition-all duration-300 animate-in fade-in slide-in-from-top-5";
@@ -30,7 +36,10 @@ export const ToastProvider = ({ children }) => {
   }, []);
 
   const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now();
+    // --- CORREÇÃO AQUI: Usamos o contador em vez de Date.now() ---
+    const id = toastIdCounter++;
+    // -----------------------------------------------------------
+    
     setToasts(prevToasts => [...prevToasts, { id, message, type }]);
     
     setTimeout(() => {

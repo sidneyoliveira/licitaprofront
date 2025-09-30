@@ -24,8 +24,8 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         initialData || {
             objeto: '', numero_processo: '', modalidade: '', classificacao: '',
             data_processo: getTodayDate(), orgao: '', entidade: '', situacao: 'Em Pesquisa',
-            tipo_organizacao: '', vigencia_meses: '', registro_precos: false, 
-            valor_referencia: '', data_publicacao: '', data_abertura: ''
+            tipo_organizacao: '', vigencia_meses: '', registro_precos: false,
+            valor_referencia: ''
         }
     );
 
@@ -44,8 +44,8 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         if (!id) return;
         try {
             const [itensRes, fornecedoresRes] = await Promise.all([
-                api.get(`/itens/?processo=${id}`),
-                api.get(`/fornecedores-processo/?processo=${id}`)
+                api.get(`/itens/?processos=${id}`),
+                api.get(`/fornecedores-processo/?processos=${id}`)
             ]);
             setItens(itensRes.data);
             setFornecedores(fornecedoresRes.data);
@@ -82,16 +82,16 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            if (processoId) {
-                const response = await api.put(`/processo/${processoId}/`, formData);
+            if (processoId) { // Modo de Edição
+                const response = await api.put(`/processos/${processoId}/`, formData);
                 setFormData(response.data);
                 showToast('Dados gerais atualizados!', 'success');
-            } else {
-                const response = await api.post('/processo/', formData);
+            } else { // Modo de Criação
+                const response = await api.post('/processos/', formData);
                 setProcessoId(response.data.id);
                 setFormData(response.data);
                 showToast('Processo criado! Agora, adicione os itens.', 'success');
-                setActiveTab('itens');
+                setActiveTab('itens'); // Avança para a próxima aba
             }
             refreshProcessos();
         } catch (error) {
@@ -100,7 +100,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             setIsLoading(false);
         }
     };
-    
+
     const handleAddItem = async (e) => {
         e.preventDefault();
         try {
@@ -112,7 +112,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             showToast('Erro ao adicionar item.', 'error');
         }
     };
-    
+
     const handleDeleteItem = async (itemId) => {
         try {
             await api.delete(`/itens/${itemId}/`);
@@ -134,7 +134,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             showToast('Erro ao adicionar fornecedor.', 'error');
         }
     };
-    
+
     const handleDeleteFornecedor = async (fornecedorId) => {
         try {
             await api.delete(`/fornecedores-processo/${fornecedorId}/`);
@@ -145,7 +145,12 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         }
     };
 
-    const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg";
+    const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
+    const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
+    const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
+    const organizacoes = ['Lote', 'Item'];
+
+    const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary";
     const labelStyle = "text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary";
     const tabBaseStyle = "px-4 py-3 text-sm font-semibold border-b-2 transition-colors";
     const tabActiveStyle = "border-accent-blue text-accent-blue";
@@ -154,7 +159,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
 
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl w-full max-w-4xl flex flex-col shadow-2xl">
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary p-0 rounded-xl w-full max-w-4xl flex flex-col shadow-2xl">
                 <header className="flex justify-between items-center p-4 border-b border-light-border dark:border-dark-border">
                     <h2 className="text-xl font-bold">
                         {processoId ? `Editar Processo: ${formData.numero_processo}` : 'Criar Novo Processo'}
@@ -173,8 +178,85 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                 <div className="p-6 max-h-[60vh] overflow-y-auto">
                     {activeTab === 'dadosGerais' && (
                         <form onSubmit={handleSaveDadosGerais} className="space-y-4">
-                            {/* Formulário de Dados Gerais como definido anteriormente */}
-                            <button type="submit" disabled={isLoading} className="mt-4 bg-accent-blue text-white py-2 px-4 rounded-lg text-sm font-semibold">
+                            <div>
+                                <label className={labelStyle}>Objeto *</label>
+                                <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1`} rows="3" required />
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className={labelStyle}>Número do Processo *</label>
+                                    <input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                                </div>
+                                <div>
+                                   <label className={labelStyle}>Data do Processo *</label>
+                                   <input name="data_processo" type="date" value={formData.data_processo || ''} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className={labelStyle}>Modalidade *</label>
+                                    <select name="modalidade" value={formData.modalidade} onChange={handleChange} className={`${inputStyle} mt-1`} required>
+                                        <option value="">Selecione...</option>
+                                        {modalidades.map(m => <option key={m} value={m}>{m}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={labelStyle}>Classificação *</label>
+                                    <select name="classificacao" value={formData.classificacao} onChange={handleChange} className={`${inputStyle} mt-1`} required>
+                                        <option value="">Selecione...</option>
+                                        {classificacoes.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 gap-4">
+                                 <div>
+                                    <label className={labelStyle}>Entidade *</label>
+                                     <select name="entidade" value={formData.entidade} onChange={handleChange} className={`${inputStyle} mt-1`} required>
+                                        <option value="">Selecione...</option>
+                                        {entidades.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={labelStyle}>Órgão *</label>
+                                    <select name="orgao" value={formData.orgao} onChange={handleChange} className={`${inputStyle} mt-1`} required disabled={!formData.entidade}>
+                                        <option value="">Selecione uma entidade...</option>
+                                        {orgaos.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                                <div>
+                                   <label className={labelStyle}>Organização dos Itens</label>
+                                   <select name="tipo_organizacao" value={formData.tipo_organizacao || ''} onChange={handleChange} className={`${inputStyle} mt-1`}>
+                                        <option value="">Selecione...</option>
+                                        {organizacoes.map(o => <option key={o} value={o}>{o}</option>)}
+                                   </select>
+                                </div>
+                                <div>
+                                   <label className={labelStyle}>Registro de Preços</label>
+                                   <select name="registro_precos" value={formData.registro_precos} onChange={handleChange} className={`${inputStyle} mt-1`}>
+                                       <option value={false}>Não</option>
+                                       <option value={true}>Sim</option>
+                                   </select>
+                                </div>
+                                <div>
+                                    <label className={labelStyle}>Situação</label>
+                                    <select name="situacao" value={formData.situacao || ''} onChange={handleChange} className={`${inputStyle} mt-1`}>
+                                        <option value="">Selecione...</option>
+                                        {situacoes.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                   <label className={labelStyle}>Vigência (Meses)</label>
+                                   <input name="vigencia_meses" type="number" value={formData.vigencia_meses || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
+                                </div>
+                            </div>
+                            
+                            <button type="submit" disabled={isLoading} className="mt-6 bg-accent-blue text-white py-2 px-4 rounded-lg text-sm font-semibold">
                                 {isLoading ? 'A Salvar...' : (processoId ? 'Atualizar Dados' : 'Salvar e Continuar')}
                             </button>
                         </form>
