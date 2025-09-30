@@ -80,7 +80,7 @@ const SidebarContent = ({ isOpen }) => {
               transition={{ duration: 0.2 }}
               className="text-light-text-primary dark:text-dark-text-primary font-bold text-xl whitespace-nowrap"
             >
-              Licita.PRO
+                L3 Soluções
             </motion.div>
           )}
         </AnimatePresence>
