@@ -1,3 +1,5 @@
+// frontend/src/pages/Cadastros.js
+
 import React, { useState, useEffect, useCallback } from 'react';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
@@ -5,12 +7,17 @@ import Card from '../components/Card';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-// --- COMPONENTES DO FORMULÁRIO ---
+// --- COMPONENTES DO FORMULÁRIO (mantidos como antes) ---
 const FormEntidade = ({ initialData, onSave }) => {
     const [formData, setFormData] = useState(initialData || { nome: '', cnpj: '' });
     const api = useAxios();
     const { showToast } = useToast();
     const isEditing = initialData && initialData.id;
+
+    // Sincroniza o formulário se o item a ser editado mudar
+    useEffect(() => {
+        setFormData(initialData || { nome: '', cnpj: '' });
+    }, [initialData]);
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -24,8 +31,7 @@ const FormEntidade = ({ initialData, onSave }) => {
                 await api.post('/entidades/', formData);
                 showToast('Entidade cadastrada com sucesso!', 'success');
             }
-            setFormData({ nome: '', cnpj: '' }); // Limpa o formulário
-            onSave(); // Notifica o componente pai para atualizar a lista
+            onSave();
         } catch (error) {
             showToast('Erro ao salvar entidade.', 'error');
         }
@@ -54,6 +60,10 @@ const FormOrgao = ({ entidades, initialData, onSave }) => {
     const { showToast } = useToast();
     const isEditing = initialData && initialData.id;
 
+    useEffect(() => {
+        setFormData(initialData || { nome: '', entidade: '' });
+    }, [initialData]);
+
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
@@ -66,7 +76,6 @@ const FormOrgao = ({ entidades, initialData, onSave }) => {
                 await api.post('/orgaos/', formData);
                 showToast('Órgão cadastrado com sucesso!', 'success');
             }
-            setFormData({ nome: '', entidade: '' });
             onSave();
         } catch (error) {
             showToast('Erro ao salvar órgão.', 'error');
@@ -93,15 +102,16 @@ const FormOrgao = ({ entidades, initialData, onSave }) => {
     );
 };
 
-// --- COMPONENTE PRINCIPAL DA PÁGINA ---
+// --- COMPONENTE PRINCIPAL DA PÁGINA COM ABAS ---
 const Cadastros = () => {
+    const [activeTab, setActiveTab] = useState('entidades'); // Estado para controlar a aba ativa
     const api = useAxios();
     const { showToast } = useToast();
 
     const [entidades, setEntidades] = useState([]);
     const [orgaos, setOrgaos] = useState([]);
-    const [editingItem, setEditingItem] = useState(null); // Guarda { type: 'entidade' | 'orgao', data: {...} }
-    const [deletingItem, setDeletingItem] = useState(null); // Guarda { type: 'entidade' | 'orgao', id: ... }
+    const [editingItem, setEditingItem] = useState(null);
+    const [deletingItem, setDeletingItem] = useState(null);
 
     const fetchEntidades = useCallback(async () => {
         try {
@@ -131,8 +141,9 @@ const Cadastros = () => {
     const confirmDelete = async () => {
         if (!deletingItem) return;
         const { type, id } = deletingItem;
+        const endpoint = type === 'entidade' ? 'entidades' : 'orgaos';
         try {
-            await api.delete(`/${type}s/${id}/`);
+            await api.delete(`/${endpoint}/${id}/`);
             showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} removido com sucesso!`, 'success');
             if (type === 'entidade') fetchEntidades();
             if (type === 'orgao') fetchOrgaos();
@@ -143,73 +154,98 @@ const Cadastros = () => {
         }
     };
 
+    const tabBaseStyle = "px-4 py-2 text-sm font-medium rounded-t-lg";
+    const tabActiveStyle = "text-accent-blue border-b-2 border-accent-blue";
+    const tabInactiveStyle = "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary border-b-2 border-transparent";
+
     return (
         <div>
             {deletingItem && (
                 <ConfirmDeleteModal
                     onConfirm={confirmDelete}
                     onCancel={() => setDeletingItem(null)}
-                    message={`Tem a certeza de que deseja remover? Esta ação irá remover também todos os registos associados.`}
+                    message={`Tem a certeza de que deseja remover? Esta ação pode remover também os registos associados.`}
                 />
             )}
 
             <h1 className="text-3xl font-bold mb-6">Gestão de Cadastros</h1>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* COLUNA DOS FORMULÁRIOS */}
-                <div className="space-y-6">
-                    <Card title={editingItem?.type === 'entidade' ? 'Editar Entidade' : 'Cadastrar Nova Entidade'}>
-                        <FormEntidade 
-                            key={editingItem?.type === 'entidade' ? editingItem.data.id : 'new'}
-                            initialData={editingItem?.type === 'entidade' ? editingItem.data : null}
-                            onSave={handleSave}
-                        />
-                    </Card>
-                    <Card title={editingItem?.type === 'orgao' ? 'Editar Órgão' : 'Cadastrar Novo Órgão'}>
-                         <FormOrgao 
-                            key={editingItem?.type === 'orgao' ? editingItem.data.id : 'new'}
-                            entidades={entidades}
-                            initialData={editingItem?.type === 'orgao' ? editingItem.data : null}
-                            onSave={handleSave}
-                        />
-                    </Card>
-                </div>
 
-                {/* COLUNA DAS LISTAS */}
-                <div className="space-y-6">
-                    <Card title="Entidades Cadastradas" className="max-h-[400px] flex flex-col">
-                        <div className="overflow-y-auto">
-                            {entidades.map(ent => (
-                                <div key={ent.id} className="flex justify-between items-center p-2 border-b">
-                                    <span>{ent.nome}</span>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => setEditingItem({ type: 'entidade', data: ent })}><PencilIcon className="w-4 h-4"/></button>
-                                        <button onClick={() => setDeletingItem({ type: 'entidade', id: ent.id })}><TrashIcon className="w-4 h-4 text-red-500"/></button>
+            {/* Navegação das Abas */}
+            <div className="border-b border-light-border dark:border-dark-border">
+                <nav className="-mb-px flex gap-6" aria-label="Tabs">
+                    <button 
+                        onClick={() => { setActiveTab('entidades'); setEditingItem(null); }}
+                        className={`${tabBaseStyle} ${activeTab === 'entidades' ? tabActiveStyle : tabInactiveStyle}`}
+                    >
+                        Entidades
+                    </button>
+                    <button 
+                        onClick={() => { setActiveTab('orgaos'); setEditingItem(null); }}
+                        className={`${tabBaseStyle} ${activeTab === 'orgaos' ? tabActiveStyle : tabInactiveStyle}`}
+                    >
+                        Órgãos
+                    </button>
+                </nav>
+            </div>
+
+            {/* Conteúdo das Abas */}
+            <div className="mt-6">
+                {activeTab === 'entidades' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card title={editingItem?.type === 'entidade' ? 'Editar Entidade' : 'Cadastrar Nova Entidade'}>
+                            <FormEntidade 
+                                key={editingItem?.type === 'entidade' ? editingItem.data.id : 'new-entidade'}
+                                initialData={editingItem?.type === 'entidade' ? editingItem.data : null}
+                                onSave={handleSave}
+                            />
+                        </Card>
+                        <Card title="Entidades Cadastradas">
+                            <div className="overflow-y-auto max-h-96">
+                                {entidades.map(ent => (
+                                    <div key={ent.id} className="flex justify-between items-center p-2 border-b">
+                                        <span>{ent.nome}</span>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setEditingItem({ type: 'entidade', data: ent })}><PencilIcon className="w-4 h-4"/></button>
+                                            <button onClick={() => setDeletingItem({ type: 'entidade', id: ent.id })}><TrashIcon className="w-4 h-4 text-red-500"/></button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                    <Card title="Órgãos Cadastrados" className="max-h-[400px] flex flex-col">
-                        <div className="overflow-y-auto">
-                             {orgaos.map(org => (
-                                <div key={org.id} className="flex justify-between items-center p-2 border-b">
-                                    <div>
-                                        <p>{org.nome}</p>
-                                        <p className="text-xs text-light-text-secondary">{org.entidade_nome}</p>
+                                ))}
+                            </div>
+                        </Card>
+                    </div>
+                )}
+
+                {activeTab === 'orgaos' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card title={editingItem?.type === 'orgao' ? 'Editar Órgão' : 'Cadastrar Novo Órgão'}>
+                             <FormOrgao 
+                                key={editingItem?.type === 'orgao' ? editingItem.data.id : 'new-orgao'}
+                                entidades={entidades}
+                                initialData={editingItem?.type === 'orgao' ? editingItem.data : null}
+                                onSave={handleSave}
+                            />
+                        </Card>
+                        <Card title="Órgãos Cadastrados">
+                            <div className="overflow-y-auto max-h-96">
+                                 {orgaos.map(org => (
+                                    <div key={org.id} className="flex justify-between items-center p-2 border-b">
+                                        <div>
+                                            <p>{org.nome}</p>
+                                            <p className="text-xs text-light-text-secondary">{org.entidade_nome}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setEditingItem({ type: 'orgao', data: org })}><PencilIcon className="w-4 h-4"/></button>
+                                            <button onClick={() => setDeletingItem({ type: 'orgao', id: org.id })}><TrashIcon className="w-4 h-4 text-red-500"/></button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => setEditingItem({ type: 'orgao', data: org })}><PencilIcon className="w-4 h-4"/></button>
-                                        <button onClick={() => setDeletingItem({ type: 'orgao', id: org.id })}><TrashIcon className="w-4 h-4 text-red-500"/></button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                </div>
+                                ))}
+                            </div>
+                        </Card>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 export default Cadastros;
-

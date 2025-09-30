@@ -1,38 +1,37 @@
-// tailwind.config.js
+// frontend/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
-export default {
-  darkMode: 'class', // Habilita o modo escuro por classe (ex: <html class="dark">)
+module.exports = {
+  darkMode: 'class',
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Cores do Modo Escuro (Dark Mode) - ATUALIZADAS
-        'dark-bg-primary': '#0A0E1E',      // Fundo principal (o mais escuro)
-        'dark-bg-secondary': '#152137',   // Cor para cards e sidebar
-        'dark-border': '#5D647E',         // Bordas
-        'dark-text-primary': '#EAEFFB',   // Texto principal (ajustado para melhor contraste)
-        'dark-text-secondary': '#A4A9B8', // Texto secundário (ajustado)
+        // Cores do Modo Escuro (Dark Mode) - Sólidas e Formais
+        'dark-bg-primary': '#0D1117',      // Um azul quase preto para o fundo
+        'dark-bg-secondary': '#161B22',   // Um azul um pouco mais claro para cards e sidebar
+        'dark-border': '#30363D',         // Uma borda sutil
+        'dark-text-primary': '#E6EDF3',   // Texto principal claro
+        'dark-text-secondary': '#7D8590', // Texto secundário com menos destaque
         
-        // Cores do Modo Claro (Light Mode) - Mantidas
-        'light-bg-primary': '#F3F4F6',
-        'light-bg-secondary': '#FFFFFF',
-        'light-border': '#E5E7EB',
-        'light-text-primary': '#1F2937',
-        'light-text-secondary': '#6B7280',
+        // Cores do Modo Claro (Light Mode) - Limpas e Profissionais
+        'light-bg-primary': '#F6F8FA',     // Fundo principal (cinza muito claro)
+        'light-bg-secondary': '#FFFFFF',  // Fundo de cards (branco puro)
+        'light-border': '#D0D7DE',        // Bordas mais definidas
+        'light-text-primary': '#1F2328',  // Texto principal (preto suave)
+        'light-text-secondary': '#656D76',// Texto secundário (cinza)
 
-        // Cores de Acento - Mantidas
-        'accent-blue': '#3B82F6',
-        'accent-green': '#22C55E',
-        'accent-green-bg': 'rgba(34, 197, 94, 0.1)',
-        'accent-green-text': '#16A34A',
+        // Cores de Acento Vivas
+        'accent-blue': '#2F81F7',
+        'accent-green': '#2DA44E',
+        'accent-yellow': '#D29922',
+        'accent-red': '#DA3633',
+        'accent-purple': '#8957E5',
       },
       fontFamily: {
-      // Substitui a fonte padrão 'sans' pela Goldplay
-      sans: ['Rubik', 'sans-serif'], 
-    },
+        sans: ['Rubik', 'sans-serif'], // Usando a fonte 'Sora' que é moderna e clara
+      },
     },
   },
   plugins: [],

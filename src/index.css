@@ -2,12 +2,19 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Sora:wght@100..800&display=swap');
 
+/* frontend/src/index.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos base simples */
+/* Estilos base com fundos sólidos */
 body {
-  @apply bg-light-bg-primary dark:bg-dark-bg-primary;
-  @apply text-light-text-primary dark:text-dark-text-primary;
+  @apply bg-light-bg-primary text-light-text-primary;
+}
+
+.dark body {
+  @apply bg-dark-bg-primary text-dark-text-primary;
 }
