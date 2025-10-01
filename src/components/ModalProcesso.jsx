@@ -47,6 +47,58 @@ const getTodayDate = () => {
 };
 
 // --- COMPONENTE PRINCIPAL DO MODAL ---
+const ItemList = ({ items, onDelete }) => {
+    const [expandedItemId, setExpandedItemId] = useState(null);
+
+    const toggleExpansion = (itemId) => {
+        setExpandedItemId(prevId => (prevId === itemId ? null : itemId));
+    };
+
+    return (
+        <div className="space-y-2">
+            {/* Cabeçalho da Tabela */}
+            <div className="grid grid-cols-12 gap-2 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary px-2 py-1">
+                <div className="col-span-1">#</div>
+                <div className="col-span-6">Descrição</div>
+                <div className="col-span-2 text-center">Unidade</div>
+                <div className="col-span-2 text-center">Quantidade</div>
+                <div className="col-span-1 text-right">Ações</div>
+            </div>
+            {/* Lista de Itens */}
+            {items.map((item, index) => (
+                <div key={item.id}>
+                    <div className="grid grid-cols-12 gap-2 items-center p-2 border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary">
+                        <div className="col-span-1 text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary">{index + 1}</div>
+                        <div className="col-span-6 text-sm font-medium cursor-pointer hover:text-accent-blue" onClick={() => toggleExpansion(item.id)}>
+                            {item.descricao}
+                        </div>
+                        <div className="col-span-2 text-sm text-center">{item.unidade}</div>
+                        <div className="col-span-2 text-sm text-center">{parseFloat(item.quantidade).toFixed(2)}</div>
+                        <div className="col-span-1 text-right">
+                             <button type="button" onClick={() => onDelete(item.id)} className="p-1 text-red-500 rounded-full hover:bg-red-500/10">
+                                 <TrashIcon className="w-4 h-4"/>
+                             </button>
+                        </div>
+                    </div>
+                    {/* Conteúdo Expansível (Especificação) */}
+                    <AnimatePresence>
+                        {expandedItemId === item.id && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="px-3 py-2 ml-8 border-l-2 border-accent-blue/30 text-xs text-light-text-secondary dark:text-dark-text-secondary"
+                            >
+                                <p className="font-semibold">Especificação:</p>
+                                <p className="whitespace-pre-wrap">{item.especificacao || "Nenhuma especificação fornecida."}</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const [activeTab, setActiveTab] = useState('dadosGerais');
@@ -76,8 +128,8 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         if (!id) return;
         try {
             const [itensRes, fornecedoresRes] = await Promise.all([
-                api.get(`/itens/?processo=${id}`),
-                api.get(`/fornecedores-processo/?processo=${id}`)
+                api.get(`/itens/?processos=${id}`),
+                api.get(`/fornecedores-processo/?processos=${id}`)
             ]);
             setItens(itensRes.data);
             setFornecedores(fornecedoresRes.data);
@@ -114,11 +166,11 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         setIsLoading(true);
         try {
             if (processoId) {
-                const response = await api.put(`/processo/${processoId}/`, formData);
+                const response = await api.put(`/processos/${processoId}/`, formData);
                 setFormData(response.data);
                 showToast('Dados gerais atualizados!', 'success');
             } else {
-                const response = await api.post('/processo/', formData);
+                const response = await api.post('/processos/', formData);
                 setProcessoId(response.data.id);
                 setFormData(response.data);
                 showToast('Processo criado! Agora, adicione os itens.', 'success');
@@ -280,24 +332,15 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                             {activeTab === 'itens' && (
                                 <div className="space-y-4">
                                     <h3 className="font-semibold text-base">Adicionar Novo Item</h3>
-                                    <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end p-3 border rounded-lg">
-                                        <input name="descricao" value={itemFormData.descricao} onChange={(e) => setItemFormData({...itemFormData, descricao: e.target.value})} placeholder="Descrição" className={inputStyle} required />
+                                    <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1fr_1fr_auto] gap-3 items-end p-3 border rounded-lg">
+                                        <input name="descricao" value={itemFormData.descricao} onChange={(e) => setItemFormData({...itemFormData, descricao: e.target.value})} placeholder="Descrição do Item *" className={inputStyle} required />
                                         <input name="especificacao" value={itemFormData.especificacao} onChange={(e) => setItemFormData({...itemFormData, especificacao: e.target.value})} placeholder="Especificação" className={inputStyle} />
-                                        <input name="unidade" value={itemFormData.unidade} onChange={(e) => setItemFormData({...itemFormData, unidade: e.target.value})} placeholder="Unidade (ex: UN, CX)" className={inputStyle} required />
-                                        <div className="flex gap-2">
-                                            <input name="quantidade" type="number" value={itemFormData.quantidade} onChange={(e) => setItemFormData({...itemFormData, quantidade: e.target.value})} placeholder="Qtd." className={inputStyle} required />
-                                            <button type="submit" className="p-2 bg-accent-green text-white rounded-lg"><PlusIcon className="w-5 h-5"/></button>
-                                        </div>
+                                        <input name="unidade" value={itemFormData.unidade} onChange={(e) => setItemFormData({...itemFormData, unidade: e.target.value})} placeholder="Unidade *" className={inputStyle} required />
+                                        <input name="quantidade" type="number" step="0.01" value={itemFormData.quantidade} onChange={(e) => setItemFormData({...itemFormData, quantidade: e.target.value})} placeholder="Qtd. *" className={inputStyle} required />
+                                        <button type="submit" className="p-2 bg-accent-green text-white rounded-lg h-full flex items-center justify-center"><PlusIcon className="w-5 h-5"/></button>
                                     </form>
                                     <h3 className="font-semibold text-base pt-4">Itens Cadastrados</h3>
-                                    <div className="space-y-2">
-                                        {itens.map(item => (
-                                            <div key={item.id} className="flex justify-between items-center p-2 border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary">
-                                                <p className="text-sm">{item.quantidade} {item.unidade} - {item.descricao}</p>
-                                                <button onClick={() => handleDeleteItem(item.id)} className="p-1 text-red-500 rounded-full hover:bg-red-500/10"><TrashIcon className="w-4 h-4"/></button>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <ItemList items={itens} onDelete={handleDeleteItem} />
                                 </div>
                             )}
                             {activeTab === 'fornecedores' && (
