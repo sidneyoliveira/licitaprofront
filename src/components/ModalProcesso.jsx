@@ -48,6 +48,7 @@ const getTodayDate = () => {
 
 const ItemList = ({ items, onDelete }) => {
     const [expandedItemId, setExpandedItemId] = useState(null);
+
     const toggleExpansion = (itemId) => {
         setExpandedItemId(prevId => (prevId === itemId ? null : itemId));
     };
@@ -134,8 +135,8 @@ const ModalNovoFornecedor = ({ onClose, onSave }) => {
                     <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" className="w-full p-2 border rounded-lg" />
                 </div>
                 <div className="flex justify-end gap-4 mt-auto pt-4">
-                    <button type="button" onClick={onClose}>Voltar</button>
-                    <button type="submit" disabled={isLoading}>
+                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-lg text-sm">Voltar</button>
+                    <button type="submit" disabled={isLoading} className="py-2 px-4 bg-accent-blue text-white rounded-lg text-sm">
                         {isLoading ? 'Salvando...' : 'Salvar Fornecedor'}
                     </button>
                 </div>
@@ -144,7 +145,6 @@ const ModalNovoFornecedor = ({ onClose, onSave }) => {
     );
 };
 
-// --- COMPONENTE DE BUSCA DE FORNECEDOR (AGORA INCLUÍDO) ---
 const SearchableSupplierDropdown = ({ onSelect, onAddNew }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState([]);
@@ -223,7 +223,6 @@ const SearchableSupplierDropdown = ({ onSelect, onAddNew }) => {
         </div>
     );
 };
-
 
 // --- COMPONENTE PRINCIPAL DO MODAL ---
 
@@ -369,7 +368,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             showToast('Erro ao remover fornecedor.', 'error');
         }
     };
-    
+
     const handleNewSupplierSaved = (newSupplier) => {
         fetchCatalogoFornecedores();
         setFornecedorSelecionado(newSupplier.id);
