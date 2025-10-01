@@ -1,6 +1,6 @@
 // frontend/src/components/ModalProcesso.jsx
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 import { XMarkIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/solid';
@@ -46,9 +46,18 @@ const getTodayDate = () => {
     return `${year}-${month}-${day}`;
 };
 
+const formatDateTimeForInput = (isoString) => {
+    if (!isoString) return '';
+    try {
+        const date = new Date(isoString);
+        return date.toISOString().slice(0, 16);
+    } catch (e) {
+        return '';
+    }
+};
+
 const ItemList = ({ items, onDelete }) => {
     const [expandedItemId, setExpandedItemId] = useState(null);
-
     const toggleExpansion = (itemId) => {
         setExpandedItemId(prevId => (prevId === itemId ? null : itemId));
     };
@@ -101,6 +110,7 @@ const ModalNovoFornecedor = ({ onClose, onSave }) => {
     const api = useAxios();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg";
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -129,10 +139,10 @@ const ModalNovoFornecedor = ({ onClose, onSave }) => {
             <h3 className="font-semibold text-base mb-4">Cadastrar Novo Fornecedor</h3>
             <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col">
                 <div className="space-y-4">
-                    <input name="razao_social" value={formData.razao_social} onChange={handleChange} placeholder="Razão Social *" className="w-full p-2 border rounded-lg" required />
-                    <input name="cnpj" value={formData.cnpj} onChange={handleChange} placeholder="CNPJ *" className="w-full p-2 border rounded-lg" required />
-                    <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" className="w-full p-2 border rounded-lg" />
-                    <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" className="w-full p-2 border rounded-lg" />
+                    <input name="razao_social" value={formData.razao_social} onChange={handleChange} placeholder="Razão Social *" className={inputStyle} required />
+                    <input name="cnpj" value={formData.cnpj} onChange={handleChange} placeholder="CNPJ *" className={inputStyle} required />
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" className={inputStyle} />
+                    <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" className={inputStyle} />
                 </div>
                 <div className="flex justify-end gap-4 mt-auto pt-4">
                     <button type="button" onClick={onClose} className="py-2 px-4 rounded-lg text-sm">Voltar</button>
@@ -224,9 +234,15 @@ const SearchableSupplierDropdown = ({ onSelect, onAddNew }) => {
     );
 };
 
+
 // --- COMPONENTE PRINCIPAL DO MODAL ---
 
 const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
+    // --- CORREÇÃO AQUI ---
+    // A variável 'isEditing' foi movida para o topo do componente para que
+    // todas as funções e o JSX dentro do ModalProcesso a possam aceder.
+    const isEditing = initialData && initialData.id;
+    
     const [activeTab, setActiveTab] = useState('dadosGerais');
     const [processoId, setProcessoId] = useState(initialData?.id || null);
     const { showToast } = useToast();
@@ -244,7 +260,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const [itemFormData, setItemFormData] = useState({ descricao: '', especificacao: '', unidade: '', quantidade: '' });
     
     const [fornecedoresDoProcesso, setFornecedoresDoProcesso] = useState([]);
-    const [catalogoFornecedores, setCatalogoFornecedores] = useState([]);
+    const [, setCatalogoFornecedores] = useState([]);
     const [fornecedorSelecionado, setFornecedorSelecionado] = useState('');
     const [isNewSupplierModalOpen, setIsNewSupplierModalOpen] = useState(false);
     
@@ -252,15 +268,36 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const [orgaos, setOrgaos] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    useEffect(() => {
+        if (isEditing && initialData) {
+            const formattedDataAbertura = initialData.data_abertura ? formatDateTimeForInput(initialData.data_abertura) : '';
+            
+            if (initialData.orgao) {
+                api.get(`/orgaos/${initialData.orgao}/`).then(response => {
+                    const orgaoData = response.data;
+                    setFormData({
+                        ...initialData,
+                        data_abertura: formattedDataAbertura,
+                        entidade: orgaoData.entidade,
+                    });
+                }).catch(() => {
+                    showToast("Não foi possível carregar os detalhes da entidade/órgão.", "error");
+                    setFormData({ ...initialData, data_abertura: formattedDataAbertura });
+                });
+            } else {
+                setFormData({ ...initialData, data_abertura: formattedDataAbertura });
+            }
+        }
+    }, [isEditing, initialData, api, showToast]);
+
     const fetchDadosDoProcesso = useCallback(async (id) => {
         if (!id) return;
         try {
             const response = await api.get(`/processos/${id}/`);
-            setFormData(response.data);
             setItens(response.data.itens);
             setFornecedoresDoProcesso(response.data.fornecedores_participantes);
         } catch (error) {
-            showToast('Erro ao carregar dados do processo.', 'error');
+            showToast('Erro ao carregar itens ou fornecedores.', 'error');
         }
     }, [api, showToast]);
     
@@ -306,17 +343,23 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            if (processoId) {
-                const response = await api.put(`/processos/${processoId}/`, formData);
-                setFormData(response.data);
+            let response;
+            if (isEditing) {
+                response = await api.put(`/processos/${processoId}/`, formData);
                 showToast('Dados gerais atualizados!', 'success');
             } else {
-                const response = await api.post('/processos/', formData);
+                response = await api.post('/processos/', formData);
                 setProcessoId(response.data.id);
-                setFormData(response.data);
                 showToast('Processo criado! Agora, adicione os itens.', 'success');
                 setActiveTab('itens');
             }
+            const responseData = response.data;
+            setFormData(prev => ({
+                ...prev,
+                ...responseData,
+                entidade: prev.entidade,
+                data_abertura: formatDateTimeForInput(responseData.data_abertura),
+            }));
             refreshProcessos();
         } catch (error) {
             showToast('Erro ao salvar dados gerais.', 'error');
@@ -368,7 +411,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             showToast('Erro ao remover fornecedor.', 'error');
         }
     };
-
+    
     const handleNewSupplierSaved = (newSupplier) => {
         fetchCatalogoFornecedores();
         setFornecedorSelecionado(newSupplier.id);
@@ -377,7 +420,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
     const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
     const organizacoes = ['Lote', 'Item'];
-    const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
+    // const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
 
     const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary";
     const labelStyle = "text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary";
@@ -390,7 +433,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                 className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl w-full max-w-4xl flex flex-col shadow-2xl h-[90vh]"
             >
                 <header className="flex-shrink-0 flex justify-between items-center p-4 border-b">
-                    <h2 className="text-lg font-bold">{processoId ? `Editar Processo: ${formData.numero_processo}` : 'Criar Novo Processo'}</h2>
+                    <h2 className="text-lg font-bold">{isEditing ? `Editar Processo: ${initialData?.numero_processo}` : 'Criar Novo Processo'}</h2>
                     <button onClick={closeModal} className="p-1 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
                 </header>
                 <div className="flex-shrink-0 border-b">
@@ -451,7 +494,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                                             <div>
                                                 <label className={labelStyle}>Órgão *</label>
                                                 <select name="orgao" value={formData.orgao} onChange={handleChange} className={`${inputStyle} mt-1`} required disabled={!formData.entidade}>
-                                                    <option value="">Selecione uma entidade...</option>
+                                                    <option value="">{formData.entidade ? 'Selecione...' : 'Selecione uma entidade primeiro'}</option>
                                                     {orgaos.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
                                                 </select>
                                             </div>
@@ -494,7 +537,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                                     <div className="flex justify-end gap-4 pt-4">
                                         <button type="button" onClick={closeModal}>Cancelar</button>
                                         <button type="submit" disabled={isLoading}>
-                                            {isLoading ? 'A Salvar...' : (processoId ? 'Atualizar Dados' : 'Salvar e Continuar')}
+                                            {isLoading ? 'A Salvar...' : (isEditing ? 'Atualizar Dados' : 'Salvar e Continuar')}
                                         </button>
                                     </div>
                                 </form>

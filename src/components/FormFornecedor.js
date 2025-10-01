@@ -1,5 +1,5 @@
 // src/components/FormFornecedor.js
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useAxios from '../hooks/useAxios';
 
 const FormFornecedor = () => {
@@ -11,7 +11,7 @@ const FormFornecedor = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/fornecedores/', {
+            await api.post('/fornecedores/', {
                 razao_social: razaoSocial,
                 cnpj: cnpj,
                 email: email,
