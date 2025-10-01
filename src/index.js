@@ -1,8 +1,9 @@
 // frontend/src/index.js
-
+    
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async'; // 1. Importe o provider
 
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
@@ -13,15 +14,16 @@ import './index.css';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    {/* O Router deve ser o componente mais externo */}
-    <Router>
-      <ThemeProvider>
-        <AuthProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </Router>
+    <HelmetProvider> {/* 2. Envolva a sua aplicação com ele */}
+      <Router>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </Router>
+    </HelmetProvider>
   </React.StrictMode>
 );

@@ -46,7 +46,7 @@ const getTodayDate = () => {
     return `${year}-${month}-${day}`;
 };
 
-// --- COMPONENTE PRINCIPAL DO MODAL ---
+// Componente para a lista de itens com descrição expansível
 const ItemList = ({ items, onDelete }) => {
     const [expandedItemId, setExpandedItemId] = useState(null);
 
@@ -56,7 +56,6 @@ const ItemList = ({ items, onDelete }) => {
 
     return (
         <div className="space-y-2">
-            {/* Cabeçalho da Tabela */}
             <div className="grid grid-cols-12 gap-2 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary px-2 py-1">
                 <div className="col-span-1">#</div>
                 <div className="col-span-6">Descrição</div>
@@ -64,7 +63,6 @@ const ItemList = ({ items, onDelete }) => {
                 <div className="col-span-2 text-center">Quantidade</div>
                 <div className="col-span-1 text-right">Ações</div>
             </div>
-            {/* Lista de Itens */}
             {items.map((item, index) => (
                 <div key={item.id}>
                     <div className="grid grid-cols-12 gap-2 items-center p-2 border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary">
@@ -80,7 +78,6 @@ const ItemList = ({ items, onDelete }) => {
                              </button>
                         </div>
                     </div>
-                    {/* Conteúdo Expansível (Especificação) */}
                     <AnimatePresence>
                         {expandedItemId === item.id && (
                             <motion.div
@@ -100,6 +97,59 @@ const ItemList = ({ items, onDelete }) => {
     );
 };
 
+// Modal interno para criar um novo fornecedor no catálogo
+const ModalNovoFornecedor = ({ onClose, onSave }) => {
+    const [formData, setFormData] = useState({ razao_social: '', cnpj: '', email: '', telefone: '' });
+    const api = useAxios();
+    const { showToast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            const response = await api.post('/fornecedores/', formData);
+            showToast('Novo fornecedor cadastrado no catálogo!', 'success');
+            onSave(response.data);
+            onClose();
+        } catch (error) {
+            showToast('Erro ao cadastrar fornecedor.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-light-bg-secondary dark:bg-dark-bg-secondary z-10 p-5 flex flex-col"
+        >
+            <h3 className="font-semibold text-base mb-4">Cadastrar Novo Fornecedor</h3>
+            <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col">
+                <div className="space-y-4">
+                    <input name="razao_social" value={formData.razao_social} onChange={handleChange} placeholder="Razão Social *" className="w-full p-2 border rounded-lg" required />
+                    <input name="cnpj" value={formData.cnpj} onChange={handleChange} placeholder="CNPJ *" className="w-full p-2 border rounded-lg" required />
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" className="w-full p-2 border rounded-lg" />
+                    <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" className="w-full p-2 border rounded-lg" />
+                </div>
+                <div className="flex justify-end gap-4 mt-auto pt-4">
+                    <button type="button" onClick={onClose}>Voltar</button>
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Salvando...' : 'Salvar Fornecedor'}
+                    </button>
+                </div>
+            </form>
+        </motion.div>
+    );
+};
+
+
+// --- COMPONENTE PRINCIPAL DO MODAL ---
+
 const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const [activeTab, setActiveTab] = useState('dadosGerais');
     const [processoId, setProcessoId] = useState(initialData?.id || null);
@@ -108,42 +158,52 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
 
     const [formData, setFormData] = useState(
         initialData || {
-            objeto: '', numero_processo: '', modalidade: '', classificacao: '',
-            data_processo: getTodayDate(), orgao: '', entidade: '', situacao: 'Em Pesquisa',
-            tipo_organizacao: '', vigencia_meses: '', registro_precos: false, 
-            valor_referencia: '',
+            objeto: '', numero_processo: '', data_processo: getTodayDate(), modalidade: '', 
+            classificacao: '', tipo_organizacao: '', registro_precos: false, orgao: '', 
+            entidade: '', valor_referencia: '', numero_certame: '', data_abertura: '',
         }
     );
-
+    
     const [itens, setItens] = useState([]);
     const [itemFormData, setItemFormData] = useState({ descricao: '', especificacao: '', unidade: '', quantidade: '' });
-    const [fornecedores, setFornecedores] = useState([]);
-    const [fornecedorFormData, setFornecedorFormData] = useState({ nome: '', cnpj: '', telefone: '', email: '' });
-
+    
+    const [fornecedoresDoProcesso, setFornecedoresDoProcesso] = useState([]);
+    const [catalogoFornecedores, setCatalogoFornecedores] = useState([]);
+    const [fornecedorSelecionado, setFornecedorSelecionado] = useState('');
+    const [isNewSupplierModalOpen, setIsNewSupplierModalOpen] = useState(false);
+    
     const [entidades, setEntidades] = useState([]);
     const [orgaos, setOrgaos] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const fetchItensEFornecedores = useCallback(async (id) => {
+    const fetchDadosDoProcesso = useCallback(async (id) => {
         if (!id) return;
         try {
-            const [itensRes, fornecedoresRes] = await Promise.all([
-                api.get(`/itens/?processos=${id}`),
-                api.get(`/fornecedores-processo/?processos=${id}`)
-            ]);
-            setItens(itensRes.data);
-            setFornecedores(fornecedoresRes.data);
+            const response = await api.get(`/processos/${id}/`);
+            setFormData(response.data); // Atualiza o formulário principal com os dados do processo
+            setItens(response.data.itens);
+            setFornecedoresDoProcesso(response.data.fornecedores_participantes);
         } catch (error) {
-            showToast('Erro ao carregar itens ou fornecedores.', 'error');
+            showToast('Erro ao carregar dados do processo.', 'error');
+        }
+    }, [api, showToast]);
+    
+    const fetchCatalogoFornecedores = useCallback(async () => {
+        try {
+            const response = await api.get('/fornecedores/');
+            setCatalogoFornecedores(response.data);
+        } catch (error) {
+            showToast('Erro ao carregar catálogo de fornecedores.', 'error');
         }
     }, [api, showToast]);
 
     useEffect(() => {
         api.get('/entidades/').then(res => setEntidades(res.data));
+        fetchCatalogoFornecedores();
         if (processoId) {
-            fetchItensEFornecedores(processoId);
+            fetchDadosDoProcesso(processoId);
         }
-    }, [processoId, api, fetchItensEFornecedores]);
+    }, [processoId, api, fetchDadosDoProcesso, fetchCatalogoFornecedores]);
 
     useEffect(() => {
         if (formData.entidade) {
@@ -156,9 +216,14 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         const finalValue = name === 'registro_precos' ? (value === 'true') : (type === 'checkbox' ? checked : value);
-        const newFormData = { ...formData, [name]: finalValue };
-        if (name === 'entidade') newFormData.orgao = '';
-        setFormData(newFormData);
+        
+        setFormData(prev => {
+            const newFormData = { ...prev, [name]: finalValue };
+            if (name === 'entidade' && prev.entidade !== value) {
+                newFormData.orgao = '';
+            }
+            return newFormData;
+        });
     };
 
     const handleSaveDadosGerais = async (e) => {
@@ -190,7 +255,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             await api.post('/itens/', { ...itemFormData, processo: processoId });
             showToast('Item adicionado!', 'success');
             setItemFormData({ descricao: '', especificacao: '', unidade: '', quantidade: '' });
-            fetchItensEFornecedores(processoId);
+            fetchDadosDoProcesso(processoId);
         } catch (error) {
             showToast('Erro ao adicionar item.', 'error');
         }
@@ -200,37 +265,41 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         try {
             await api.delete(`/itens/${itemId}/`);
             showToast('Item removido!', 'success');
-            fetchItensEFornecedores(processoId);
+            fetchDadosDoProcesso(processoId);
         } catch (error) {
             showToast('Erro ao remover item.', 'error');
         }
     };
 
-    const handleAddFornecedor = async (e) => {
-        e.preventDefault();
+    const handleAddFornecedor = async () => {
+        if (!fornecedorSelecionado) return showToast('Selecione um fornecedor.', 'error');
         try {
-            await api.post('/fornecedores-processo/', { ...fornecedorFormData, processo: processoId });
+            await api.post(`/processos/${processoId}/adicionar_fornecedor/`, { fornecedor_id: fornecedorSelecionado });
             showToast('Fornecedor adicionado!', 'success');
-            setFornecedorFormData({ nome: '', cnpj: '', telefone: '', email: '' });
-            fetchItensEFornecedores(processoId);
+            setFornecedorSelecionado('');
+            fetchDadosDoProcesso(processoId);
         } catch (error) {
             showToast('Erro ao adicionar fornecedor.', 'error');
         }
     };
-    
-    const handleDeleteFornecedor = async (fornecedorId) => {
+
+    const handleRemoveFornecedor = async (fornecedorId) => {
         try {
-            await api.delete(`/fornecedores-processo/${fornecedorId}/`);
+            await api.post(`/processos/${processoId}/remover_fornecedor/`, { fornecedor_id: fornecedorId });
             showToast('Fornecedor removido!', 'success');
-            fetchItensEFornecedores(processoId);
+            fetchDadosDoProcesso(processoId);
         } catch (error) {
             showToast('Erro ao remover fornecedor.', 'error');
         }
     };
 
+    const handleNewSupplierSaved = (newSupplier) => {
+        fetchCatalogoFornecedores();
+        setFornecedorSelecionado(newSupplier.id);
+    };
+
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
     const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
-    const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
     const organizacoes = ['Lote', 'Item'];
 
     const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary";
@@ -241,51 +310,42 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             <motion.div 
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl w-full max-w-4xl flex flex-col shadow-2xl"
+                className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl w-full max-w-4xl flex flex-col shadow-2xl h-[90vh]"
             >
-                <header className="flex justify-between items-center p-4 border-b border-light-border dark:border-dark-border">
-                    <h2 className="text-lg font-bold">
-                        {processoId ? `Editar Processo: ${formData.numero_processo}` : 'Criar Novo Processo'}
-                    </h2>
-                    <button onClick={closeModal} className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10"><XMarkIcon className="w-6 h-6" /></button>
+                <header className="flex-shrink-0 flex justify-between items-center p-4 border-b">
+                    <h2 className="text-lg font-bold">{processoId ? `Editar Processo: ${formData.numero_processo}` : 'Criar Novo Processo'}</h2>
+                    <button onClick={closeModal} className="p-1 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
                 </header>
-
-                <div className="border-b border-light-border dark:border-dark-border">
+                <div className="flex-shrink-0 border-b">
                     <nav className="flex gap-2 px-4">
                         <TabButton label="1. Dados Gerais" isActive={activeTab === 'dadosGerais'} onClick={() => setActiveTab('dadosGerais')} />
                         <TabButton label="2. Itens" isActive={activeTab === 'itens'} onClick={() => setActiveTab('itens')} isDisabled={!processoId} />
                         <TabButton label="3. Fornecedores" isActive={activeTab === 'fornecedores'} onClick={() => setActiveTab('fornecedores')} isDisabled={!processoId} />
                     </nav>
                 </div>
-                
-                <div className="p-5 max-h-[65vh] overflow-y-auto">
+                <div className="p-5 flex-grow overflow-y-auto relative">
                     <AnimatePresence mode="wait">
-                        <motion.div
-                            key={activeTab}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
-                            transition={{ duration: 0.2 }}
-                        >
+                        <motion.div key={activeTab} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
                             {activeTab === 'dadosGerais' && (
                                 <form onSubmit={handleSaveDadosGerais} className="space-y-5">
                                     <FormSection title="Informações Principais">
-                                        <div>
-                                            <label className={labelStyle}>Objeto *</label>
-                                            <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1`} rows="3" required />
-                                        </div>
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className={labelStyle}>Número do Processo *</label>
-                                                <input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                                        <div className="grid md:grid-cols-3 gap-4">
+                                            <div className="md:col-span-2">
+                                                <label className={labelStyle}>Objeto *</label>
+                                                <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1 h-[113px]`} rows="3" required/>
                                             </div>
-                                            <div>
-                                               <label className={labelStyle}>Data do Processo *</label>
-                                               <input name="data_processo" type="date" value={formData.data_processo || ''} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className={labelStyle}>Número do Processo *</label>
+                                                    <input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                                                </div>
+                                                <div>
+                                                   <label className={labelStyle}>Data do Processo *</label>
+                                                   <input name="data_processo" type="date" value={formData.data_processo || ''} onChange={handleChange} className={`${inputStyle} mt-1`} required />
+                                                </div>
                                             </div>
                                         </div>
                                     </FormSection>
-                                    
                                     <FormSection title="Detalhes da Licitação">
                                         <div className="grid md:grid-cols-2 gap-4">
                                             <div>
@@ -320,10 +380,43 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                                             </div>
                                         </div>
                                     </FormSection>
-                                    
+                                    <FormSection title="Configurações Adicionais">
+                                        <div className="grid md:grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={labelStyle}>Tipo de Organização *</label>
+                                                <select name="tipo_organizacao" value={formData.tipo_organizacao} onChange={handleChange} className={`${inputStyle} mt-1`} required>
+                                                    <option value="">Selecione...</option>
+                                                    {organizacoes.map(o => <option key={o} value={o}>{o}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className={labelStyle}>Registro de Preços *</label>
+                                                <select name="registro_precos" value={formData.registro_precos} onChange={handleChange} className={`${inputStyle} mt-1`} required>
+                                                    <option value={false}>Não</option>
+                                                    <option value={true}>Sim</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className={labelStyle}>Valor de Referência</label>
+                                                <input name="valor_referencia" type="number" step="0.01" value={formData.valor_referencia || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
+                                            </div>
+                                        </div>
+                                    </FormSection>
+                                    <FormSection title="Publicação (Opcional)">
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={labelStyle}>Número do Certame</label>
+                                                <input name="numero_certame" value={formData.numero_certame || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
+                                            </div>
+                                            <div>
+                                                <label className={labelStyle}>Abertura da Contratação</label>
+                                                <input name="data_abertura" type="datetime-local" value={formData.data_abertura || ''} onChange={handleChange} className={`${inputStyle} mt-1`} />
+                                            </div>
+                                        </div>
+                                    </FormSection>
                                     <div className="flex justify-end gap-4 pt-4">
-                                        <button type="button" onClick={closeModal} className="py-2 px-4 rounded-lg text-sm font-medium">Cancelar</button>
-                                        <button type="submit" disabled={isLoading} className="py-2 px-4 bg-accent-blue text-white rounded-lg text-sm font-semibold">
+                                        <button type="button" onClick={closeModal}>Cancelar</button>
+                                        <button type="submit" disabled={isLoading}>
                                             {isLoading ? 'A Salvar...' : (processoId ? 'Atualizar Dados' : 'Salvar e Continuar')}
                                         </button>
                                     </div>
@@ -331,39 +424,61 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                             )}
                             {activeTab === 'itens' && (
                                 <div className="space-y-4">
-                                    <h3 className="font-semibold text-base">Adicionar Novo Item</h3>
-                                    <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1fr_1fr_auto] gap-3 items-end p-3 border rounded-lg">
-                                        <input name="descricao" value={itemFormData.descricao} onChange={(e) => setItemFormData({...itemFormData, descricao: e.target.value})} placeholder="Descrição do Item *" className={inputStyle} required />
-                                        <input name="especificacao" value={itemFormData.especificacao} onChange={(e) => setItemFormData({...itemFormData, especificacao: e.target.value})} placeholder="Especificação" className={inputStyle} />
-                                        <input name="unidade" value={itemFormData.unidade} onChange={(e) => setItemFormData({...itemFormData, unidade: e.target.value})} placeholder="Unidade *" className={inputStyle} required />
-                                        <input name="quantidade" type="number" step="0.01" value={itemFormData.quantidade} onChange={(e) => setItemFormData({...itemFormData, quantidade: e.target.value})} placeholder="Qtd. *" className={inputStyle} required />
-                                        <button type="submit" className="p-2 bg-accent-green text-white rounded-lg h-full flex items-center justify-center"><PlusIcon className="w-5 h-5"/></button>
-                                    </form>
-                                    <h3 className="font-semibold text-base pt-4">Itens Cadastrados</h3>
-                                    <ItemList items={itens} onDelete={handleDeleteItem} />
+                                    <FormSection title="Adicionar Novo Item">
+                                        <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1fr_1fr_auto] gap-3 items-end">
+                                            <div>
+                                                <label className={labelStyle}>Descrição *</label>
+                                                <input name="descricao" value={itemFormData.descricao} onChange={(e) => setItemFormData({...itemFormData, descricao: e.target.value})} className={inputStyle} required />
+                                            </div>
+                                            <div>
+                                                <label className={labelStyle}>Especificação</label>
+                                                <input name="especificacao" value={itemFormData.especificacao} onChange={(e) => setItemFormData({...itemFormData, especificacao: e.target.value})} className={inputStyle} />
+                                            </div>
+                                            <div>
+                                                <label className={labelStyle}>Unidade *</label>
+                                                <input name="unidade" value={itemFormData.unidade} onChange={(e) => setItemFormData({...itemFormData, unidade: e.target.value})} className={inputStyle} required />
+                                            </div>
+                                            <div>
+                                                <label className={labelStyle}>Quantidade *</label>
+                                                <input name="quantidade" type="number" step="0.01" value={itemFormData.quantidade} onChange={(e) => setItemFormData({...itemFormData, quantidade: e.target.value})} className={inputStyle} required />
+                                            </div>
+                                            <button type="submit" className="p-2 bg-accent-green text-white rounded-lg h-full flex items-center justify-center"><PlusIcon className="w-5 h-5"/></button>
+                                        </form>
+                                    </FormSection>
+                                    <FormSection title="Itens Cadastrados">
+                                        <ItemList items={itens} onDelete={handleDeleteItem} />
+                                    </FormSection>
                                 </div>
                             )}
                             {activeTab === 'fornecedores' && (
-                                 <div className="space-y-4">
-                                    <h3 className="font-semibold text-base">Adicionar Novo Fornecedor</h3>
-                                    <form onSubmit={handleAddFornecedor} className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end p-3 border rounded-lg">
-                                        <input name="nome" value={fornecedorFormData.nome} onChange={(e) => setFornecedorFormData({...fornecedorFormData, nome: e.target.value})} placeholder="Nome do Fornecedor" className={`${inputStyle} sm:col-span-2`} required />
-                                        <input name="cnpj" value={fornecedorFormData.cnpj} onChange={(e) => setFornecedorFormData({...fornecedorFormData, cnpj: e.target.value})} placeholder="CNPJ" className={inputStyle} required />
-                                        <input name="email" type="email" value={fornecedorFormData.email} onChange={(e) => setFornecedorFormData({...fornecedorFormData, email: e.target.value})} placeholder="Email" className={inputStyle} />
-                                        <div className="flex gap-2">
-                                          <input name="telefone" value={fornecedorFormData.telefone} onChange={(e) => setFornecedorFormData({...fornecedorFormData, telefone: e.target.value})} placeholder="Telefone" className={inputStyle} />
-                                          <button type="submit" className="p-2 bg-accent-green text-white rounded-lg"><PlusIcon className="w-5 h-5"/></button>
+                                 <div className="space-y-4 relative">
+                                    <FormSection title="Adicionar Fornecedor ao Processo">
+                                        <div className="flex gap-2 items-end">
+                                            <div className="flex-grow">
+                                                <label className={labelStyle}>Buscar no Catálogo</label>
+                                                <select value={fornecedorSelecionado} onChange={(e) => setFornecedorSelecionado(e.target.value)} className={`${inputStyle} mt-1`}>
+                                                    <option value="">Selecione um fornecedor existente...</option>
+                                                    {catalogoFornecedores.map(f => <option key={f.id} value={f.id}>{f.razao_social} ({f.cnpj})</option>)}
+                                                </select>
+                                            </div>
+                                            <button type="button" onClick={handleAddFornecedor} className="px-4 py-2 text-sm bg-accent-green text-white rounded-lg h-full flex items-center justify-center">Adicionar</button>
+                                            <button type="button" onClick={() => setIsNewSupplierModalOpen(true)} className="px-4 py-2 text-sm bg-accent-blue text-white rounded-lg h-full flex items-center justify-center">Novo Fornecedor</button>
                                         </div>
-                                    </form>
-                                    <h3 className="font-semibold text-base pt-4">Fornecedores Cadastrados</h3>
-                                    <div className="space-y-2">
-                                        {fornecedores.map(fornecedor => (
-                                            <div key={fornecedor.id} className="flex justify-between items-center p-2 border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary">
-                                                <p className="text-sm">{fornecedor.nome} ({fornecedor.cnpj})</p>
-                                                <button onClick={() => handleDeleteFornecedor(fornecedor.id)} className="p-1 text-red-500 rounded-full hover:bg-red-500/10"><TrashIcon className="w-4 h-4"/></button>
+                                    </FormSection>
+                                    <FormSection title="Fornecedores Vinculados">
+                                        {fornecedoresDoProcesso.map(f => (
+                                            <div key={f.id} className="flex justify-between items-center p-2 border rounded-lg">
+                                                <p className="text-sm">{f.razao_social}</p>
+                                                <button onClick={() => handleRemoveFornecedor(f.id)}><TrashIcon className="w-4 h-4 text-red-500"/></button>
                                             </div>
                                         ))}
-                                    </div>
+                                    </FormSection>
+                                    {isNewSupplierModalOpen && (
+                                        <ModalNovoFornecedor 
+                                            onClose={() => setIsNewSupplierModalOpen(false)} 
+                                            onSave={handleNewSupplierSaved} 
+                                        />
+                                    )}
                                 </div>
                             )}
                         </motion.div>

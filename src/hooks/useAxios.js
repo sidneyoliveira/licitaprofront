@@ -1,3 +1,5 @@
+// frontend/src/hooks/useAxios.js
+
 import axios from 'axios';
 import { useContext, useMemo } from 'react';
 import { jwtDecode } from 'jwt-decode';
@@ -16,6 +18,9 @@ const useAxios = () => {
         });
 
         instance.interceptors.request.use(async req => {
+            // --- CORREÇÃO AQUI ---
+            // 1. Adicionar verificação: se não houver token, envia o pedido sem autenticação.
+            //    O backend irá então rejeitá-lo com um erro 401, que é o comportamento esperado.
             if (!authTokens) {
                 return req;
             }
@@ -26,7 +31,7 @@ const useAxios = () => {
             if (!isExpired) return req;
 
             try {
-                const response = await axios.post(`${baseURL}/token/refresh/`, {
+                const response = await axios.post(`${baseURL}/api/token/refresh/`, {
                     refresh: authTokens.refresh
                 });
 
@@ -38,6 +43,7 @@ const useAxios = () => {
                 return req;
 
             } catch (error) {
+                // Se a renovação falhar, faz logout e rejeita a promessa
                 logoutUser();
                 return Promise.reject(error);
             }
