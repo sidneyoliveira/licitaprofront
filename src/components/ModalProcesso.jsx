@@ -1,6 +1,6 @@
 // frontend/src/components/ModalProcesso.jsx
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 import { XMarkIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/solid';
@@ -46,10 +46,8 @@ const getTodayDate = () => {
     return `${year}-${month}-${day}`;
 };
 
-// Componente para a lista de itens com descrição expansível
 const ItemList = ({ items, onDelete }) => {
     const [expandedItemId, setExpandedItemId] = useState(null);
-
     const toggleExpansion = (itemId) => {
         setExpandedItemId(prevId => (prevId === itemId ? null : itemId));
     };
@@ -97,7 +95,6 @@ const ItemList = ({ items, onDelete }) => {
     );
 };
 
-// Modal interno para criar um novo fornecedor no catálogo
 const ModalNovoFornecedor = ({ onClose, onSave }) => {
     const [formData, setFormData] = useState({ razao_social: '', cnpj: '', email: '', telefone: '' });
     const api = useAxios();
@@ -147,6 +144,86 @@ const ModalNovoFornecedor = ({ onClose, onSave }) => {
     );
 };
 
+// --- COMPONENTE DE BUSCA DE FORNECEDOR (AGORA INCLUÍDO) ---
+const SearchableSupplierDropdown = ({ onSelect, onAddNew }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [results, setResults] = useState([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const api = useAxios();
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        if (searchTerm.length < 2) {
+            setResults([]);
+            return;
+        }
+        setIsLoading(true);
+        const timer = setTimeout(() => {
+            api.get(`/fornecedores/?search=${searchTerm}`)
+                .then(res => setResults(res.data))
+                .catch(() => setResults([]))
+                .finally(() => setIsLoading(false));
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm, api]);
+
+    const handleSelect = (fornecedor) => {
+        onSelect(fornecedor.id);
+        setSearchTerm(`${fornecedor.cnpj} / ${fornecedor.razao_social}`);
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="flex gap-2 items-end" ref={dropdownRef}>
+            <div className="flex-grow relative">
+                <label className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary">Buscar Fornecedor (CNPJ ou Razão Social)</label>
+                <input 
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setIsOpen(true)}
+                    placeholder="Comece a digitar para pesquisar..."
+                    className="w-full px-3 py-1.5 text-sm border rounded-lg mt-1"
+                />
+                {isOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute top-full left-0 right-0 mt-1 bg-light-bg-secondary dark:bg-dark-bg-secondary border rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto"
+                    >
+                        {isLoading && <p className="p-2 text-xs text-center">A pesquisar...</p>}
+                        {!isLoading && results.length === 0 && searchTerm.length >= 2 && <p className="p-2 text-xs text-center">Nenhum fornecedor encontrado.</p>}
+                        {results.map(fornecedor => (
+                            <div 
+                                key={fornecedor.id}
+                                onClick={() => handleSelect(fornecedor)}
+                                className="px-3 py-2 text-sm cursor-pointer hover:bg-light-border dark:hover:bg-dark-border"
+                            >
+                                <p className="font-semibold">{fornecedor.razao_social}</p>
+                                <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{fornecedor.cnpj}</p>
+                            </div>
+                        ))}
+                    </motion.div>
+                )}
+            </div>
+            <button type="button" onClick={onAddNew} className="px-4 py-2 text-sm bg-accent-blue text-white rounded-lg h-full flex items-center justify-center flex-shrink-0">
+                Novo Fornecedor
+            </button>
+        </div>
+    );
+};
+
 
 // --- COMPONENTE PRINCIPAL DO MODAL ---
 
@@ -180,7 +257,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         if (!id) return;
         try {
             const response = await api.get(`/processos/${id}/`);
-            setFormData(response.data); // Atualiza o formulário principal com os dados do processo
+            setFormData(response.data);
             setItens(response.data.itens);
             setFornecedoresDoProcesso(response.data.fornecedores_participantes);
         } catch (error) {
@@ -272,7 +349,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     };
 
     const handleAddFornecedor = async () => {
-        if (!fornecedorSelecionado) return showToast('Selecione um fornecedor.', 'error');
+        if (!fornecedorSelecionado) return showToast('Selecione um fornecedor da lista.', 'error');
         try {
             await api.post(`/processos/${processoId}/adicionar_fornecedor/`, { fornecedor_id: fornecedorSelecionado });
             showToast('Fornecedor adicionado!', 'success');
@@ -292,7 +369,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
             showToast('Erro ao remover fornecedor.', 'error');
         }
     };
-
+    
     const handleNewSupplierSaved = (newSupplier) => {
         fetchCatalogoFornecedores();
         setFornecedorSelecionado(newSupplier.id);
@@ -301,6 +378,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
     const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
     const organizacoes = ['Lote', 'Item'];
+    const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
 
     const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary";
     const labelStyle = "text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary";
@@ -332,7 +410,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                                         <div className="grid md:grid-cols-3 gap-4">
                                             <div className="md:col-span-2">
                                                 <label className={labelStyle}>Objeto *</label>
-                                                <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1 h-[113px]`} rows="3" required/>
+                                                <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} mt-1 h-[113px]`} required />
                                             </div>
                                             <div className="space-y-4">
                                                 <div>
@@ -453,22 +531,27 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                             {activeTab === 'fornecedores' && (
                                  <div className="space-y-4 relative">
                                     <FormSection title="Adicionar Fornecedor ao Processo">
-                                        <div className="flex gap-2 items-end">
-                                            <div className="flex-grow">
-                                                <label className={labelStyle}>Buscar no Catálogo</label>
-                                                <select value={fornecedorSelecionado} onChange={(e) => setFornecedorSelecionado(e.target.value)} className={`${inputStyle} mt-1`}>
-                                                    <option value="">Selecione um fornecedor existente...</option>
-                                                    {catalogoFornecedores.map(f => <option key={f.id} value={f.id}>{f.razao_social} ({f.cnpj})</option>)}
-                                                </select>
-                                            </div>
-                                            <button type="button" onClick={handleAddFornecedor} className="px-4 py-2 text-sm bg-accent-green text-white rounded-lg h-full flex items-center justify-center">Adicionar</button>
-                                            <button type="button" onClick={() => setIsNewSupplierModalOpen(true)} className="px-4 py-2 text-sm bg-accent-blue text-white rounded-lg h-full flex items-center justify-center">Novo Fornecedor</button>
+                                        <SearchableSupplierDropdown 
+                                            onSelect={(id) => setFornecedorSelecionado(id)}
+                                            onAddNew={() => setIsNewSupplierModalOpen(true)}
+                                        />
+                                        <div className="flex justify-end mt-2">
+                                            <button 
+                                                type="button" 
+                                                onClick={handleAddFornecedor} 
+                                                className="px-4 py-2 text-sm bg-accent-green text-white rounded-lg flex items-center gap-2"
+                                            >
+                                                <PlusIcon className="w-5 h-5"/> Vincular Fornecedor Selecionado
+                                            </button>
                                         </div>
                                     </FormSection>
                                     <FormSection title="Fornecedores Vinculados">
                                         {fornecedoresDoProcesso.map(f => (
                                             <div key={f.id} className="flex justify-between items-center p-2 border rounded-lg">
-                                                <p className="text-sm">{f.razao_social}</p>
+                                                <div>
+                                                    <p className="font-semibold text-sm">{f.razao_social}</p>
+                                                    <p className="text-xs text-light-text-secondary">{f.cnpj}</p>
+                                                </div>
                                                 <button onClick={() => handleRemoveFornecedor(f.id)}><TrashIcon className="w-4 h-4 text-red-500"/></button>
                                             </div>
                                         ))}
