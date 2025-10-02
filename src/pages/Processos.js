@@ -127,7 +127,8 @@ const Processos = () => {
                 <ModalProcesso 
                     closeModal={() => setEditingProcess(null)} 
                     onSave={handleSaveProcess}
-                    initialData={editingProcess} 
+                    refreshProcessos={fetchProcessos} 
+                    initialData={editingProcess}
                 />
             )}
 

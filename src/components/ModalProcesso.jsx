@@ -1,6 +1,6 @@
 // frontend/src/components/ModalProcesso.jsx
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 import { XMarkIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/solid';
@@ -238,29 +238,25 @@ const SearchableSupplierDropdown = ({ onSelect, onAddNew }) => {
 // --- COMPONENTE PRINCIPAL DO MODAL ---
 
 const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
-    // --- CORREÇÃO AQUI ---
-    // A variável 'isEditing' foi movida para o topo do componente para que
-    // todas as funções e o JSX dentro do ModalProcesso a possam aceder.
     const isEditing = initialData && initialData.id;
-    
     const [activeTab, setActiveTab] = useState('dadosGerais');
     const [processoId, setProcessoId] = useState(initialData?.id || null);
     const { showToast } = useToast();
     const api = useAxios();
 
-    const [formData, setFormData] = useState(
-        initialData || {
-            objeto: '', numero_processo: '', data_processo: getTodayDate(), modalidade: '', 
-            classificacao: '', tipo_organizacao: '', registro_precos: false, orgao: '', 
-            entidade: '', valor_referencia: '', numero_certame: '', data_abertura: '',
-        }
-    );
+    const [formData, setFormData] = useState({
+        objeto: '', numero_processo: '', data_processo: getTodayDate(), modalidade: '', 
+        classificacao: '', tipo_organizacao: '', registro_precos: false, orgao: '', 
+        entidade: '', valor_referencia: '', numero_certame: '', data_abertura: '',
+    });
     
     const [itens, setItens] = useState([]);
     const [itemFormData, setItemFormData] = useState({ descricao: '', especificacao: '', unidade: '', quantidade: '' });
+    const [itemSelecionadoId, setItemSelecionadoId] = useState('');
+    const [itemQuantidade, setItemQuantidade] = useState(1);
     
     const [fornecedoresDoProcesso, setFornecedoresDoProcesso] = useState([]);
-    const [, setCatalogoFornecedores] = useState([]);
+    const [catalogoFornecedores, setCatalogoFornecedores] = useState([]);
     const [fornecedorSelecionado, setFornecedorSelecionado] = useState('');
     const [isNewSupplierModalOpen, setIsNewSupplierModalOpen] = useState(false);
     
@@ -294,7 +290,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         if (!id) return;
         try {
             const response = await api.get(`/processos/${id}/`);
-            setItens(response.data.itens);
+            setItens(response.data.itens_do_processo); 
             setFornecedoresDoProcesso(response.data.fornecedores_participantes);
         } catch (error) {
             showToast('Erro ao carregar itens ou fornecedores.', 'error');
@@ -344,7 +340,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
         setIsLoading(true);
         try {
             let response;
-            if (isEditing) {
+            if (processoId) {
                 response = await api.put(`/processos/${processoId}/`, formData);
                 showToast('Dados gerais atualizados!', 'success');
             } else {
@@ -370,13 +366,19 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     
     const handleAddItem = async (e) => {
         e.preventDefault();
+        if (!itemSelecionadoId) return showToast('Selecione um item do catálogo.', 'error');
         try {
-            await api.post('/itens/', { ...itemFormData, processo: processoId });
+            await api.post('/itens/', { 
+                processo: processoId,
+                item_catalogo: itemSelecionadoId,
+                quantidade: itemQuantidade
+            });
             showToast('Item adicionado!', 'success');
-            setItemFormData({ descricao: '', especificacao: '', unidade: '', quantidade: '' });
+            setItemSelecionadoId(''); // Limpa a seleção
+            setItemQuantidade(1); // Reinicia a quantidade
             fetchDadosDoProcesso(processoId);
         } catch (error) {
-            showToast('Erro ao adicionar item.', 'error');
+            showToast('Erro ao adicionar item. Ele pode já estar na lista.', 'error');
         }
     };
     
@@ -420,7 +422,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
     const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
     const organizacoes = ['Lote', 'Item'];
-    // const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
+    const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
 
     const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-primary dark:bg-dark-bg-primary";
     const labelStyle = "text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary";
@@ -433,7 +435,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                 className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl w-full max-w-4xl flex flex-col shadow-2xl h-[90vh]"
             >
                 <header className="flex-shrink-0 flex justify-between items-center p-4 border-b">
-                    <h2 className="text-lg font-bold">{isEditing ? `Editar Processo: ${initialData?.numero_processo}` : 'Criar Novo Processo'}</h2>
+                    <h2 className="text-lg font-bold">{processoId ? `Editar Processo: ${initialData?.numero_processo}` : 'Criar Novo Processo'}</h2>
                     <button onClick={closeModal} className="p-1 rounded-full"><XMarkIcon className="w-6 h-6" /></button>
                 </header>
                 <div className="flex-shrink-0 border-b">
