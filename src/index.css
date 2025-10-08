@@ -6,15 +6,16 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
 
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos base com fundos sólidos */
 body {
   @apply bg-light-bg-primary text-light-text-primary;
 }
 
 .dark body {
-  @apply bg-dark-bg-primary text-dark-text-primary;
+  @apply bg-gradient-to-br from-[#0A0E1E] via-[#100b21] to-[#0A0E1E] text-dark-text-primary;
 }

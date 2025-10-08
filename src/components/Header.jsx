@@ -1,22 +1,10 @@
-// frontend/src/components/Header.jsx
-
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthContext from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { 
-    Bell, 
-    User, 
-    Menu, 
-    Sun, 
-    Moon,
-    Archive as ArchiveIcon,
-    LogOut as LogOutIcon,
-    Settings
-} from 'lucide-react';
+import { Bell, User, Menu, Sun, Moon, Archive as ArchiveIcon, LogOut as LogOutIcon } from 'lucide-react';
 
-// Hook customizado para detetar cliques fora de um elemento (para fechar o dropdown)
 const useClickOutside = (ref, handler) => {
     useEffect(() => {
         const listener = (event) => {
@@ -24,42 +12,29 @@ const useClickOutside = (ref, handler) => {
             handler(event);
         };
         document.addEventListener('mousedown', listener);
-        document.addEventListener('touchstart', listener);
-        return () => {
-            document.removeEventListener('mousedown', listener);
-            document.removeEventListener('touchstart', listener);
-        };
+        return () => document.removeEventListener('mousedown', listener);
     }, [ref, handler]);
 };
 
-const Header = ({ toggleDesktopSidebar, toggleMobileSidebar }) => {
+const Header = ({ toggleSidebar }) => {
     const { user, logoutUser } = useContext(AuthContext);
     const { isDark, toggleTheme } = useTheme();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
     useClickOutside(userMenuRef, () => setUserMenuOpen(false));
-    
+
     return (
         <motion.header
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="sticky top-0 z-40 bg-light-bg-secondary/80 dark:bg-dark-bg-secondary/80 backdrop-blur-lg border-b border-light-border dark:border-dark-border"
+            className="sticky top-0 z-40 bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
         >
             <div className="flex items-center justify-between p-3 h-16">
-                {/* Lado Esquerdo: Botão de Menu Responsivo */}
-                <div className="flex items-center gap-2">
-                    {/* Botão para o sidebar de DESKTOP (só visível em ecrãs grandes) */}
-                    <button onClick={toggleDesktopSidebar} className="hidden lg:block p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                        <Menu className="w-5 h-5" />
-                    </button>
-                    {/* Botão para o sidebar de TELEMÓVEL (só visível em ecrãs pequenos) */}
-                    <button onClick={toggleMobileSidebar} className="lg:hidden p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                        <Menu className="w-5 h-5" />
-                    </button>
-                </div>
+                <button onClick={toggleSidebar} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                    <Menu className="w-5 h-5" />
+                </button>
 
-                {/* Lado Direito: Ações */}
                 <div className="flex items-center gap-2">
                     <button onClick={toggleTheme} className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -70,16 +45,11 @@ const Header = ({ toggleDesktopSidebar, toggleMobileSidebar }) => {
                         <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-yellow-400 rounded-full border-2 border-light-bg-secondary dark:border-dark-bg-secondary"></span>
                     </Link>
 
-                    {/* Menu do Utilizador */}
                     <div className="relative" ref={userMenuRef}>
                         <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                            <span className="font-semibold text-sm">
-                                {(user?.first_name || user?.username || '').toUpperCase()}
-                            </span>
+                            <span className="font-semibold text-sm">{(user?.first_name || user?.username || '').toUpperCase()}</span>
                             <User className="w-5 h-5" />
                         </button>
-
-                        {/* Dropdown do Utilizador */}
                         {userMenuOpen && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}

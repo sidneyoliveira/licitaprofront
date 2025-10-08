@@ -1,4 +1,3 @@
-// frontend/src/components/Sidebar.jsx
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,7 +37,7 @@ const NavItem = ({ item, isOpen, isActive }) => {
             initial="closed"
             animate="open"
             exit="closed"
-            className="whitespace-nowrap"
+            className="font-medium whitespace-nowrap"
           >
             {label}
           </motion.span>
@@ -54,7 +53,7 @@ const Sidebar = ({ isOpen }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Início', path: '/' },
     { icon: FileText, label: 'Processos', path: '/processos' },
-    { icon: Archive, label: 'Entidades e Órgãos', path: '/cadastros' }, // Rota atualizada
+    { icon: Archive, label: 'Entidades e Órgãos', path: '/entidades' },
     { icon: Building, label: 'Fornecedores', path: '/fornecedores' },
     { icon: Users, label: 'Usuários', path: '/usuarios' },
     { icon: Bell, label: 'Notificações', path: '/notificacoes' },
@@ -75,7 +74,7 @@ const Sidebar = ({ isOpen }) => {
     >
       <div className="p-4 flex flex-col h-full">
         <div className={`flex items-center gap-3 mb-6 flex-shrink-0 ${isOpen ? 'px-2' : 'justify-center'}`}>
-          <div className="w-10 h-10 bg-accent-blue rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-accent-blue to-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
             <Gavel className="w-6 h-6 text-white" />
           </div>
           <AnimatePresence>
@@ -87,13 +86,13 @@ const Sidebar = ({ isOpen }) => {
                 transition={{ duration: 0.2 }}
                 className="text-light-text-primary dark:text-dark-text-primary font-bold text-xl whitespace-nowrap"
               >
-                L3 Soluções
+                Licita.PRO
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-1">
           {menuItems.map((item) => (
             <NavItem
               key={item.path}
@@ -115,3 +114,5 @@ const Sidebar = ({ isOpen }) => {
     </motion.aside>
   );
 };
+
+export default Sidebar;
