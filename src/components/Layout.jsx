@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 
 const Layout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
   return (
