@@ -86,13 +86,13 @@ const Sidebar = ({ isOpen }) => {
                 transition={{ duration: 0.2 }}
                 className="text-light-text-primary dark:text-dark-text-primary font-bold text-xl whitespace-nowrap"
               >
-                Licita.PRO
+                L3 Solutions
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-1 text-sm overflow-y-auto">
           {menuItems.map((item) => (
             <NavItem
               key={item.path}

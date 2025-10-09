@@ -11,7 +11,6 @@ import { useToast } from '../context/ToastContext';
 import { Search, Plus, Filter, Download, RefreshCw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- CORREÇÃO: Importação do componente Button ---
 const Button = ({ children, variant, size, className, ...props }) => (
     <button className={`flex items-center justify-center text-sm font-semibold gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 rounded-lg px-4 py-2 ${className}`} {...props}>
         {children}
@@ -128,7 +127,7 @@ const Processos = () => {
 
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
 
-    const inputStyle = "w-full px-3 py-1 text-sm border rounded-lg bg-white";
+    const inputStyle = "w-full px-3 py-1 text-xs border rounded-lg bg-white";
     const labelStyle = "text-xs font-medium text-gray-600 ";
     
     const hasActiveFilters = useMemo(() => {
@@ -141,7 +140,7 @@ const Processos = () => {
     return (
         <div className="space-y-4">
             <Helmet>
-                <title>Minhas Licitações - Licita.PRO</title>
+                <title>Minhas Licitações</title>
             </Helmet>
 
             {editingProcess && <ModalProcesso closeModal={() => setEditingProcess(null)} onSave={handleSaveProcess} refreshProcessos={fetchProcessos} initialData={isEditing ? editingProcess : {}} />}
@@ -156,7 +155,7 @@ const Processos = () => {
                             Gerencie e acompanhe {processos.length} {processos.length === 1 ? 'licitação' : 'licitações'}
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <Button onClick={fetchProcessos} variant="outline" className={`${inputStyle} gap-2`}><RefreshCw className="w-4 h-4" /> Atualizar</Button>
                         <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} gap-2`}><Download className="w-4 h-4" /> Exportar</Button>
                         <Button onClick={handleCreate} className={`${inputStyle} gap-2`}><Plus className="w-4 h-4" /> Novo Processo</Button>

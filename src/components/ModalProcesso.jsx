@@ -315,9 +315,9 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
 
                 <div className="flex-shrink-0 border-b">
                     <nav className="flex gap-2 px-4">
-                        <TabButton label="1. Dados Gerais" isActive={activeTab === 'dadosGerais'} onClick={() => setActiveTab('dadosGerais')} />
-                        <TabButton label="2. Itens" isActive={activeTab === 'itens'} onClick={() => setActiveTab('itens')} isDisabled={!processoId} />
-                        <TabButton label="3. Fornecedores" isActive={activeTab === 'fornecedores'} onClick={() => setActiveTab('fornecedores')} isDisabled={!processoId} />
+                        <TabButton label="Dados Gerais" isActive={activeTab === 'dadosGerais'} onClick={() => setActiveTab('dadosGerais')} />
+                        <TabButton label="Itens" isActive={activeTab === 'itens'} onClick={() => setActiveTab('itens')} isDisabled={!processoId} />
+                        <TabButton label="Fornecedores" isActive={activeTab === 'fornecedores'} onClick={() => setActiveTab('fornecedores')} isDisabled={!processoId} />
                     </nav>
                 </div>
 
