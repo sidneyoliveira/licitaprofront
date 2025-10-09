@@ -19,29 +19,6 @@ const Button = ({ children, variant, size, className, ...props }) => (
 );
 
 
-// Componente para as abas de status
-const StatusTab = ({ children, count, active, onClick }) => (
-  <button 
-    onClick={onClick} 
-    className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 ${
-      active 
-        ? 'bg-accent-blue text-white shadow-md' 
-        : 'bg-light-bg-secondary dark:bg-dark-bg-secondary text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-border dark:hover:bg-dark-border'
-    }`}
-  >
-    {children}
-    {count > 0 && (
-      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-        active 
-          ? 'bg-white text-accent-blue' 
-          : 'bg-accent-blue/10 text-accent-blue'
-      }`}>
-        {count}
-      </span>
-    )}
-  </button>
-);
-
 const Processos = () => {
     const [processos, setProcessos] = useState([]);
     const [editingProcess, setEditingProcess] = useState(null);
@@ -149,17 +126,11 @@ const Processos = () => {
         showToast('Funcionalidade em desenvolvimento!', 'info');
     };
 
-    const statuses = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
 
-    const statusCounts = useMemo(() => {
-        const counts = { total: processos.length };
-        statuses.forEach(status => {
-            counts[status] = processos.filter(p => p.situacao === status).length;
-        });
-        return counts;
-    }, [processos]);
-
+    const inputStyle = "w-full px-3 py-1 text-sm border rounded-lg bg-white";
+    const labelStyle = "text-xs font-medium text-gray-600 ";
+    
     const hasActiveFilters = useMemo(() => {
         return Object.values(filters).some(v => v !== '') || activeStatus !== '' || sortBy !== 'data_processo' || sortOrder !== 'desc';
     }, [filters, activeStatus, sortBy, sortOrder]);
@@ -186,9 +157,9 @@ const Processos = () => {
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <Button onClick={fetchProcessos} variant="outline" className="gap-2"><RefreshCw className="w-4 h-4" /> Atualizar</Button>
-                        <Button onClick={exportToCSV} variant="outline" className="gap-2"><Download className="w-4 h-4" /> Exportar</Button>
-                        <Button onClick={handleCreate} className="gap-2"><Plus className="w-4 h-4" /> Novo Processo</Button>
+                        <Button onClick={fetchProcessos} variant="outline" className={`${inputStyle} gap-2`}><RefreshCw className="w-4 h-4" /> Atualizar</Button>
+                        <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} gap-2`}><Download className="w-4 h-4" /> Exportar</Button>
+                        <Button onClick={handleCreate} className={`${inputStyle} gap-2`}><Plus className="w-4 h-4" /> Novo Processo</Button>
                     </div>
                 </div>
 
@@ -197,35 +168,26 @@ const Processos = () => {
                         <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Pesquisar por número, objeto, entidade..." className="w-full pl-10 pr-4 py-2 border rounded-lg" />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="gap-2">
-                            <Filter className="w-4 h-4" /> Filtros Avançados
-                            {hasActiveFilters && <span className="ml-1 px-2 py-0.5 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-semibold">Ativos</span>}
+                    <div className="grid md:grid-cols-[1fr_1fr_2fr_2fr_2fr] gap-2">
+                        <Button className={`${inputStyle} w-4 h-8`} onClick={() => setShowFilters(!showFilters)} variant="outline">
+                            <Filter className="w-4 h-5"/> Filtros
+                            {hasActiveFilters && <span className="ml-1 px-2 py-0.5 bg-accent-blue/10 text-accent-blue border rounded-lg text-xs font-semibold">Ativos</span>}
                         </Button>
-                        {hasActiveFilters && <Button onClick={clearFilters} variant="ghost" size="sm" className="gap-1 text-accent-red"><X className="w-3 h-3" /> Limpar</Button>}
+                        {hasActiveFilters && <Button onClick={clearFilters} variant="ghost" size="sm" className={`${inputStyle} text-accent-red border border-red-200 rounded-lg h-8`}><X className="w-4 h-3" /> Limpar</Button>}
                     </div>
 
                     <AnimatePresence>
                         {showFilters && (
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-                                    <select name="modalidade" value={filters.modalidade} onChange={handleFilterChange}><option value="">Todas Modalidades</option>{modalidades.map(m => <option key={m} value={m}>{m}</option>)}</select>
-                                    <select name="registro_precos" value={filters.registro_precos} onChange={handleFilterChange}><option value="">Reg. de Preços (Todos)</option><option value="true">Sim</option><option value="false">Não</option></select>
-                                    <input type="date" name="data_inicio" value={filters.data_inicio} onChange={handleFilterChange} />
-                                    <input type="date" name="data_fim" value={filters.data_fim} onChange={handleFilterChange} />
-                                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}><option value="data_processo">Ordenar por Data</option><option value="numero_processo">Ordenar por Número</option></select>
-                                    <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}><option value="desc">Decrescente</option><option value="asc">Crescente</option></select>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 pt-2">
+                                    <select className={`${inputStyle}`} name="modalidade" value={filters.modalidade} onChange={handleFilterChange}><option value="">Todas Modalidades</option>{modalidades.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                                    <select className={`${inputStyle}`} name="registro_precos" value={filters.registro_precos} onChange={handleFilterChange}><option value="">Reg. de Preços (Todos)</option><option value="true">Sim</option><option value="false">Não</option></select>
+                                    <input className={`${inputStyle}`} type="date" name="data_inicio" value={filters.data_inicio} onChange={handleFilterChange} />
+                                    <input className={`${inputStyle}`} type="date" name="data_fim" value={filters.data_fim} onChange={handleFilterChange} />
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
-            </div>
-
-            <div className="overflow-x-auto pb-2">
-                <div className="flex gap-2 min-w-max p-1">
-                    <StatusTab active={activeStatus === ''} onClick={() => handleTabClick('')} count={statusCounts.total}>Todos</StatusTab>
-                    {statuses.map(status => <StatusTab key={status} active={activeStatus === status} onClick={() => handleTabClick(status)} count={statusCounts[status] || 0}>{status}</StatusTab>)}
                 </div>
             </div>
 

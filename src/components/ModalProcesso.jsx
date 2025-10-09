@@ -193,23 +193,28 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     };
 
     const handleAddItem = async (e) => {
-        e.preventDefault();
-        if (!processoId) return showToast('Salve o processo antes de adicionar itens.', 'error');
-        try {
-            await api.post('/itens/', {
-                processo: processoId,
-                descricao: itemFormData.descricao,
-                especificacao: itemFormData.especificacao,
-                unidade: itemFormData.unidade,
-                quantidade: itemFormData.quantidade
-            });
-            showToast('Item adicionado!', 'success');
-            setItemFormData({ descricao: '', especificacao: '', unidade: '', quantidade: 1 });
-            fetchDadosDoProcesso(processoId);
-        } catch (err) {
-            const msg = err.response?.data?.error || 'Erro ao adicionar item.';
-            showToast(msg, 'error');
-        }
+    e.preventDefault();
+    if (!processoId) return showToast('Salve o processo antes de adicionar itens.', 'error');
+
+    // Calcula automaticamente a próxima ordem
+    const nextOrdem = itens.length > 0 ? Math.max(...itens.map(i => i.ordem || 0)) + 1 : 1;
+
+    try {
+        await api.post('/itens/', {
+            processo: processoId,
+            descricao: itemFormData.descricao,
+            especificacao: itemFormData.especificacao,
+            unidade: itemFormData.unidade,
+            quantidade: itemFormData.quantidade,
+            ordem: nextOrdem
+        });
+        showToast('Item adicionado!', 'success');
+        setItemFormData({ descricao: '', especificacao: '', unidade: '', quantidade: 1 });
+        fetchDadosDoProcesso(processoId);
+    } catch (err) {
+        const msg = err.response?.data?.error || 'Erro ao adicionar item.';
+        showToast(msg, 'error');
+    }
     };
 
     const handleDeleteItem = async (itemId) => {
@@ -554,120 +559,132 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
 
 
                             {activeTab === 'itens' && (
-                                <div className="space-y-4">
-                                    <FormSection title="Adicionar Item">
-                                        <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_2fr_2fr_1fr] gap-2 items-end p-2 border rounded-lg">
-                                            <div className="sm:col-span-2">
-                                                <label className={labelStyle}>Descrição *</label>
-                                                <input name="descricao" value={itemFormData.descricao} onChange={handleItemFormChange} className={inputStyle} required />
-                                            </div>
-                                            <div>
-                                                <label className={labelStyle}>Especificação</label>
-                                                <input name="especificacao" value={itemFormData.especificacao} onChange={handleItemFormChange} className={inputStyle} />
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <div>
-                                                    <label className={labelStyle}>Unidade *</label>
-                                                    <input name="unidade" value={itemFormData.unidade} onChange={handleItemFormChange} className={inputStyle} required />
-                                                </div>
-                                                <div>
-                                                    <label className={labelStyle}>Quantidade *</label>
-                                                    <input name="quantidade" type="number" step="0.01" value={itemFormData.quantidade} onChange={handleItemFormChange} className={inputStyle} required />
-                                                </div>
-                                            </div>
-                                            <button type="submit" className="p-2 bg-green-600 text-white rounded-lg h-full flex items-center justify-center"><PlusIcon className="w-5 h-5"/></button>
-                                        </form>
-                                    </FormSection>
+    <div className="space-y-4">
+        <FormSection title="Adicionar Item">
+            <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_2fr_2fr_1fr] gap-2 items-end p-2 border rounded-lg">
+                <div className="sm:col-span-2">
+                    <label className={labelStyle}>Descrição *</label>
+                    <input name="descricao" value={itemFormData.descricao} onChange={handleItemFormChange} className={inputStyle} required />
+                </div>
+                <div>
+                    <label className={labelStyle}>Especificação</label>
+                    <input name="especificacao" value={itemFormData.especificacao} onChange={handleItemFormChange} className={inputStyle} />
+                </div>
+                <div className="flex gap-2">
+                    <div>
+                        <label className={labelStyle}>Unidade *</label>
+                        <input name="unidade" value={itemFormData.unidade} onChange={handleItemFormChange} className={inputStyle} required />
+                    </div>
+                    <div>
+                        <label className={labelStyle}>Quantidade *</label>
+                        <input name="quantidade" type="number" step="0.01" value={itemFormData.quantidade} onChange={handleItemFormChange} className={inputStyle} required />
+                    </div>
+                </div>
+                <button type="submit" className="p-2 bg-green-600 text-white rounded-lg h-full flex items-center justify-center"><PlusIcon className="w-5 h-5"/></button>
+            </form>
+        </FormSection>
 
-                                    <FormSection title="Itens do Processo">
-                                        <ItemList items={itens} onEdit={handleEditItem} onDelete={handleDeleteItem} onMoveUp={(i) => moveItem(i, -1)} onMoveDown={(i) => moveItem(i, 1)} />
-                                    </FormSection>
-                                    {/* Modal de edição de item */}
-                                        {editingItem && (
-                                        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                                            <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg"
-                                            >
-                                            <h3 className="text-lg font-bold mb-4">Editar Item</h3>
-                                            <form
-                                                onSubmit={(e) => {
-                                                e.preventDefault();
-                                                handleSaveEditedItem(editingItem.id, editingItem);
-                                                }}
-                                                className="space-y-4"
-                                            >
-                                                <div>
-                                                <label className={labelStyle}>Descrição *</label>
-                                                <input
-                                                    type="text"
-                                                    name="descricao"
-                                                    value={editingItem.descricao || ''}
-                                                    onChange={(e) => setEditingItem(prev => ({ ...prev, descricao: e.target.value }))}
-                                                    className={inputStyle}
-                                                    required
-                                                />
-                                                </div>
+        <FormSection title="Itens do Processo">
+            <ItemList items={itens} onEdit={handleEditItem} onDelete={handleDeleteItem} onMoveUp={(i) => moveItem(i, -1)} onMoveDown={(i) => moveItem(i, 1)} />
+        </FormSection>
 
-                                                <div>
-                                                <label className={labelStyle}>Especificação</label>
-                                                <textarea
-                                                    name="especificacao"
-                                                    value={editingItem.especificacao || ''}
-                                                    onChange={(e) => setEditingItem(prev => ({ ...prev, especificacao: e.target.value }))}
-                                                    className={`${inputStyle} h-24`}
-                                                />
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-3">
-                                                <div>
-                                                    <label className={labelStyle}>Unidade *</label>
-                                                    <input
-                                                    name="unidade"
-                                                    value={editingItem.unidade || ''}
-                                                    onChange={(e) => setEditingItem(prev => ({ ...prev, unidade: e.target.value }))}
-                                                    className={inputStyle}
-                                                    required
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className={labelStyle}>Quantidade *</label>
-                                                    <input
-                                                    name="quantidade"
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={editingItem.quantidade || ''}
-                                                    onChange={(e) => setEditingItem(prev => ({ ...prev, quantidade: e.target.value }))}
-                                                    className={inputStyle}
-                                                    required
-                                                    />
-                                                </div>
-                                                </div>
-
-                                                <div className="flex justify-end gap-3 mt-5">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setEditingItem(null)}
-                                                    className="px-4 py-2 rounded-lg border border-gray-300 text-sm"
-                                                >
-                                                    Cancelar
-                                                </button>
-                                                <button
-                                                    type="submit"
-                                                    className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm"
-                                                >
-                                                    Salvar Alterações
-                                                </button>
-                                                </div>
-                                            </form>
-                                            </motion.div>
-                                        </div>
-                                        )}
+                {/* Modal de edição de item */}
+                {editingItem && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg"
+                        >
+                            <h3 className="text-lg font-bold mb-4">Editar Item</h3>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleSaveEditedItem(editingItem.id, editingItem);
+                                }}
+                                className="space-y-4"
+                            >
+                                <div>
+                                    <label className={labelStyle}>Ordem</label>
+                                    <input
+                                        type="number"
+                                        name="ordem"
+                                        min="1"
+                                        value={editingItem.ordem || ''}
+                                        onChange={(e) => setEditingItem(prev => ({ ...prev, ordem: e.target.value }))}
+                                        className={inputStyle}
+                                        placeholder="Auto"
+                                    />
                                 </div>
-                            )}
+                                <div>
+                                    <label className={labelStyle}>Descrição *</label>
+                                    <input
+                                        type="text"
+                                        name="descricao"
+                                        value={editingItem.descricao || ''}
+                                        onChange={(e) => setEditingItem(prev => ({ ...prev, descricao: e.target.value }))}
+                                        className={inputStyle}
+                                        required
+                                    />
+                                </div>
 
+                                <div>
+                                    <label className={labelStyle}>Especificação</label>
+                                    <textarea
+                                        name="especificacao"
+                                        value={editingItem.especificacao || ''}
+                                        onChange={(e) => setEditingItem(prev => ({ ...prev, especificacao: e.target.value }))}
+                                        className={`${inputStyle} h-24`}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className={labelStyle}>Unidade *</label>
+                                        <input
+                                            name="unidade"
+                                            value={editingItem.unidade || ''}
+                                            onChange={(e) => setEditingItem(prev => ({ ...prev, unidade: e.target.value }))}
+                                            className={inputStyle}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={labelStyle}>Quantidade *</label>
+                                        <input
+                                            name="quantidade"
+                                            type="number"
+                                            step="0.01"
+                                            value={editingItem.quantidade || ''}
+                                            onChange={(e) => setEditingItem(prev => ({ ...prev, quantidade: e.target.value }))}
+                                            className={inputStyle}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditingItem(null)}
+                                        className="px-4 py-2 rounded-lg border border-gray-300 text-sm"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm"
+                                    >
+                                        Salvar Alterações
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </div>
+        )}
                             {activeTab === 'fornecedores' && (
                                 <div className="space-y-4">
                                     <FormSection title="Buscar Fornecedor (Catálogo)">
