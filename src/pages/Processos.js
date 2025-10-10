@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom'; // ATUALIZADO: Importado para navegação
 import useAxios from '../hooks/useAxios';
 import ProcessoCard from '../components/ProcessoCard';
-import ModalProcesso from '../components/ModalProcesso';
+// import PaginaProcesso from './PaginaProcesso'; // REMOVIDO: Não é mais renderizado aqui
 import ModalPublicacao from '../components/ModalPublicacao';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { useToast } from '../context/ToastContext';
@@ -20,7 +21,7 @@ const Button = ({ children, variant, size, className, ...props }) => (
 
 const Processos = () => {
     const [processos, setProcessos] = useState([]);
-    const [editingProcess, setEditingProcess] = useState(null);
+    // const [editingProcess, setEditingProcess] = useState(null); // REMOVIDO: Controle de modal não é mais necessário
     const [deletingProcessId, setDeletingProcessId] = useState(null);
     const [publishingProcess, setPublishingProcess] = useState(null);
     const [activeStatus, setActiveStatus] = useState('');
@@ -37,6 +38,7 @@ const Processos = () => {
     const [sortOrder, setSortOrder] = useState('desc');
     const api = useAxios();
     const { showToast } = useToast();
+    const navigate = useNavigate(); // ATUALIZADO: Hook para navegação programática
 
     const fetchProcessos = useCallback(async () => {
         setIsLoading(true);
@@ -99,14 +101,9 @@ const Processos = () => {
         }
     };
 
-    const handleSaveProcess = (savedData) => {
-        setEditingProcess(null);
-        fetchProcessos();
-        const isPublishedOrLater = ['Publicado', 'Em Contratação', 'Adjudicado/Homologado'].includes(savedData.situacao);
-        if (isPublishedOrLater && !savedData.numero_certame) {
-            setPublishingProcess(savedData);
-        }
-    };
+    // REMOVIDO: A lógica de salvar agora pertence à PaginaProcesso.
+    // A lista será atualizada automaticamente quando o usuário voltar para esta página.
+    // const handleSaveProcess = (savedData) => { ... };
 
     const handlePublicationSave = () => {
         setPublishingProcess(null);
@@ -118,8 +115,15 @@ const Processos = () => {
         window.open(url, '_blank');
     };
 
-    const handleEdit = (processo) => setEditingProcess(processo);
-    const handleCreate = () => setEditingProcess({});
+    // ATUALIZADO: Navega para a página de edição
+    const handleEdit = (processo) => {
+        navigate(`/processos/editar/${processo.id}`);
+    };
+
+    // ATUALIZADO: Navega para a página de criação
+    const handleCreate = () => {
+        navigate('/processos/novo');
+    };
 
     const exportToCSV = () => {
         showToast('Funcionalidade em desenvolvimento!', 'info');
@@ -133,9 +137,9 @@ const Processos = () => {
     const hasActiveFilters = useMemo(() => {
         return Object.values(filters).some(v => v !== '') || activeStatus !== '' || sortBy !== 'data_processo' || sortOrder !== 'desc';
     }, [filters, activeStatus, sortBy, sortOrder]);
-
-    // --- CORREÇÃO AQUI: Declaração da variável isEditing ---
-    const isEditing = editingProcess && editingProcess.id;
+    
+    // REMOVIDO: Não é mais necessário
+    // const isEditing = editingProcess && editingProcess.id;
 
     return (
         <div className="space-y-4">
@@ -143,7 +147,9 @@ const Processos = () => {
                 <title>Minhas Licitações</title>
             </Helmet>
 
-            {editingProcess && <ModalProcesso closeModal={() => setEditingProcess(null)} onSave={handleSaveProcess} refreshProcessos={fetchProcessos} initialData={isEditing ? editingProcess : {}} />}
+            {/* REMOVIDO: A PaginaProcesso não é mais um modal renderizado aqui */}
+            {/* {editingProcess && <PaginaProcesso ... />} */}
+
             {publishingProcess && <ModalPublicacao processo={publishingProcess} closeModal={() => setPublishingProcess(null)} onPublished={handlePublicationSave} />}
             {deletingProcessId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={() => setDeletingProcessId(null)} />}
 

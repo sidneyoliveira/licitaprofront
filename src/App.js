@@ -14,12 +14,13 @@ import Register from './pages/Register';
 // Páginas Privadas
 import Inicio from './pages/Inicio';
 import Processos from './pages/Processos';
-import Entidades from './pages/Entidades'; // <-- ALTERADO de Cadastros para Entidades
+import Entidades from './pages/Entidades'; 
 import Fornecedores from './pages/Fornecedores';
 import Usuarios from './pages/Usuarios';
 import Notificacoes from './pages/Notificacoes';
 import Perfil from './pages/Perfil';
 import Configuracoes from './pages/Configuracoes';
+import PaginaProcesso from './pages/PaginaProcesso';
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
                         <Route path="/notificacoes" element={<Notificacoes />} />
                         <Route path="/perfil" element={<Perfil />} />
                         <Route path="/configuracoes" element={<Configuracoes />} />
+                        <Route path="/processos/novo" element={<PaginaProcesso />} />
+                        <Route path="/processos/editar/:id" element={<PaginaProcesso />} />
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </Layout>

@@ -86,6 +86,16 @@ const ItemList = ({ items, onEdit, onDelete, onMoveUp, onMoveDown }) => {
     );
 };
 
+  // --- DICIONÁRIO E FUNÇÃO DE ESTILO PARA A TAG DO CERTAME ---
+  const modalidadeMap = {
+    'Pregão Eletrônico': { sigla: 'PE', color: 'purple' },
+    'Concorrência Eletrônica': { sigla: 'CE', color: 'teal' },
+    'Dispensa Eletrônica': { sigla: 'DE', color: 'indigo' },
+    'Adesão a Registro de Preços': { sigla: 'ARP', color: 'pink' },
+    'Credenciamento': { sigla: 'CR', color: 'amber' },
+    'Inexigibilidade Eletrônica': { sigla: 'IE', color: 'cyan' },
+  };
+
 // --- Modal principal ---
 const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const isEditing = initialData && initialData.id;
@@ -305,11 +315,15 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
     const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-white";
     const labelStyle = "text-xs font-medium text-gray-600 ";
 
+    const anoCertame = initialData.numero_certame?.split('/')[1] || new Date().getFullYear();
+    const numeroCertame = initialData.numero_certame?.split('/')[0];
+    const siglaModalidade = modalidadeMap[initialData.modalidade]?.sigla || '';
+
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col shadow-2xl">
                 <header className="flex items-center justify-between p-4 border-b">
-                    <h2 className="text-lg font-bold">{isEditing ? `Editar Processo ${initialData.numero_processo}` : 'Criar Novo Processo'}</h2>
+                    <h2 className="text-lg font-bold">{isEditing ? `Editar Processo: Nº ${numeroCertame}/${anoCertame}-${siglaModalidade}` : 'Criar Novo Processo'}</h2>
                     <button onClick={closeModal}><XMarkIcon className="w-6 h-6"/></button>
                 </header>
 
@@ -536,23 +550,7 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                                 
                                     </FormSection>
 
-                                    {/* ========== BOTÕES ========== */}
-                                    <div className="flex justify-end gap-4 pt-2 border-t border-gray-200">
-                                    <button
-                                        type="button"
-                                        onClick={closeModal}
-                                        className="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors"
-                                    >
-                                        {isLoading ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Salvar e continuar')}
-                                    </button>
-                                    </div>
+                                    
                                 </form>
                                 )}
 
@@ -748,9 +746,24 @@ const ModalProcesso = ({ closeModal, refreshProcessos, initialData }) => {
                     </AnimatePresence>
                 </div>
 
-                <div className="p-4 border-t flex justify-end gap-2">
-                    <button onClick={closeModal} className="py-2 px-4 rounded-lg">Fechar</button>
-                </div>
+                {/* ========== BOTÕES ========== */}
+                                    <div className="flex justify-end gap-4 px-6 py-4 border-t border-gray-200">
+                                    <button
+                                        type="button"
+                                        onClick={closeModal}
+                                        className="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-50 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        onClick={handleSaveDadosGerais}
+                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors"
+                                    >
+                                        {isLoading ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Salvar e continuar')}
+                                    </button>
+                                    </div>
             </motion.div>
         </div>
     );

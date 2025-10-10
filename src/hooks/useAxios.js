@@ -18,9 +18,7 @@ const useAxios = () => {
         });
 
         instance.interceptors.request.use(async req => {
-            // --- CORREÇÃO AQUI ---
-            // 1. Adicionar verificação: se não houver token, envia o pedido sem autenticação.
-            //    O backend irá então rejeitá-lo com um erro 401, que é o comportamento esperado.
+
             if (!authTokens) {
                 return req;
             }
@@ -28,11 +26,12 @@ const useAxios = () => {
             const user = jwtDecode(authTokens.access);
             const isExpired = Date.now() >= user.exp * 1000;
 
+
             if (!isExpired) return req;
 
             try {
                 const response = await axios.post(`${baseURL}token/refresh/`, {
-                    refresh: authTokens.refresh
+                    refresh: authTokens?.refresh
                 });
 
                 localStorage.setItem('authTokens', JSON.stringify(response.data));
@@ -43,7 +42,7 @@ const useAxios = () => {
                 return req;
 
             } catch (error) {
-                // Se a renovação falhar, faz logout e rejeita a promessa
+
                 logoutUser();
                 return Promise.reject(error);
             }
