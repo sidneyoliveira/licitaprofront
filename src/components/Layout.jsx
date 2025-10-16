@@ -64,7 +64,7 @@ const Layout = ({ children }) => {
         >
           {children}
         </motion.main>
-        <Rodape toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        {/* <Rodape toggleSidebar={() => setSidebarOpen(!sidebarOpen)} /> */}
       </div>
     </div>
   );
