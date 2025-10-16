@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom'; // ATUALIZADO: Importado para navegação
+import { useNavigate } from 'react-router-dom';
 import useAxios from '../hooks/useAxios';
 import ProcessoCard from '../components/ProcessoCard';
-// import PaginaProcesso from './PaginaProcesso'; // REMOVIDO: Não é mais renderizado aqui
 import ModalPublicacao from '../components/ModalPublicacao';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { useToast } from '../context/ToastContext';
@@ -20,8 +19,8 @@ const Button = ({ children, variant, size, className, ...props }) => (
 
 
 const Processos = () => {
+    
     const [processos, setProcessos] = useState([]);
-    // const [editingProcess, setEditingProcess] = useState(null); // REMOVIDO: Controle de modal não é mais necessário
     const [deletingProcessId, setDeletingProcessId] = useState(null);
     const [publishingProcess, setPublishingProcess] = useState(null);
     const [activeStatus, setActiveStatus] = useState('');
@@ -38,7 +37,7 @@ const Processos = () => {
     const [sortOrder, setSortOrder] = useState('desc');
     const api = useAxios();
     const { showToast } = useToast();
-    const navigate = useNavigate(); // ATUALIZADO: Hook para navegação programática
+    const navigate = useNavigate();
 
     const fetchProcessos = useCallback(async () => {
         setIsLoading(true);
@@ -101,10 +100,6 @@ const Processos = () => {
         }
     };
 
-    // REMOVIDO: A lógica de salvar agora pertence à PaginaProcesso.
-    // A lista será atualizada automaticamente quando o usuário voltar para esta página.
-    // const handleSaveProcess = (savedData) => { ... };
-
     const handlePublicationSave = () => {
         setPublishingProcess(null);
         fetchProcessos();
@@ -115,12 +110,10 @@ const Processos = () => {
         window.open(url, '_blank');
     };
 
-    // ATUALIZADO: Navega para a página de edição
     const handleEdit = (processo) => {
         navigate(`/processos/editar/${processo.id}`);
     };
 
-    // ATUALIZADO: Navega para a página de criação
     const handleCreate = () => {
         navigate('/processos/novo');
     };
@@ -131,24 +124,18 @@ const Processos = () => {
 
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
 
-    const inputStyle = "w-full px-3 py-1 text-xs border rounded-lg bg-white";
-    const labelStyle = "text-xs font-medium text-gray-600 ";
+    const inputStyle = "w-full px-3 py-2 text-xs border rounded-lg bg-white dark:bg-dark-bg-secondary border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent";
+    const labelStyle = "text-xs font-medium text-gray-600 dark:text-gray-300 mb-1";
     
     const hasActiveFilters = useMemo(() => {
         return Object.values(filters).some(v => v !== '') || activeStatus !== '' || sortBy !== 'data_processo' || sortOrder !== 'desc';
     }, [filters, activeStatus, sortBy, sortOrder]);
-    
-    // REMOVIDO: Não é mais necessário
-    // const isEditing = editingProcess && editingProcess.id;
-
+  
     return (
         <div className="space-y-4">
             <Helmet>
                 <title>Minhas Licitações</title>
             </Helmet>
-
-            {/* REMOVIDO: A PaginaProcesso não é mais um modal renderizado aqui */}
-            {/* {editingProcess && <PaginaProcesso ... />} */}
 
             {publishingProcess && <ModalPublicacao processo={publishingProcess} closeModal={() => setPublishingProcess(null)} onPublished={handlePublicationSave} />}
             {deletingProcessId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={() => setDeletingProcessId(null)} />}
@@ -170,7 +157,7 @@ const Processos = () => {
 
                 <div className="space-y-4">
                     <div className="relative">
-                        <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Pesquisar por número, objeto, entidade..." className="w-full pl-10 pr-4 py-2 border rounded-lg" />
+                        <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Pesquisar por número, objeto, entidade..." className={`${inputStyle} w-full pl-10 pr-4 py-3 border rounded-lg`} />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
                     </div>
                     <div className="grid md:grid-cols-[1fr_1fr_2fr_2fr_2fr] gap-2">

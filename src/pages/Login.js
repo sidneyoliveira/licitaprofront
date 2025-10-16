@@ -1,28 +1,25 @@
 import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { useToast } from '../context/ToastContext'; // Importe o useToast
+import { useToast } from '../context/ToastContext';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { loginUser } = useContext(AuthContext);
-  const { showToast } = useToast(); // Use o hook de notificações
+  const { showToast } = useToast(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       await loginUser(username, password);
-      // O redirecionamento é tratado dentro do loginUser em caso de sucesso
+
     } catch (error) {
-      // Apanha o erro lançado pelo loginUser e exibe a sua mensagem
-      // A mensagem padrão do Django para login falhado é "No active account found with the given credentials"
-      // Podemos traduzi-la para algo mais amigável.
+
       let friendlyMessage = 'Usuário ou senha inválidos. Por favor, verifique os seus dados.';
       
-      // Se a mensagem de erro original for sobre rede, usamos outra mensagem.
       if (error.message.includes('Network Error') || error.message.includes('conectar')) {
           friendlyMessage = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
       }

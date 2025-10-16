@@ -3,7 +3,6 @@
 import React from 'react';
 import { BuildingLibraryIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 
-// Componente para os itens de informação dentro do card
 const InfoPill = ({ label, value }) => (
   <div>
     <p className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">{label}</p>
@@ -13,7 +12,6 @@ const InfoPill = ({ label, value }) => (
 
 const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
 
-  // Função para determinar o estilo da "pílula" de situação
   const getSituacaoStyle = (situacao) => {
     const baseStyle = "px-2 py-1 text-xs font-semibold rounded-md border inline-block uppercase";
     switch (situacao) {
@@ -58,7 +56,6 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
     return colorClasses[color];
   };
   
-  // Lógica para formatar o número do certame
   const anoCertame = processo.numero_certame?.split('/')[1] || new Date().getFullYear();
   const numeroCertame = processo.numero_certame?.split('/')[0];
   const siglaModalidade = modalidadeMap[processo.modalidade]?.sigla || '';
@@ -78,8 +75,8 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
             {processo.situacao}
           </span>
         </div>
-        
-        {/* --- NÚMERO DO CERTAME MOVIDO E ESTILIZADO --- */}
+
+
         <div className="flex justify-between items-center">
             <h3 className="font-bold text-base text-light-text-primary dark:text-dark-text-primary">
               Processo Nº {processo.numero_processo}
@@ -106,9 +103,9 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
           <button onClick={() => onView(processo.id)} className="p-2 rounded-md text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50">
             <EyeIcon className="w-4 h-4" />
           </button>
-          <button onClick={() => onEdit(processo)} className="p-2 rounded-md text-yellow-600 hover:bg-yellow-100 dark:hover:bg-yellow-900/50">
+          {/* <button onClick={() => onEdit(processo)} className="p-2 rounded-md text-yellow-600 hover:bg-yellow-100 dark:hover:bg-yellow-900/50">
             <PencilIcon className="w-4 h-4" />
-          </button>
+          </button> */}
           <button onClick={() => onDelete(processo.id)} className="p-2 rounded-md text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50">
             <TrashIcon className="w-4 h-4" />
           </button>

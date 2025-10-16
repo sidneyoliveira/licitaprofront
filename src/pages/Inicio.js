@@ -69,7 +69,7 @@ const Inicio = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="space-y-6"
+            className="space-y-3"
         >
             {/* Saudação no estilo do Header */}
             <div className="flex items-center justify-between bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-lg p-4 shadow-sm">
@@ -84,7 +84,7 @@ const Inicio = () => {
             </div>
 
             {/* Cards de estatísticas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card>
                     <StatItem title="Total de Processos" value={stats.total_processos} />
                 </Card>

@@ -30,7 +30,6 @@ export const ThemeProvider = ({ children }) => {
         setIsDark(prevIsDark => !prevIsDark);
     }, []);
 
-    // Otimização para evitar re-renderizações desnecessárias
     const value = useMemo(() => ({ isDark, toggleTheme }), [isDark, toggleTheme]);
 
     return (

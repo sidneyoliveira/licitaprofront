@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import Rodape from './Rodape';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -63,6 +64,7 @@ const Layout = ({ children }) => {
         >
           {children}
         </motion.main>
+        <Rodape toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       </div>
     </div>
   );

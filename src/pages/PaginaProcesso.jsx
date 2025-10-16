@@ -1,10 +1,10 @@
 // frontend/src/pages/PaginaProcesso.jsx
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // <-- ADICIONADO para routing
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom'; 
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
-import { XMarkIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { TrashIcon, PlusIcon, PencilIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const formatDateTimeForInput = (isoString) => {
@@ -17,13 +17,12 @@ const formatDateTimeForInput = (isoString) => {
     }
 };
 
-// --- pequenos componentes (sem alterações) ---
 const TabButton = ({ label, isActive, onClick, isDisabled }) => (
     <button
         type="button"
         onClick={onClick}
         disabled={isDisabled}
-        className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors relative ${isActive ? 'text-accent-blue' : isDisabled ? 'text-gray-400/50 cursor-not-allowed' : 'text-light-text-secondary hover:text-light-text-primary'}`}
+        className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors relative ${isActive ? 'text-accent-blue' : isDisabled ? 'text-gray-200 cursor-not-allowed' : 'text-light-text-secondary hover:text-light-text-primary dark:text-dark-text-secondary dark:hover:text-dark-text-primary'} `}
     >
         {label}
         {isActive && <motion.div layoutId="activeTabIndicator" className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-accent-blue" />}
@@ -31,7 +30,7 @@ const TabButton = ({ label, isActive, onClick, isDisabled }) => (
 );
 
 const FormSection = ({ title, children }) => (
-    <div className="space-y-4">
+    <div className="space-y-1">
         <h3 className="text-sm font-bold">{title}</h3>
         {children}
     </div>
@@ -43,7 +42,7 @@ const ItemList = ({ items, onEdit, onDelete, onMoveUp, onMoveDown }) => {
 
     return (
         <div className="space-y-2">
-            <div className="grid grid-cols-12 gap-2 text-xs font-bold px-2 py-1">
+            <div className="grid grid-cols-12 gap-2 text-xs font-bold px-3 py-3 border rounded-lg">
                 <div className="col-span-1">#</div>
                 <div className="col-span-6">Descrição</div>
                 <div className="col-span-2 text-center">Unidade</div>
@@ -52,14 +51,14 @@ const ItemList = ({ items, onEdit, onDelete, onMoveUp, onMoveDown }) => {
             </div>
             {(items || []).map((item, index) => (
                 <div key={item.id}>
-                    <div className="grid grid-cols-12 gap-2 items-center p-2 border rounded-lg bg-light-bg-secondary dark:bg-dark-bg-secondary">
+                    <div className="grid grid-cols-12 gap-2 items-center p-2 bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border">
                         <div className="col-span-1 text-sm font-semibold">{index + 1}</div>
                         <div className="col-span-6 text-sm font-medium cursor-pointer  hover:text-accent-blue" onClick={() => toggleExpansion(item.id)}>{item.descricao}</div>
                         <div className="col-span-2 text-sm text-center">{item.unidade}</div>
                         <div className="col-span-2 text-sm text-center">{parseFloat(item.quantidade).toFixed(2)}</div>
                         <div className="col-span-1 text-right flex items-center justify-end gap-1">
-                            <button type="button" onClick={() => onMoveUp(index)} disabled={index === 0} className="p-1 disabled:opacity-30"><ArrowUpIcon className="w-4 h-4"/></button>
-                            <button type="button" onClick={() => onMoveDown(index)} disabled={index === items.length - 1} className="p-1 disabled:opacity-30"><ArrowDownIcon className="w-4 h-4"/></button>
+                            {/* <button type="button" onClick={() => onMoveUp(index)} disabled={index === 0} className="p-1 disabled:opacity-30"><ArrowUpIcon className="w-4 h-4"/></button>
+                            <button type="button" onClick={() => onMoveDown(index)} disabled={index === items.length - 1} className="p-1 disabled:opacity-30"><ArrowDownIcon className="w-4 h-4"/></button> */}
                             <button type="button" onClick={() => onEdit(item)} className="p-1 text-yellow-600"><PencilIcon className="w-4 h-4"/></button>
                             <button type="button" onClick={() => onDelete(item.id)} className="p-1 text-red-500"><TrashIcon className="w-4 h-4"/></button>
                         </div>
@@ -79,7 +78,7 @@ const ItemList = ({ items, onEdit, onDelete, onMoveUp, onMoveDown }) => {
 };
 
 
-// --- DICIONÁRIO E FUNÇÃO DE ESTILO PARA A TAG DO CERTAME (sem alterações) ---
+// --- DICIONÁRIO E FUNÇÃO DE ESTILO PARA A TAG DO CERTAME  ---
 const modalidadeMap = {
     'Pregão Eletrônico': { sigla: 'PE', color: 'purple' },
     'Concorrência Eletrônica': { sigla: 'CE', color: 'teal' },
@@ -100,7 +99,6 @@ const PaginaProcesso = () => {
     const { showToast } = useToast();
     const api = useAxios();
 
-    // Estados (sem alterações)
     const [formData, setFormData] = useState({
         objeto: '', numero_processo: '', data_processo:'', modalidade: '', 
         classificacao: '', tipo_organizacao: '', registro_precos: false, orgao: '', 
@@ -153,7 +151,6 @@ const PaginaProcesso = () => {
         }
     }, [isEditing, processoId, fetchProcessoData, fetchAuxiliares]);
 
-    // Lógica para carregar órgãos quando a entidade muda (sem alterações)
     useEffect(() => {
         if (formData.entidade) {
             api.get(`/orgaos/?entidade=${formData.entidade}`).then(res => setOrgaos(res.data)).catch(() => setOrgaos([]));
@@ -189,8 +186,8 @@ const PaginaProcesso = () => {
             const updatedData = res.data;
             setFormData(prev => ({ ...prev, ...updatedData, data_abertura: formatDateTimeForInput(updatedData.data_abertura) }));
             if(!isEditing) {
-                setProcessoId(updatedData.id); // Garante que o ID está setado para as outras abas
-                setActiveTab('itens'); // Muda para a aba de itens
+                setProcessoId(updatedData.id); 
+                setActiveTab('itens'); 
             }
 
         } catch (err) {
@@ -200,7 +197,6 @@ const PaginaProcesso = () => {
         }
     };
     
-    // Todas as outras funções de manipulação (handleAddItem, handleDeleteItem, etc.) permanecem exatamente as mesmas
     const fetchDadosDoProcesso = useCallback(async (id) => {
         if (!id) return;
         try {
@@ -290,7 +286,6 @@ const PaginaProcesso = () => {
         return (f.razao_social || '').toLowerCase().includes(q) || (f.cnpj || '').toLowerCase().includes(q);
     });
 
-    // Constantes (sem alterações)
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
     const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
     const organizacoes = ['Lote', 'Item'];
@@ -303,14 +298,13 @@ const PaginaProcesso = () => {
     const siglaModalidade = modalidadeMap[formData.modalidade]?.sigla || '';
     
     return (
-        // O container principal agora é um div de página, não um modal 'fixed'
+
         <div>
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg border border-light-border dark:border-dark-border shadow-sm hover:shadow-md transition-shadow">
-                <header className="flex items-center justify-between p-4 border-b  bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border">
+            <div className="mb-28 rounded-lg border border-light-border dark:border-dark-border bg-light-bg-secondary dark:bg-dark-bg-secondary">
+                <header className="flex items-center justify-between p-4 rounded-lg bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border">
                     <h1 className="text-xl font-bold">
                         {isEditing ? `Editar Processo: Nº ${numeroCertame}/${anoCertame}-${siglaModalidade}` : 'Criar Novo Processo'}
                     </h1>
-                    {/* O botão de fechar modal foi removido, a navegação é feita pelos botões de ação */}
                 </header>
 
                 <div className="flex-shrink-0 border-b  bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border ">
@@ -324,12 +318,10 @@ const PaginaProcesso = () => {
                 <div className="p-5 flex-grow">
                     <AnimatePresence mode="wait">
                         <motion.div key={activeTab} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                            {/* O CONTEÚDO DAS ABAS (DADOS GERAIS, ITENS, FORNECEDORES) PERMANECE O MESMO */}
                             
                             {activeTab === 'dadosGerais' && (
                                 <form onSubmit={handleSaveDadosGerais} className="space-y-6">
-                                    {/* ... todo o seu JSX para o formulário de Dados Gerais cola aqui ... */}
-                                    {/* (Colei a seção abaixo para manter o código completo) */}
+
                                     <FormSection>
                                     <div className="grid md:grid-cols-3 gap-6">
                                         <div className="md:col-span-2">
@@ -421,11 +413,11 @@ const PaginaProcesso = () => {
                                 </form>
                             )}
                             {activeTab === 'itens' && (
-                                <div className="space-y-4">
+                                <div className="space-y-2">
 
                                     <FormSection title="Adicionar Item">
-                                        <form onSubmit={handleAddItem} className="grid grid-cols-1 sm:grid-cols-[1fr_2fr_2fr_2fr_1fr] gap-2 items-end p-2 border rounded-lg">
-                                            <div className="sm:col-span-2">
+                                        <form onSubmit={handleAddItem} className={`${inputStyle} grid grid-cols-1 sm:grid-cols-[1fr_2fr_2fr_2fr_1fr] gap-2 items-end p-2 border rounded-lg`}>
+                                            <div className="sm:col-span-2 ">
                                                 <label className={labelStyle}>Descrição *</label>
                                                 <input name="descricao" value={itemFormData.descricao} onChange={handleItemFormChange} className={inputStyle} required />
                                             </div>
@@ -488,8 +480,7 @@ const PaginaProcesso = () => {
                             )}
                             {activeTab === 'fornecedores' && (
                                 <div className="space-y-4">
-                                    {/* ... todo o seu JSX para a aba de Fornecedores cola aqui ... */}
-                                    {/* (Colei a seção abaixo para manter o código completo) */}
+                                    
                                     <FormSection title="Buscar Fornecedor (Catálogo)">
                                         <div className="flex gap-2 items-end">
                                             <div className="flex-grow">
@@ -552,13 +543,13 @@ const PaginaProcesso = () => {
                 <div className="flex justify-end gap-4 px-6 py-4 border-t bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border">
                     <button
                         type="button"
-                        onClick={() => navigate(-1)} // <-- Ação de "cancelar" agora volta para a página anterior
-                        className="px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100 transition-colors"
+                        onClick={() => navigate(-1)} 
+                        className="px-4 py-2 rounded-lg border  bg-light-bg-secondary houver:bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:hover:bg-dark-100 dark:border-dark-border transition-colors"
                     >
                         {isEditing ? 'Voltar' : 'Cancelar'}
                     </button>
                     <button
-                        type="button" // O form tem seu próprio submit, este botão aciona a função de salvar
+                        type="button" 
                         disabled={isLoading}
                         onClick={handleSaveDadosGerais}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors disabled:bg-blue-400"

@@ -1,12 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Sora:wght@100..800&display=swap');
-
 /* frontend/src/index.css */
-
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -18,4 +10,41 @@ body {
 
 .dark body {
   @apply bg-gradient-to-br from-[#0A0E1E] via-[#100b21] to-[#0A0E1E] text-dark-text-primary;
+}
+
+/* ==== TEMA CLARO ==== */
+:root {
+  --scroll-bg: #f3f3f3;
+  --scroll-thumb: rgba(65, 65, 65, 0.377);
+  --scroll-thumb-hover: rgba(119, 119, 119, 0.116);
+}
+
+/* ==== TEMA ESCURO ==== */
+[data-theme='dark'] {
+  --scroll-bg: #979797;
+  --scroll-thumb: rgba(255, 255, 255, 0.2);
+  --scroll-thumb-hover: rgba(255, 255, 255, 0.35);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scroll-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-bg);
 }
