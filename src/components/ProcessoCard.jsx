@@ -100,12 +100,13 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView }) => {
         <InfoPill label="Abertura" value={processo.data_abertura ? new Date(processo.data_abertura).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'} />
         <InfoPill label="Reg. Preços" value={processo.registro_precos ? 'Sim' : 'Não'} />
         <div className="flex items-center justify-end gap-2">
-          <button onClick={() => onView(processo.id)} className="p-2 rounded-md text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50">
+          {/* <button onClick={() => onView(processo.id)} className="p-2 rounded-md text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50">
+            <EyeIcon className="w-4 h-4" />
+          </button> */}
+          <button onClick={() => onEdit(processo)} className="p-2 rounded-md text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50">
+            {/* <PencilIcon className="w-4 h-4" /> */}
             <EyeIcon className="w-4 h-4" />
           </button>
-          {/* <button onClick={() => onEdit(processo)} className="p-2 rounded-md text-yellow-600 hover:bg-yellow-100 dark:hover:bg-yellow-900/50">
-            <PencilIcon className="w-4 h-4" />
-          </button> */}
           <button onClick={() => onDelete(processo.id)} className="p-2 rounded-md text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50">
             <TrashIcon className="w-4 h-4" />
           </button>
