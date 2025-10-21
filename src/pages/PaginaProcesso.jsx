@@ -406,7 +406,7 @@ export default function PaginaProcesso() {
             showToast("Nenhum item selecionado para exportar.", "info");
             return;
         }
-
+        
         const itemsToExport = itens.filter(item => selectedItems.has(item.id));
         
         // Cabeçalho do CSV
