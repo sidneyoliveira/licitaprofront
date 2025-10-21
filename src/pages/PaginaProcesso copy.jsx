@@ -1,7 +1,8 @@
-import React,{ useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrashIcon, PlusIcon, PencilIcon, CalendarDaysIcon, ClockIcon, DocumentTextIcon, ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon, BuildingOffice2Icon, CheckCircleIcon, NoSymbolIcon, ArchiveBoxIcon, ExclamationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PlusIcon, PencilIcon } from '@heroicons/react/24/solid';
+import { DocumentTextIcon, ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon, BuildingOffice2Icon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 
@@ -16,98 +17,35 @@ const formatDateTimeForInput = (isoString) => {
     } catch { return ''; }
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return 'Não informado';
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    return new Date(dateString + 'T00:00:00-03:00').toLocaleDateString('pt-BR', options);
-};
-
-const formatDateTime = (isoString) => {
-    if (!isoString) return 'Não informada';
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(isoString).toLocaleDateString('pt-BR', options).replace(',', ' às');
-};
-
-const formatCurrency = (value) => {
-    if (value === null || value === undefined) return 'Não informado';
-    return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
-
-
 const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento', 'Inexigibilidade Eletrônica'];
 const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
 const organizacoes = ['Lote', 'Item'];
 const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
 
 // Estilos Reutilizáveis
-const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-md bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border focus:ring-1 focus:ring-accent-blue focus:border-accent-blue";
-const labelStyle = "text-xs font-medium text-slate-500 dark:text-dark-text-secondary";
+const inputStyle = "w-full px-3 py-1.5 text-sm border rounded-lg bg-light-bg-secondary border-light-border dark:bg-dark-bg-secondary dark:border-dark-border focus:ring-1 focus:ring-accent-blue focus:border-accent-blue";
+const labelStyle = "text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary";
 
-// --- NOVOS COMPONENTES DE UI ---
-const DetailItem = ({ label, value, children }) => (
-    <div>
-        <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
-        <div className="text-sm font-semibold text-slate-800 dark:text-dark-text-primary flex items-center gap-2 mt-1">
+// --- MODULAR UI COMPONENTS ---
+
+const FormSection = ({ title, children }) => (
+    <fieldset className="border border-neutral-300 dark:border-dark-border px-4 py-2 rounded-lg">
+        <legend className="px-2 text-sm font-semibold text-accent-blue">{title}</legend>
+        <div className="space-y-6">
             {children}
-            <span>{value || 'Não informado'}</span>
         </div>
-    </div>
+    </fieldset>
 );
 
-const StatusTag = ({ status }) => {
-    const statusStyles = {
-        'Publicado': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-        'Adjudicado/Homologado': 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-        'Em Pesquisa': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-        'Aberto': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-        'Revogado/Cancelado': 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-        'default': 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-    };
-    const style = statusStyles[status] || statusStyles.default;
-    return (
-        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${style}`}>
-            <ArrowPathIcon className="w-4 h-4" />
-            {status}
-        </div>
-    );
-};
-
-const ActionButton = ({ text, onClick, variant = 'primary', icon: Icon, disabled = false }) => {
-    const baseStyle = "flex items-center justify-center gap-2 px-6 py-2.5 rounded-md font-semibold text-sm transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed";
-    const styles = {
-        primary: 'bg-orange-500 text-white hover:bg-orange-600 focus:ring-2 focus:ring-orange-400',
-        secondary: 'bg-teal-500 text-white hover:bg-teal-600 focus:ring-2 focus:ring-teal-400',
-        outlined: 'bg-white dark:bg-dark-bg-secondary border border-slate-300 dark:border-dark-border text-slate-700 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary',
-    };
-    return (
-        <button onClick={onClick} className={`${baseStyle} ${styles[variant]}`} disabled={disabled}>
-            {Icon && <Icon className="w-5 h-5" />}
-            <span>{text}</span>
-        </button>
-    );
-};
-
-
 const TabButton = ({ label, isActive, onClick, isDisabled }) => (
-    <button
-        type="button"
-        onClick={onClick}
-        disabled={isDisabled}
-        className={`px-1 py-4 text-sm font-semibold border-b-2 transition-colors relative
-        ${isActive
-            ? 'text-teal-500 border-teal-500'
-            : isDisabled
-            ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
-            : 'text-slate-500 hover:text-slate-800 dark:text-dark-text-secondary dark:hover:text-dark-text-primary border-transparent'
-        }`}
-    >
+    <button type="button" onClick={onClick} disabled={isDisabled} className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors relative ${isActive ? 'text-accent-blue border-accent-blue' : isDisabled ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed border-transparent' : 'text-light-text-secondary hover:text-light-text-primary dark:text-dark-text-secondary dark:hover:text-dark-text-primary border-transparent'}`}>
         {label}
+        {isActive && <motion.div layoutId="activeTabIndicator" className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-accent-blue" />}
     </button>
 );
 
-
-// --- DEMAIS COMPONENTES (MODAIS, TABELAS, ETC) ---
 const ItemModal = ({ isOpen, onClose, item, onSave }) => {
+    // ... (código do modal inalterado)
     const [formData, setFormData] = useState({ descricao: '', especificacao: '', unidade: '', quantidade: 1 });
     useEffect(() => { if (isOpen) { setFormData(item || { descricao: '', especificacao: '', unidade: '', quantidade: 1 }); } }, [item, isOpen]);
     if (!isOpen) return null;
@@ -125,7 +63,7 @@ const ItemModal = ({ isOpen, onClose, item, onSave }) => {
                         <div><label className={labelStyle}>Unidade *</label><input name="unidade" value={formData.unidade} onChange={handleChange} className={inputStyle} required /></div>
                         <div><label className={labelStyle}>Quantidade *</label><input name="quantidade" type="number" step="0.01" value={formData.quantidade} onChange={handleChange} className={inputStyle} required /></div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-4"><button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-light-border dark:border-dark-border text-sm font-medium hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary">Cancelar</button><button type="submit" className="px-5 py-2 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600">Salvar</button></div>
+                    <div className="flex justify-end gap-3 pt-4"><button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-light-border dark:border-dark-border text-sm font-medium hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary">Cancelar</button><button type="submit" className="px-5 py-2 bg-accent-blue text-white rounded-lg text-sm font-medium hover:bg-blue-700">Salvar</button></div>
                 </form>
             </motion.div>
         </div>
@@ -133,6 +71,7 @@ const ItemModal = ({ isOpen, onClose, item, onSave }) => {
 };
 
 const FornecedorModal = ({ isOpen, onClose, onLink, onSaveNew, catalogo }) => {
+    // ... (código do modal inalterado)
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [newFornForm, setNewFornForm] = useState({ razao_social: '', cnpj: '', email: '', telefone: '' });
@@ -165,10 +104,10 @@ const FornecedorModal = ({ isOpen, onClose, onLink, onSaveNew, catalogo }) => {
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} className="bg-light-bg-secondary dark:bg-dark-bg-secondary p-6 rounded-xl shadow-2xl w-full max-w-2xl border border-light-border dark:border-dark-border">
                 <div className="flex justify-between items-center mb-5">
                     <h3 className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary">{isCreating ? "Cadastrar Novo Fornecedor" : "Adicionar Fornecedor"}</h3>
-                    <button type="button" onClick={() => setIsCreating(!isCreating)} className="text-sm text-teal-500 hover:underline">{isCreating ? "Buscar no Catálogo" : "Novo Fornecedor"}</button>
+                    <button type="button" onClick={() => setIsCreating(!isCreating)} className="text-sm text-accent-blue hover:underline">{isCreating ? "Buscar no Catálogo" : "Novo Fornecedor"}</button>
                 </div>
                 {isCreating ? (
-                    <form onSubmit={handleSaveNewSubmit} className="space-y-4">
+                    <form onSubmit={handleSaveNewSubmit} className="space-y-2">
                         <div><label className={labelStyle}>Razão Social *</label><input name="razao_social" value={newFornForm.razao_social} onChange={handleNewFornChange} className={inputStyle} required /></div>
                         <div><label className={labelStyle}>CNPJ *</label><input name="cnpj" value={newFornForm.cnpj} onChange={handleNewFornChange} className={inputStyle} required /></div>
                         <div><label className={labelStyle}>Email</label><input name="email" type="email" value={newFornForm.email} onChange={handleNewFornChange} className={inputStyle} /></div>
@@ -176,13 +115,13 @@ const FornecedorModal = ({ isOpen, onClose, onLink, onSaveNew, catalogo }) => {
                         <div className="flex justify-end gap-3 pt-4"><button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-light-border dark:border-dark-border text-sm font-medium hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary">Cancelar</button><button type="submit" disabled={isSaving} className="px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:bg-green-400">{isSaving ? 'Salvando...' : 'Salvar e Vincular'}</button></div>
                     </form>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                         <input type="text" placeholder="Buscar por CNPJ ou Razão Social..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={inputStyle} />
                         <div className="max-h-64 overflow-y-auto border rounded-lg divide-y divide-light-border dark:divide-dark-border">
                             {filteredCatalogo.map(f => (
                                 <div key={f.id} className="p-3 flex justify-between items-center hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary">
                                     <div><p className="font-semibold text-light-text-primary dark:text-dark-text-primary">{f.razao_social}</p><p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">{f.cnpj}</p></div>
-                                    <button onClick={() => onLink(f.id)} className="px-4 py-2 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600">Vincular</button>
+                                    <button onClick={() => onLink(f.id)} className="px-4 py-2 bg-accent-blue text-white rounded-lg text-sm font-medium hover:bg-blue-700">Vincular</button>
                                 </div>
                             ))}
                             {filteredCatalogo.length === 0 && <p className="p-4 text-center text-light-text-secondary dark:text-dark-text-secondary">Nenhum fornecedor encontrado.</p>}
@@ -194,6 +133,7 @@ const FornecedorModal = ({ isOpen, onClose, onLink, onSaveNew, catalogo }) => {
         </div>
     );
 };
+
 
 const ItemTable = ({ itens, onEdit, onDelete, selectedItems, onSelectAll, onSelectItem, expandedItemId, onToggleExpand }) => (
     <div className="overflow-x-auto rounded-lg border border-light-border dark:border-dark-border bg-light-bg-secondary dark:bg-dark-bg-secondary shadow-sm">
@@ -302,10 +242,11 @@ const FornecedorTable = ({ fornecedores, onRemove }) => (
 
 
 const StyledCheckbox = ({ checked, onChange, className = "" }) => {
+    // ... (código do checkbox inalterado)
     return (
         <label className={`relative inline-flex items-center justify-center cursor-pointer select-none ${className}`} aria-checked={checked} role="checkbox">
             <input type="checkbox" checked={checked} onChange={onChange} className="peer absolute inset-0 z-20 m-0 h-full w-full cursor-pointer opacity-0" />
-            <div className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-dark-border transition-colors duration-200 peer-checked:border-teal-500 peer-checked:bg-teal-500`}>
+            <div className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-light-border dark:border-dark-border transition-colors duration-200 peer-checked:border-accent-blue peer-checked:bg-accent-blue`}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={`h-3 w-3 text-white transition-opacity duration-200 ${checked ? 'opacity-100' : 'opacity-0'}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
@@ -322,11 +263,10 @@ export default function PaginaProcesso() {
     const { showToast } = useToast();
 
     // Page Control State
-    const isNewProcess = !id;
+    const isEditing = !!id;
     const [processoId, setProcessoId] = useState(id || null);
     const [activeTab, setActiveTab] = useState("dadosGerais");
     const [isLoading, setIsLoading] = useState(false);
-    const [isEditing, setIsEditing] = useState(isNewProcess);
 
     // Form and Data State
     const [formData, setFormData] = useState({ objeto: '', numero_processo: '', data_processo: '', modalidade: '', classificacao: '', tipo_organizacao: '', registro_precos: false, orgao: '', entidade: '', valor_referencia: '', numero_certame: '', data_abertura: '', situacao: 'Em Pesquisa', vigencia_meses: 12 });
@@ -336,26 +276,26 @@ export default function PaginaProcesso() {
     const [orgaos, setOrgaos] = useState([]);
     const [catalogoFornecedores, setCatalogoFornecedores] = useState([]);
 
-    const [entidadeNome, setEntidadeNome] = useState('');
-    const [orgaoNome, setOrgaoNome] = useState('');
-
     // Modal Control State
     const [isItemModalOpen, setIsItemModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [isFornecedorModalOpen, setIsFornecedorModalOpen] = useState(false);
-    
-    // ... (States de paginação e outros inalterados) ...
+
+    // Item Table State
     const [selectedItems, setSelectedItems] = useState(new Set());
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [expandedItemId, setExpandedItemId] = useState(null);
     const currentItems = itens.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const totalPages = Math.ceil(itens.length / itemsPerPage);
+
+    // Fornecedor Table State
     const [currentPageForn, setCurrentPageForn] = useState(1);
     const [itemsPerPageForn, setItemsPerPageForn] = useState(5);
     const currentFornecedores = fornecedoresDoProcesso.slice((currentPageForn - 1) * itemsPerPageForn, currentPageForn * itemsPerPageForn);
     const totalPagesForn = Math.ceil(fornecedoresDoProcesso.length / itemsPerPageForn);
 
+    // --- (Callbacks de fetch, handlers, etc. - Sem alterações na lógica) ---
     // --- DATA FETCHING ---
     const fetchDadosDoProcesso = useCallback(async (pid) => {
         if (!pid) return;
@@ -363,12 +303,10 @@ export default function PaginaProcesso() {
         try {
             const res = await api.get(`/processos/${pid}/`);
             const data = res.data;
-            setFormData({ ...data, data_abertura: formatDateTimeForInput(data.data_abertura), data_processo: data.data_processo || '' });
+            setFormData({ ...formData, ...data, data_abertura: formatDateTimeForInput(data.data_abertura), data_processo: data.data_processo || '' });
             setItens((data.itens || []).sort((a, b) => (a.ordem || 0) - (b.ordem || 0)));
             setFornecedoresDoProcesso(data.fornecedores || []);
             setProcessoId(data.id);
-            setEntidadeNome(data.entidade_nome || '');
-            setOrgaoNome(data.orgao_nome || '');
         } catch (err) {
             showToast("Erro ao carregar dados do processo.", "error");
             navigate("/processos");
@@ -385,8 +323,8 @@ export default function PaginaProcesso() {
 
     useEffect(() => {
         fetchAuxiliares();
-        if (id) { fetchDadosDoProcesso(id); }
-    }, [id, fetchDadosDoProcesso, fetchAuxiliares]);
+        if (isEditing && id) { fetchDadosDoProcesso(id); }
+    }, [id, isEditing, fetchDadosDoProcesso, fetchAuxiliares]);
     
     useEffect(() => {
         if (formData.entidade) {
@@ -394,7 +332,7 @@ export default function PaginaProcesso() {
         } else { setOrgaos([]); }
     }, [formData.entidade, api]);
 
-    // --- HANDLERS (lógica inalterada) ---
+    // --- HANDLERS ---
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         const finalValue = name === "registro_precos" ? value === "true" : (type === "checkbox" ? checked : value);
@@ -406,21 +344,18 @@ export default function PaginaProcesso() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const res = isNewProcess ? await api.post("/processos/", formData) : await api.put(`/processos/${processoId}/`, formData);
-            showToast(isNewProcess ? "Processo criado!" : "Processo atualizado!", "success");
+            const res = isEditing ? await api.put(`/processos/${processoId}/`, formData) : await api.post("/processos/", formData);
+            showToast(isEditing ? "Processo atualizado!" : "Processo criado!", "success");
             const updatedData = res.data;
-            if (isNewProcess) {
+            if (!isEditing) {
                 navigate(`/processos/editar/${updatedData.id}`, { replace: true });
                 setActiveTab("itens");
-            } else {
-                fetchDadosDoProcesso(updatedData.id);
-                setIsEditing(false); // Volta para o modo de visualização após salvar
             }
-        } catch { showToast("Erro ao salvar o processo.", "error"); } 
+            fetchDadosDoProcesso(updatedData.id);
+        } catch { showToast("Erro ao salvar o processo.", "error"); }
         finally { setIsLoading(false); }
     };
-    
-    // ... (demais handlers permanecem iguais)
+
     const handleSaveItem = async (itemData) => {
         const isUpdating = !!editingItem?.id;
         setIsItemModalOpen(false);
@@ -432,9 +367,10 @@ export default function PaginaProcesso() {
             const payload = isUpdating ? itemData : { ...itemData, processo: processoId, ordem: nextOrdem };
             await api[method](endpoint, payload);
             showToast(`Item ${isUpdating ? 'atualizado' : 'adicionado'}!`, "success");
-            fetchDadosDoProcesso(processoId); 
+            fetchDadosDoProcesso(processoId);
         } catch { showToast("Erro ao salvar o item.", "error"); }
     };
+
     const handleDeleteItem = async (itemId) => {
         if (window.confirm("Tem certeza que deseja excluir este item?")) {
             try {
@@ -444,6 +380,7 @@ export default function PaginaProcesso() {
             } catch { showToast("Erro ao remover o item.", "error"); }
         }
     };
+
     const handleLinkFornecedor = async (fornecedorId) => {
         setIsFornecedorModalOpen(false);
         try {
@@ -452,10 +389,12 @@ export default function PaginaProcesso() {
             fetchDadosDoProcesso(processoId);
         } catch { showToast('Erro ao vincular fornecedor.', 'error'); }
     };
+
     const handleSaveNewAndLinkFornecedor = (newFornecedor) => {
         setCatalogoFornecedores(prev => [newFornecedor, ...prev]);
         handleLinkFornecedor(newFornecedor.id);
     };
+
     const handleRemoveFornecedor = async (fornecedorId) => {
         if (window.confirm("Deseja desvincular este fornecedor do processo?")) {
             try {
@@ -465,6 +404,7 @@ export default function PaginaProcesso() {
             } catch { showToast("Erro ao remover fornecedor.", "error"); }
         }
     };
+    
     const handleExportItems = () => {
         if (selectedItems.size === 0) {
             showToast("Nenhum item selecionado para exportar.", "info");
@@ -490,132 +430,88 @@ export default function PaginaProcesso() {
         }
         showToast(`${itemsToExport.length} itens exportados com sucesso!`, "success");
     };
+
     const handleSelectAll = (e) => { if (e.target.checked) { setSelectedItems(new Set(currentItems.map(item => item.id))); } else { setSelectedItems(new Set()); } };
     const handleSelectItem = (itemId) => { const newSelected = new Set(selectedItems); newSelected.has(itemId) ? newSelected.delete(itemId) : newSelected.add(itemId); setSelectedItems(newSelected); };
 
     return (
         <>
             <ItemModal isOpen={isItemModalOpen} onClose={() => { setIsItemModalOpen(false); setEditingItem(null); }} item={editingItem} onSave={handleSaveItem} />
-            <FornecedorModal isOpen={isFornecedorModalOpen} onClose={() => setIsFornecedorModalOpen(false)} catalogo={catalogoFornecedores} onLink={handleLinkFornecedor} onSaveNew={handleSaveNewAndLinkFornecedor}/>
+            <FornecedorModal isOpen={isFornecedorModalOpen} onClose={() => setIsFornecedorModalOpen(false)} catalogo={catalogoFornecedores} onLink={handleLinkFornecedor} onSaveNew={handleSaveNewAndLinkFornecedor} />
 
-            <div className="bg-slate-50 dark:bg-dark-bg-primary p-4 sm:p-6 lg:p-8 min-h-full">
+            <div className="bg-gray-100 dark:bg-dark-bg-primary min-h-full">
                 <div className="max-w-7xl mx-auto">
-                    
-                    {/* Painel de Navegação */}
-                    <header className="flex items-center justify-between mb-6">
-                         <div className="flex flex-col">
-                            <h1 className="text-2xl font-bold text-slate-800 dark:text-dark-text-primary">
-                                {isNewProcess ? "Novo Processo Licitatório" : `Processo Nº ${formData.numero_processo || '...'}`}
-                            </h1>
-                            <p className="text-sm text-slate-500 dark:text-dark-text-secondary mt-1">
-                                {isNewProcess ? "Preencha os dados para iniciar um novo processo." : "Acompanhe e controle as principais informações sobre este processo."}
-                            </p>
-                        </div>
-                    </header>
-                    
-                    {/* Painel Principal */}
-                    <div className="bg-white dark:bg-dark-bg-secondary rounded-lg border border-slate-200 dark:border-dark-border shadow-sm">
-                        <nav className="flex gap-6 px-6 border-b border-slate-200 dark:border-dark-border">
-                            <TabButton label="Visão Geral" isActive={activeTab === "dadosGerais"} onClick={() => setActiveTab("dadosGerais")} />
-                            <TabButton label="Itens do Processo" isActive={activeTab === "itens"} onClick={() => setActiveTab("itens")} isDisabled={isNewProcess} />
-                            <TabButton label="Fornecedores" isActive={activeTab === "fornecedores"} onClick={() => setActiveTab("fornecedores")} isDisabled={isNewProcess} />
+                    <div className="rounded-lg border border-light-border dark:border-dark-border bg-light-bg-secondary dark:bg-dark-bg-secondary text-light-text-primary dark:text-dark-text-primary shadow-sm">
+                        <header className="flex items-center justify-between p-5 border-b border-light-border dark:border-dark-border bg-gray-50/70 dark:bg-dark-bg-tertiary/50 rounded-t-lg">
+                            <h1 className="text-xl font-bold">{isEditing ? `Editar Processo: Nº ${formData.numero_certame || "..."}` : "Criar Novo Processo"}</h1>
+                        </header>
+
+                        <nav className="flex gap-2 px-5 border-b border-light-border dark:border-dark-border">
+                            <TabButton label="Dados Gerais" isActive={activeTab === "dadosGerais"} onClick={() => setActiveTab("dadosGerais")} />
+                            <TabButton label="Itens" isActive={activeTab === "itens"} onClick={() => setActiveTab("itens")} isDisabled={!processoId} />
+                            <TabButton label="Fornecedores" isActive={activeTab === "fornecedores"} onClick={() => setActiveTab("fornecedores")} isDisabled={!processoId} />
                         </nav>
 
                         <main className="p-6">
                             <AnimatePresence mode="wait">
                                 <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                                     
-                                    {/* ABA DADOS GERAIS */}
                                     {activeTab === "dadosGerais" && (
-                                        isEditing ? (
-                                        // MODO DE EDIÇÃO (FORMULÁRIO)
-                                        <form onSubmit={handleSaveDadosGerais} className="space-y-6">
-                                            <div className="grid md:grid-cols-2 gap-6">
-                                                <div><label className={labelStyle}>Objeto *</label><textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} h-24`} required /></div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                  <div><label className={labelStyle}>Nº do Processo*</label><input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={inputStyle} required /></div>
-                                                  <div><label className={labelStyle}>Data do Processo*</label><input name="data_processo" type="date" value={formData.data_processo} onChange={handleChange} className={inputStyle} required /></div>
-                                                  <div><label className={labelStyle}>Nº do Certame</label><input name="numero_certame" value={formData.numero_certame || ''} onChange={handleChange} className={inputStyle} /></div>
-                                                  <div><label className={labelStyle}>Data/Hora Abertura</label><input name="data_abertura" type="datetime-local" value={formData.data_abertura || ''} onChange={handleChange} className={inputStyle} /></div>
+                                        <form onSubmit={handleSaveDadosGerais} className="space-y-4">
+                                            <FormSection title="Informações Principais">
+                                                <div className="grid md:grid-cols-3 gap-6">
+                                                    <div className="md:col-span-2">
+                                                        <label className={labelStyle}>Objeto *</label>
+                                                        <textarea name="objeto" value={formData.objeto} onChange={handleChange} placeholder="Descreva o objeto do processo..." className={`${inputStyle} h-28`} required />
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <div><label className={labelStyle}>Número do Processo *</label><input name="numero_processo" value={formData.numero_processo} onChange={handleChange} placeholder="Ex: 123/2025" className={inputStyle} required /></div>
+                                                        <div><label className={labelStyle}>Data do Processo *</label><input name="data_processo" type="date" value={formData.data_processo} onChange={handleChange} className={inputStyle} required /></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="grid md:grid-cols-4 gap-6">
-                                                <div><label className={labelStyle}>Modalidade *</label><select name="modalidade" value={formData.modalidade} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{modalidades.map(m => (<option key={m} value={m}>{m}</option>))}</select></div>
-                                                <div><label className={labelStyle}>Classificação *</label><select name="classificacao" value={formData.classificacao} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{classificacoes.map(c => (<option key={c} value={c}>{c}</option>))}</select></div>
-                                                <div><label className={labelStyle}>Organização *</label><select name="tipo_organizacao" value={formData.tipo_organizacao} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{organizacoes.map(o => (<option key={o} value={o}>{o}</option>))}</select></div>
-                                                <div><label className={labelStyle}>Situação *</label><select name="situacao" value={formData.situacao} onChange={handleChange} className={inputStyle} required>{situacoes.map(s => (<option key={s} value={s}>{s}</option>))}</select></div>
-                                            </div>
-                                             <div className="grid md:grid-cols-2 gap-6">
-                                                <div><label className={labelStyle}>Entidade *</label><select name="entidade" value={formData.entidade} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{entidades.map(e => (<option key={e.id} value={e.id}>{e.nome}</option>))}</select></div>
-                                                <div><label className={labelStyle}>Órgão *</label><select name="orgao" value={formData.orgao} onChange={handleChange} className={inputStyle} required disabled={!formData.entidade || orgaos.length === 0}><option value="">{formData.entidade ? 'Selecione...' : 'Selecione uma entidade'}</option>{orgaos.map(o => (<option key={o.id} value={o.id}>{o.nome}</option>))}</select></div>
-                                            </div>
-                                            <div className="grid md:grid-cols-4 gap-6">
-                                                <div><label className={labelStyle}>Valor de Referência (R$)</label><input name="valor_referencia" type="number" step="0.01" value={formData.valor_referencia || ''} onChange={handleChange} placeholder="0,00" className={`${inputStyle} text-right`} /></div>
-                                                <div><label className={labelStyle}>Vigência (Meses)*</label><input name="vigencia_meses" type="number" min="1" value={formData.vigencia_meses || ''} onChange={handleChange} placeholder="12" className={`${inputStyle} text-center`} /></div>
-                                            </div>
+                                            </FormSection>
 
-                                            <div className="flex justify-center gap-4 pt-6 border-t border-slate-200 dark:border-dark-border">
-                                                 <ActionButton text={isNewProcess ? "Cancelar" : "Cancelar Edição"} onClick={() => isNewProcess ? navigate(-1) : setIsEditing(false)} variant="outlined"/>
-                                                 <ActionButton text={isNewProcess ? "Salvar e Continuar" : "Salvar Alterações"} onClick={handleSaveDadosGerais} variant="primary" icon={CheckCircleIcon} disabled={isLoading} />
-                                            </div>
+                                            <FormSection title="Configuração da Licitação">
+                                                <div className="grid md:grid-cols-4 gap-6">
+                                                    <div><label className={labelStyle}>Modalidade *</label><select name="modalidade" value={formData.modalidade} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{modalidades.map(m => (<option key={m} value={m}>{m}</option>))}</select></div>
+                                                    <div><label className={labelStyle}>Classificação *</label><select name="classificacao" value={formData.classificacao} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{classificacoes.map(c => (<option key={c} value={c}>{c}</option>))}</select></div>
+                                                    <div><label className={labelStyle}>Tipo de Organização *</label><select name="tipo_organizacao" value={formData.tipo_organizacao} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{organizacoes.map(o => (<option key={o} value={o}>{o}</option>))}</select></div>
+                                                    <div><label className={labelStyle}>Registro de Preços *</label><select name="registro_precos" value={String(formData.registro_precos)} onChange={handleChange} className={inputStyle} required><option value="false">Não</option><option value="true">Sim</option></select></div>
+                                                </div>
+                                                <div className="grid md:grid-cols-2 gap-6">
+                                                    <div><label className={labelStyle}>Entidade *</label><select name="entidade" value={formData.entidade} onChange={handleChange} className={inputStyle} required><option value="">Selecione...</option>{entidades.map(e => (<option key={e.id} value={e.id}>{e.nome}</option>))}</select></div>
+                                                    <div><label className={labelStyle}>Órgão *</label><select name="orgao" value={formData.orgao} onChange={handleChange} className={inputStyle} required disabled={!formData.entidade || orgaos.length === 0}><option value="">{formData.entidade ? 'Selecione...' : 'Selecione uma entidade'}</option>{orgaos.map(o => (<option key={o.id} value={o.id}>{o.nome}</option>))}</select></div>
+                                                </div>
+                                            </FormSection>
+
+                                            <FormSection title="Detalhes do Certame">
+                                                <div className="grid md:grid-cols-5 gap-6 items-end">
+                                                    <div><label className={labelStyle}>Número do Certame</label><input name="numero_certame" value={formData.numero_certame || ''} onChange={handleChange} placeholder="Ex: 045/2025" className={inputStyle} /></div>
+                                                    <div><label className={labelStyle}>Data/Hora de Abertura</label><input name="data_abertura" type="datetime-local" value={formData.data_abertura || ''} onChange={handleChange} className={inputStyle} /></div>
+                                                    <div><label className={labelStyle}>Valor de Referência (R$)</label><input name="valor_referencia" type="number" step="0.01" value={formData.valor_referencia || ''} onChange={handleChange} placeholder="0,00" className={`${inputStyle} text-right`} /></div>
+                                                    <div><label className={labelStyle}>Vigência (Meses)*</label><input name="vigencia_meses" type="number" min="1" value={formData.vigencia_meses || ''} onChange={handleChange} placeholder="12" className={`${inputStyle} text-center`} /></div>
+                                                    <div><label className={labelStyle}>Situação *</label><select name="situacao" value={formData.situacao} onChange={handleChange} className={inputStyle} required>{situacoes.map(s => (<option key={s} value={s}>{s}</option>))}</select></div>
+                                                </div>
+                                            </FormSection>
                                         </form>
-                                    ) : (
-                                        // MODO DE VISUALIZAÇÃO
-                                        <div>
-                                            <div className="flex justify-between items-start mb-8">
-                                                <div>
-                                                    <h2 className="font-bold text-lg text-slate-800 dark:text-dark-text-primary">Detalhes da Licitação</h2>
-                                                    <p className="text-sm text-slate-500 dark:text-dark-text-secondary">{formData.objeto}</p>
-                                                </div>
-                                                <button onClick={() => setIsEditing(true)} className="text-sm font-semibold text-teal-500 hover:text-teal-600 flex items-center gap-1">
-                                                    <PencilIcon className="w-4 h-4" />
-                                                    Editar
-                                                </button>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                                                <DetailItem label="Status"><StatusTag status={formData.situacao} /></DetailItem>
-                                                <DetailItem label="Abertura" value={formatDateTime(formData.data_abertura)}><CalendarDaysIcon className="w-5 h-5 text-slate-400" /></DetailItem>
-                                                <DetailItem label="Modalidade" value={formData.modalidade} />
-                                                <DetailItem label="Valor Estimado" value={formatCurrency(formData.valor_referencia)} />
-                                                <DetailItem label="Vigência (Meses)" value={formData.vigencia_meses} />
-                                                <DetailItem label="Nº do Certame" value={formData.numero_certame} />
-                                                <DetailItem label="Data do Processo" value={formatDate(formData.data_processo)} />
-                                                <DetailItem label="Entidade" value={entidadeNome} />
-                                                <DetailItem label="Órgão" value={orgaoNome} />
-                                                <DetailItem label="Registro de Preço" value={formData.registro_precos ? 'Sim' : 'Não'} />
-                                            </div>
-
-                                            <div className="flex justify-center items-center gap-4 pt-8 mt-8 border-t border-slate-200 dark:border-dark-border">
-                                                <ActionButton text="Gerar Relatório" onClick={() => alert('Função não implementada')} variant="outlined" />
-                                                <ActionButton text="Anexar Arquivos" onClick={() => alert('Função não implementada')} variant="outlined" />
-                                                <ActionButton text="Analisar Edital" onClick={() => alert('Função não implementada')} variant="secondary" />
-                                            </div>
-                                        </div>
-                                    )
                                     )}
 
-                                    {/* ABA ITENS */}
                                     {activeTab === "itens" && (
-                                         <div className="space-y-6">
+                                        <div className="space-y-6">
                                             <div className="sm:flex sm:items-center sm:justify-between">
                                                 <div><h2 className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">Itens do Processo</h2><p className="mt-1 text-sm text-light-text-secondary dark:text-dark-text-secondary">{itens.length} itens no total. {selectedItems.size > 0 && `${selectedItems.size} selecionado(s).`}</p></div>
-                                                <div className="mt-4 sm:mt-0 flex items-center gap-3">
-                                                    <button type="button" className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-light-bg-secondary dark:bg-dark-bg-tertiary border border-light-border dark:border-dark-border rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary disabled:opacity-50" onClick={handleExportItems} disabled={selectedItems.size === 0}><ArrowDownTrayIcon className="w-5 h-5" />Exportar</button>
-                                                    <button type="button" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-teal-500 border border-transparent rounded-md shadow-sm hover:bg-teal-600" onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }}><PlusIcon className="w-5 h-5" />Adicionar Item</button>
-                                                </div>
+                                                <div className="mt-4 sm:mt-0 flex items-center gap-3"><button type="button" className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-sm hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary disabled:opacity-50" onClick={handleExportItems} disabled={selectedItems.size === 0}><ArrowDownTrayIcon className="w-5 h-5" />Exportar</button><button type="button" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-blue border border-transparent rounded-md shadow-sm hover:bg-blue-700" onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }}><PlusIcon className="w-5 h-5" />Adicionar Item</button></div>
                                             </div>
-                                             <ItemTable itens={currentItems} onEdit={(item) => { setEditingItem(item); setIsItemModalOpen(true); }} onDelete={handleDeleteItem} selectedItems={selectedItems} onSelectAll={handleSelectAll} onSelectItem={handleSelectItem} expandedItemId={expandedItemId} onToggleExpand={(itemId) => setExpandedItemId(prev => prev === itemId ? null : itemId)} />
+                                            <ItemTable itens={currentItems} onEdit={(item) => { setEditingItem(item); setIsItemModalOpen(true); }} onDelete={handleDeleteItem} selectedItems={selectedItems} onSelectAll={handleSelectAll} onSelectItem={handleSelectItem} expandedItemId={expandedItemId} onToggleExpand={(itemId) => setExpandedItemId(prev => prev === itemId ? null : itemId)} />
                                             {totalPages > 1 && (<div className="flex items-center justify-between pt-4 border-t border-light-border dark:border-dark-border"><div className="flex items-center gap-2 text-sm text-light-text-secondary dark:text-dark-text-secondary"><span>Exibir</span><select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); setSelectedItems(new Set()); }} className={`${inputStyle} shadow-sm w-auto`}><option value={5}>5</option><option value={10}>10</option><option value={20}>20</option></select><span>por página</span></div><nav className="isolate inline-flex -space-x-px rounded-md shadow-sm"><button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1} className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-light-border dark:ring-dark-border hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary disabled:opacity-50"><ChevronLeftIcon className="h-5 w-5" /></button><span className="relative hidden items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-light-border dark:ring-dark-border md:inline-flex">Página {currentPage} de {totalPages}</span><button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages || totalPages === 0} className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-light-border dark:ring-dark-border hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary disabled:opacity-50"><ChevronRightIcon className="h-5 w-5" /></button></nav></div>)}
                                         </div>
                                     )}
 
-                                    {/* ABA FORNECEDORES */}
                                     {activeTab === "fornecedores" && (
                                         <div className="space-y-6">
                                             <div className="sm:flex sm:items-center sm:justify-between">
                                                 <div><h2 className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">Fornecedores Vinculados</h2><p className="mt-1 text-sm text-light-text-secondary dark:text-dark-text-secondary">{fornecedoresDoProcesso.length} fornecedores no total.</p></div>
-                                                <button type="button" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-teal-500 border border-transparent rounded-md shadow-sm hover:bg-teal-600" onClick={() => setIsFornecedorModalOpen(true)}><PlusIcon className="w-5 h-5" />Adicionar Fornecedor</button>
+                                                <button type="button" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-blue border border-transparent rounded-md shadow-sm hover:bg-blue-700" onClick={() => setIsFornecedorModalOpen(true)}><PlusIcon className="w-5 h-5" />Adicionar Fornecedor</button>
                                             </div>
                                             <FornecedorTable fornecedores={currentFornecedores} onRemove={handleRemoveFornecedor} />
                                             {totalPagesForn > 1 && (<div className="flex items-center justify-between pt-4 border-t border-light-border dark:border-dark-border"><div className="flex items-center gap-2 text-sm text-light-text-secondary dark:text-dark-text-secondary"><span>Exibir</span><select value={itemsPerPageForn} onChange={(e) => { setItemsPerPageForn(Number(e.target.value)); setCurrentPageForn(1); }} className={`${inputStyle} shadow-sm w-auto`}><option value={5}>5</option><option value={10}>10</option><option value={20}>20</option></select><span>por página</span></div><nav className="isolate inline-flex -space-x-px rounded-md shadow-sm"><button onClick={() => setCurrentPageForn(p => Math.max(p - 1, 1))} disabled={currentPageForn === 1} className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-light-border dark:ring-dark-border hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary disabled:opacity-50"><ChevronLeftIcon className="h-5 w-5" /></button><span className="relative hidden items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-light-border dark:ring-dark-border md:inline-flex">Página {currentPageForn} de {totalPagesForn}</span><button onClick={() => setCurrentPageForn(p => Math.min(p + 1, totalPagesForn))} disabled={currentPageForn === totalPagesForn || totalPagesForn === 0} className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-light-border dark:ring-dark-border hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary disabled:opacity-50"><ChevronRightIcon className="h-5 w-5" /></button></nav></div>)}
@@ -625,6 +521,11 @@ export default function PaginaProcesso() {
                                 </motion.div>
                             </AnimatePresence>
                         </main>
+
+                        <div className="flex justify-end gap-4 px-6 py-4 border-t border-light-border dark:border-dark-border bg-gray-50/70 dark:bg-dark-bg-tertiary/50 rounded-b-lg">
+                            <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 rounded-lg border border-light-border dark:border-dark-border hover:bg-light-bg-tertiary dark:hover:bg-dark-bg-tertiary transition-colors">{isEditing ? 'Voltar' : 'Cancelar'}</button>
+                            <button type="button" disabled={isLoading} onClick={handleSaveDadosGerais} className="px-6 py-2 bg-accent-blue text-white rounded-lg text-sm font-medium shadow-sm hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed">{isLoading ? 'Salvando...' : (isEditing ? 'Atualizar Processo' : 'Salvar e Continuar')}</button>
+                        </div>
                     </div>
                 </div>
             </div>
