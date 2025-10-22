@@ -1,12 +1,14 @@
 // src/components/FormFornecedor.js
 import { useState } from 'react';
 import useAxios from '../hooks/useAxios';
+import { useToast } from '../context/ToastContext'; // 1. Importar o hook
 
 const FormFornecedor = () => {
     const [razaoSocial, setRazaoSocial] = useState('');
     const [cnpj, setCnpj] = useState('');
     const [email, setEmail] = useState('');
     const api = useAxios();
+    const { showToast } = useToast(); // 2. Instanciar o hook
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,14 +18,14 @@ const FormFornecedor = () => {
                 cnpj: cnpj,
                 email: email,
             });
-            alert('Fornecedor cadastrado com sucesso!');
+            showToast('Fornecedor cadastrado com sucesso!', 'success'); // 3. Usar o toast
             // Limpa os campos após o sucesso
             setRazaoSocial('');
             setCnpj('');
             setEmail('');
         } catch (error) {
             console.error('Erro ao cadastrar fornecedor:', error);
-            alert('Falha ao cadastrar fornecedor. Verifique os dados e tente novamente.');
+            showToast('Falha ao cadastrar fornecedor. Verifique os dados.', 'error'); // 3. Usar o toast
         }
     };
 

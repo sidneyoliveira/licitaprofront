@@ -1,25 +1,27 @@
 // src/components/FormOrgao.js
 import React, { useState } from 'react';
 import useAxios from '../hooks/useAxios';
+import { useToast } from '../context/ToastContext'; // 1. Importar o hook
 
 const FormOrgao = () => {
     const [nome, setNome] = useState('');
     const [cnpj, setCnpj] = useState('');
     const api = useAxios();
+    const { showToast } = useToast(); // 2. Instanciar o hook
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/orgaos/', {
+            await api.post('/orgaos/', {
                 nome: nome,
                 cnpj: cnpj,
             });
-            alert('Órgão cadastrado com sucesso!');
+            showToast('Órgão cadastrado com sucesso!', 'success'); // 3. Usar o toast
             setNome('');
             setCnpj('');
         } catch (error) {
             console.error('Erro ao cadastrar órgão:', error);
-            alert('Falha ao cadastrar órgão. Verifique os dados e tente novamente.');
+            showToast('Falha ao cadastrar órgão. Verifique os dados.', 'error'); // 3. Usar o toast
         }
     };
 

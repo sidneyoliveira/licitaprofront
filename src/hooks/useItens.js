@@ -1,26 +1,59 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+// src/hooks/useItens.js
+import { useState, useEffect, useCallback } from "react";
+import useAxios from "./useAxios"; // Garanta que o caminho para useAxios está correto
+import { useToast } from '../context/ToastContext';
 
-export default function useFornecedores(processoId) {
-  const [fornecedores, setFornecedores] = useState([]);
+export default function useItens(processoId) {
+  const [itens, setItens] = useState([]);
+  const api = useAxios();
+  const { showToast } = useToast();
+
+  const fetchItens = useCallback(async () => {
+    if (processoId) {
+      try {
+        const res = await api.get(`/processos/${processoId}/itens/`);
+        setItens(res.data);
+      } catch (error) {
+        showToast('Erro ao carregar os itens do processo.', 'error');
+      }
+    }
+  }, [processoId, api, showToast]);
 
   useEffect(() => {
+    fetchItens();
+  }, [fetchItens]);
+
+  const addItem = async (itemData) => {
     if (processoId) {
-      axios.get(`/api/processos/${processoId}/fornecedores`).then(res => setFornecedores(res.data));
+      try {
+        const res = await api.post(`/itens/`, { ...itemData, processo: processoId });
+        setItens(prev => [...prev, res.data]);
+        showToast('Item adicionado com sucesso!', 'success');
+      } catch (error) {
+        showToast('Erro ao adicionar o item.', 'error');
+      }
     }
-  }, [processoId]);
+  };
 
-  function addFornecedor(f) {
-    axios.post(`/api/processos/${processoId}/fornecedores`, f).then(res => setFornecedores(prev => [...prev, res.data]));
-  }
+  const editItem = async (id, itemData) => {
+    try {
+      const res = await api.put(`/itens/${id}/`, itemData);
+      setItens(prev => prev.map(item => (item.id === id ? res.data : item)));
+      showToast('Item atualizado com sucesso!', 'success');
+    } catch (error) {
+      showToast('Erro ao atualizar o item.', 'error');
+    }
+  };
 
-  function editFornecedor(id, f) {
-    axios.put(`/api/fornecedores/${id}`, f).then(res => setFornecedores(prev => prev.map(forn => (forn.id === id ? res.data : forn))));
-  }
+  const deleteItem = async (id) => {
+    try {
+      await api.delete(`/itens/${id}/`);
+      setItens(prev => prev.filter(item => item.id !== id));
+      showToast('Item removido com sucesso!', 'success');
+    } catch (error) {
+      showToast('Erro ao remover o item.', 'error');
+    }
+  };
 
-  function deleteFornecedor(id) {
-    axios.delete(`/api/fornecedores/${id}`).then(() => setFornecedores(prev => prev.filter(f => f.id !== id)));
-  }
-
-  return { fornecedores, addFornecedor, editFornecedor, deleteFornecedor };
+  return { itens, addItem, editItem, deleteItem, refreshItens: fetchItens };
 }
