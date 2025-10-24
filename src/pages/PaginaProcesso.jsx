@@ -192,48 +192,49 @@ const FornecedorModal = ({
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
-    cnpj: '',
-    razao_social: '',
-    nome_fantasia: '',
-    porte: '',
-    natureza_juridica: '',
-    email: '',
-    cep: '',
-    logradouro: '',
-    numero: '',
-    bairro: '',
-    complemento: '',
-    uf: '',
-    municipio: '',
-  });
+    const [formData, setFormData] = useState({
+  cnpj: '',
+  razao_social: '',
+  nome_fantasia: '',
+  porte: '',
+  telefone: '',
+  email: '',
+  cep: '',
+  logradouro: '',
+  numero: '',
+  bairro: '',
+  complemento: '',
+  uf: '',
+  municipio: '',
+    });
+
 
   const isEditing = Boolean(fornecedorSelecionado);
   const showForm = isEditing || isCreating;
 
-  useEffect(() => {
-    if (isEditing && fornecedorSelecionado) {
-      setFormData(fornecedorSelecionado);
-      setIsCreating(true);
-    } else {
-      setFormData({
-        cnpj: '',
-        razao_social: '',
-        nome_fantasia: '',
-        porte: '',
-        natureza_juridica: '',
-        email: '',
-        cep: '',
-        logradouro: '',
-        numero: '',
-        bairro: '',
-        complemento: '',
-        uf: '',
-        municipio: '',
-      });
-      setIsCreating(false);
-    }
-  }, [isEditing, fornecedorSelecionado, isOpen]);
+useEffect(() => {
+  if (isEditing && fornecedorSelecionado) {
+    setFormData(fornecedorSelecionado);
+    setIsCreating(true);
+  } else {
+    setFormData({
+      cnpj: '',
+      razao_social: '',
+      nome_fantasia: '',
+      porte: '',
+      telefone: '',
+      email: '',
+      cep: '',
+      logradouro: '',
+      numero: '',
+      bairro: '',
+      complemento: '',
+      uf: '',
+      municipio: '',
+    });
+    setIsCreating(false);
+  }
+}, [isEditing, fornecedorSelecionado, isOpen]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -246,20 +247,20 @@ const FornecedorModal = ({
       const data = res.data;
       console.log('Retorno da BrasilAPI:', data);
       setFormData({
-        ...formData,
-        razao_social: data.razao_social || '',
-        nome_fantasia: data.nome_fantasia || '',
-        porte: data.porte || '',
-        natureza_juridica: data.natureza_juridica || '',
-        email: data.email || '',
-        cep: data.cep || '',
-        logradouro: data.logradouro || '',
-        numero: data.numero || '',
-        bairro: data.bairro || '',
-        complemento: data.complemento || '',
-        uf: data.uf || '',
-        municipio: data.municipio || '',
-      });
+  ...formData,
+  razao_social: data.razao_social || '',
+  nome_fantasia: data.nome_fantasia || '',
+  porte: data.porte || '',
+  telefone: data.telefone || '',  // ✅ novo campo
+  email: data.email || '',
+  cep: data.cep || '',
+  logradouro: data.logradouro || '',
+  numero: data.numero || '',
+  bairro: data.bairro || '',
+  complemento: data.complemento || '',
+  uf: data.uf || '',
+  municipio: data.municipio || '',
+});
       showToast('Dados carregados com sucesso!', 'success');
     } catch (error) {
       showToast('Erro ao buscar CNPJ. Verifique o número e tente novamente.', 'error');
@@ -356,18 +357,18 @@ const FornecedorModal = ({
             </div>
 
             {[
-              'nome_fantasia',
-              'porte',
-              'natureza_juridica',
-              'email',
-              'cep',
-              'logradouro',
-              'numero',
-              'bairro',
-              'complemento',
-              'uf',
-              'municipio',
-            ].map((field) => (
+  'nome_fantasia',
+  'porte',
+  'telefone',
+  'email',
+  'cep',
+  'logradouro',
+  'numero',
+  'bairro',
+  'complemento',
+  'uf',
+  'municipio',
+].map((field) => (
               <div key={field}>
                 <label className="block font-medium capitalize">{field.replace('_', ' ')}</label>
                 <input
