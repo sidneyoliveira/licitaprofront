@@ -192,49 +192,48 @@ const FornecedorModal = ({
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-    const [formData, setFormData] = useState({
-  cnpj: '',
-  razao_social: '',
-  nome_fantasia: '',
-  porte: '',
-  telefone: '',
-  email: '',
-  cep: '',
-  logradouro: '',
-  numero: '',
-  bairro: '',
-  complemento: '',
-  uf: '',
-  municipio: '',
-    });
-
+  const [formData, setFormData] = useState({
+    cnpj: '',
+    razao_social: '',
+    nome_fantasia: '',
+    porte: '',
+    telefone: '',
+    email: '',
+    cep: '',
+    logradouro: '',
+    numero: '',
+    bairro: '',
+    complemento: '',
+    uf: '',
+    municipio: '',
+  });
 
   const isEditing = Boolean(fornecedorSelecionado);
   const showForm = isEditing || isCreating;
 
-useEffect(() => {
-  if (isEditing && fornecedorSelecionado) {
-    setFormData(fornecedorSelecionado);
-    setIsCreating(true);
-  } else {
-    setFormData({
-      cnpj: '',
-      razao_social: '',
-      nome_fantasia: '',
-      porte: '',
-      telefone: '',
-      email: '',
-      cep: '',
-      logradouro: '',
-      numero: '',
-      bairro: '',
-      complemento: '',
-      uf: '',
-      municipio: '',
-    });
-    setIsCreating(false);
-  }
-}, [isEditing, fornecedorSelecionado, isOpen]);
+  useEffect(() => {
+    if (isEditing && fornecedorSelecionado) {
+      setFormData(fornecedorSelecionado);
+      setIsCreating(true);
+    } else {
+      setFormData({
+        cnpj: '',
+        razao_social: '',
+        nome_fantasia: '',
+        porte: '',
+        telefone: '',
+        email: '',
+        cep: '',
+        logradouro: '',
+        numero: '',
+        bairro: '',
+        complemento: '',
+        uf: '',
+        municipio: '',
+      });
+      setIsCreating(false);
+    }
+  }, [isEditing, fornecedorSelecionado, isOpen]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -245,24 +244,28 @@ useEffect(() => {
       const cnpjLimpo = formData.cnpj.replace(/[^\d]/g, '');
       const res = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
       const data = res.data;
+
       console.log('Retorno da BrasilAPI:', data);
+
       setFormData({
-  ...formData,
-  razao_social: data.razao_social || '',
-  nome_fantasia: data.nome_fantasia || '',
-  porte: data.porte || '',
-  telefone: data.telefone || '',  // ✅ novo campo
-  email: data.email || '',
-  cep: data.cep || '',
-  logradouro: data.logradouro || '',
-  numero: data.numero || '',
-  bairro: data.bairro || '',
-  complemento: data.complemento || '',
-  uf: data.uf || '',
-  municipio: data.municipio || '',
-});
+        ...formData,
+        razao_social: data.razao_social || '',
+        nome_fantasia: data.nome_fantasia || '',
+        porte: data.porte || '',
+        telefone: data.ddd_telefone_1 || '',
+        email: data.email || '',
+        cep: data.cep || '',
+        logradouro: data.logradouro || '',
+        numero: data.numero || '',
+        bairro: data.bairro || '',
+        complemento: data.complemento || '',
+        uf: data.uf || '',
+        municipio: data.municipio || '',
+      });
+
       showToast('Dados carregados com sucesso!', 'success');
     } catch (error) {
+      console.error(error);
       showToast('Erro ao buscar CNPJ. Verifique o número e tente novamente.', 'error');
     }
   };
@@ -298,8 +301,7 @@ useEffect(() => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 30 }}
-        className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl shadow-2xl w-full max-w-6xl"
-      >
+        className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl shadow-2xl w-full max-w-[800px] min-w-[400px] mx-auto ">
         <div className="flex justify-between items-center mb-5">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white">
             {isEditing
@@ -322,6 +324,7 @@ useEffect(() => {
 
         {showForm ? (
           <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-4 text-sm">
+            {/* CNPJ e Razão Social */}
             <div>
               <label className="block font-medium">CNPJ</label>
               <div className="flex gap-2">
@@ -356,30 +359,125 @@ useEffect(() => {
               />
             </div>
 
-            {[
-  'nome_fantasia',
-  'porte',
-  'telefone',
-  'email',
-  'cep',
-  'logradouro',
-  'numero',
-  'bairro',
-  'complemento',
-  'uf',
-  'municipio',
-].map((field) => (
-              <div key={field}>
-                <label className="block font-medium capitalize">{field.replace('_', ' ')}</label>
+            {/* Linha 2 */}
+            <div className="col-span-3 grid grid-cols-[2fr_2fr_1fr_1fr] gap-4">
+            <div>
+              <label className="block font-medium">Nome Fantasia</label>
+              <input
+                name="nome_fantasia"
+                value={formData.nome_fantasia}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">E-mail</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Telefone</label>
+              <input
+                name="telefone"
+                value={formData.telefone}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Porte</label>
+              <input
+                name="porte"
+                value={formData.porte}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+            </div>
+
+            {/* Linha 3 */}
+             <div className="col-span-3 grid grid-cols-[1fr_3fr_1fr] gap-4">
+            <div >
+              <label className="block font-medium">CEP</label>
+              <input
+                name="cep"
+                value={formData.cep}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block font-medium">Logradouro</label>
+              <input
+                name="logradouro"
+                value={formData.logradouro}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">Número</label>
+              <input
+                name="numero"
+                value={formData.numero}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+            
+            </div>
+
+             <div className="col-span-3 grid grid-cols-[2fr_2fr_2fr_1fr] gap-4">
+
+            <div>
+              <label className="block font-medium">Bairro</label>
+              <input
+                name="bairro"
+                value={formData.bairro}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">Complemento</label>
+              <input
+                name="complemento"
+                value={formData.complemento}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+
+            {/* Linha 5 */}
+              <div>
+                <label className="block font-medium">Município</label>
                 <input
-                  name={field}
-                  value={formData[field] || ''}
+                  name="municipio"
+                  value={formData.municipio}
                   onChange={handleChange}
                   className="w-full p-2 border rounded-md"
                 />
               </div>
-            ))}
+              <div>
+                <label className="block font-medium">UF</label>
+                <input
+                  name="uf"
+                  value={formData.uf}
+                  onChange={handleChange}
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+            </div>
 
+            {/* Botões */}
             <div className="col-span-3 flex justify-end gap-3 pt-4">
               <button
                 type="button"
@@ -398,46 +496,51 @@ useEffect(() => {
             </div>
           </form>
         ) : (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Buscar por CNPJ ou Razão Social..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 border rounded-md text-sm"
-            />
-            <div className="max-h-64 overflow-y-auto border rounded-lg divide-y">
-              {filteredCatalogo.map((f) => (
-                <div
-                  key={f.id}
-                  className="p-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary"
-                >
-                  <div>
-                    <p className="font-semibold text-gray-800 dark:text-white">{f.razao_social}</p>
-                    <p className="text-sm text-gray-500">{f.cnpj}</p>
-                  </div>
-                  <button
-                    onClick={() => onLink(f.id)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500"
+          <>
+            {/* Catálogo */}
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Buscar por CNPJ ou Razão Social..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-2 border rounded-md text-sm"
+              />
+              <div className="max-h-64 overflow-y-auto border rounded-lg divide-y">
+                {filteredCatalogo.map((f) => (
+                  <div
+                    key={f.id}
+                    className="p-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary"
                   >
-                    Vincular
-                  </button>
-                </div>
-              ))}
-              {filteredCatalogo.length === 0 && (
-                <p className="p-4 text-center text-gray-500">Nenhum fornecedor encontrado.</p>
-              )}
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-white">{f.razao_social}</p>
+                      <p className="text-sm text-gray-500">{f.cnpj}</p>
+                    </div>
+                    <button
+                      onClick={() => onLink(f.id)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500"
+                    >
+                      Vincular
+                    </button>
+                  </div>
+                ))}
+                {filteredCatalogo.length === 0 && (
+                  <p className="p-4 text-center text-gray-500">
+                    Nenhum fornecedor encontrado.
+                  </p>
+                )}
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-             <div className="col-span-3 flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+          </>
         )}
       </motion.div>
     </div>
@@ -500,9 +603,10 @@ const FornecedorTable = ({ fornecedores, handleAskDelete, onEdit }) => (
     <table className="w-full divide-y">
       <thead className="bg-gray-100 dark:bg-dark-bg-tertiary">
         <tr>
-          <th className="py-3 px-6 text-left text-xs font-semibold uppercase tracking-wider">Fornecedor</th>
-          <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider">CNPJ</th>
-          <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
+            <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider">CNPJ</th>
+          <th className="py-3 px-6 text-left text-xs font-semibold uppercase tracking-wider">Razão Social</th>
+          <th className="py-3 px-6 text-left text-xs font-semibold uppercase tracking-wider">Nome Fantasia</th>
+          <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider">Telefone</th>
           <th className="py-3 px-6 text-center text-xs font-semibold uppercase tracking-wider">Ações</th>
         </tr>
       </thead>
@@ -510,9 +614,10 @@ const FornecedorTable = ({ fornecedores, handleAskDelete, onEdit }) => (
         {fornecedores.length > 0 ? (
           fornecedores.map((forn) => (
             <tr key={forn.id} className="hover:bg-gray-50 dark:hover:bg-dark-bg-tertiary">
+            <td className="px-3 py-4">{forn.cnpj}</td>
               <td className="py-4 px-6">{forn.razao_social}</td>
-              <td className="px-3 py-4">{forn.cnpj}</td>
-              <td className="px-3 py-4">{forn.email}</td>
+            <td className="px-3 py-4">{forn.nome_fantasia}</td>
+              <td className="px-3 py-4">{forn.telefone}</td>
               <td className="px-6 py-4 text-center space-x-4">
                 <button onClick={() => onEdit(forn)} className="text-blue-500 hover:text-blue-400">
                   <PencilIcon className="w-5 h-5 inline" />
