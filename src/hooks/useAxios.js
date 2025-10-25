@@ -31,12 +31,16 @@ const useAxios = () => {
 
             try {
                 const response = await axios.post(`${baseURL}token/refresh/`, {
-                    refresh: authTokens?.refresh
+                    refresh: authTokens.refresh
+                    
                 });
 
                 localStorage.setItem('authTokens', JSON.stringify(response.data));
                 setAuthTokens(response.data);
                 setUser(jwtDecode(response.data.access));
+
+                console.log("URL Refresh:", `${baseURL}token/refresh/`);
+                console.log("Sending refresh:", authTokens.refresh);
                 
                 req.headers.Authorization = `Bearer ${response.data.access}`;
                 return req;

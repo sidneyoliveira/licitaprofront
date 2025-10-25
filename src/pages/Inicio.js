@@ -18,7 +18,7 @@ const Inicio = () => {
     const fetchResumo = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/dashboard/resumo"); // endpoint exemplo — mantém teu original
+        const res = await api.get("dashboard-stats/"); 
         if (res.data) setResumo(res.data);
       } catch (error) {
         console.error("Erro ao carregar resumo:", error);
@@ -54,7 +54,7 @@ const Inicio = () => {
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Processos</div>
             <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-              {loading ? "..." : resumo.processos}
+              {loading ? "..." : resumo.processos_em_andamento}
             </div>
           </div>
           <div
@@ -70,7 +70,7 @@ const Inicio = () => {
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Fornecedores</div>
             <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-              {loading ? "..." : resumo.fornecedores}
+              {loading ? "..." : resumo.total_fornecedores}
             </div>
           </div>
           <div
@@ -86,7 +86,7 @@ const Inicio = () => {
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Entidades</div>
             <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-              {loading ? "..." : resumo.entidades}
+              {loading ? "..." : resumo.total_orgaos}
             </div>
           </div>
           <div

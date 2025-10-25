@@ -11,7 +11,7 @@ import { LayoutDashboard, FileText, Users, Building2, Settings, UserCheck } from
 
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
   const navItem =
-    "flex items-center gap-3 px-4 py-2.5 text-sm rounded-md font-medium transition-colors";
+    "flex items-center gap-3 px-4 py-2.5 text-md  rounded-lg font-medium transition-colors";
 
   return (
     <>
@@ -25,24 +25,20 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
 
       {/* Sidebar principal */}
       <aside
-        className={`fixed z-50 top-0 left-0 h-full bg-white dark:bg-[#1E293B] shadow-xl border-r border-gray-200 dark:border-gray-700
-          transform transition-transform duration-300 ease-in-out
+        className={`fixed z-50 top-0 left-0 h-full bg-white dark:bg-[#1E293B] shadow-xl transform transition-transform duration-300 ease-in-out
           ${isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
           ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"} flex flex-col`}
       >
         {/* Logo e título */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-center gap-1 px-4 py-4 mt-3">
           <div
-            className="w-10 h-10 flex items-center justify-center text-white font-bold rounded-md shadow"
-            style={{
-              background: "linear-gradient(135deg,#1789D2,#0F7BC2)",
-            }}
+            className="w-10 h-10 flex items-center text-3xl font-extrabold text-gray-800 dark:text-white rounded-md shadow"
           >
             L3
           </div>
           {isOpen && (
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
-              L3 SOLUTIONS
+            <h1 className="text-3xl font-regular tracking-tight text-[#757575] dark:text-[#d6d6d6]">
+              SOLUTIONS
             </h1>
           )}
         </div>
@@ -54,7 +50,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:bg-[#0F294A]"
+                  ? "bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300  dark:bg-[#0F294A] border border-[#bcd2e0] dark:border-[#1c4274]"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }
