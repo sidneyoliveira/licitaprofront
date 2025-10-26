@@ -16,7 +16,7 @@ const InfoPill = ({ label, value }) => (
 
 const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
   const getSituacaoStyle = (situacao) => {
-    const baseStyle = 'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm';
+    const baseStyle = 'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold';
     switch (situacao) {
       case 'Aberto':
       case 'Publicado':
@@ -66,7 +66,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
   const valorPrevisto = formatCurrency(processo.valor_previsto ?? processo.valor_estimado ?? processo.valor_total);
 
   return (
-    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl shadow-lg border border-light-border/30 dark:border-white/5 p-6 space-y-6">
+    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl p-6 space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
         <div className="flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-3">

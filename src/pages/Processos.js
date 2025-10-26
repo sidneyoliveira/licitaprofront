@@ -124,7 +124,7 @@ const Processos = () => {
 
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
 
-    const inputStyle = "w-full px-3 py-2 text-xs border rounded-lg bg-white dark:bg-dark-bg-secondary border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent";
+    const inputStyle = "w-full px-3 py-2 text-lg text-semibold rounded-xl focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
     const labelStyle = "text-xs font-medium text-gray-600 dark:text-gray-300 mb-1";
     
     const hasActiveFilters = useMemo(() => {
@@ -132,7 +132,7 @@ const Processos = () => {
     }, [filters, activeStatus, sortBy, sortOrder]);
   
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <Helmet>
                 <title>Minhas Licitações</title>
             </Helmet>
@@ -140,22 +140,22 @@ const Processos = () => {
             {publishingProcess && <ModalPublicacao processo={publishingProcess} closeModal={() => setPublishingProcess(null)} onPublished={handlePublicationSave} />}
             {deletingProcessId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={() => setDeletingProcessId(null)} />}
 
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg shadow-sm p-4 md:p-6 border border-light-border dark:border-dark-border">
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl p-4 mt-3 md:p-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
-                        <h1 className="text-2xl font-bold">Minhas Licitações</h1>
-                        <p className="mt-1 text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                        <h1 className="text-4xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
+                        <p className="mt-1 text-lg text-light-text-secondary dark:text-dark-text-secondary">
                             Gerencie e acompanhe {processos.length} {processos.length === 1 ? 'licitação' : 'licitações'}
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <Button onClick={fetchProcessos} variant="outline" className={`${inputStyle} gap-2`}><RefreshCw className="w-4 h-4" /> Atualizar</Button>
-                        <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} gap-2`}><Download className="w-4 h-4" /> Exportar</Button>
-                        <Button onClick={handleCreate} className={`${inputStyle} gap-2`}><Plus className="w-4 h-4" /> Novo Processo</Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} gap-2 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button>
+                        <Button onClick={handleCreate} className={`${inputStyle} gap-2 inline-flex items-center bg-accent-blue text-white shadow-md hover:bg-accent-blue/90 transition-colors`}><Plus className="w-4 h-4" /> Novo Processo</Button>
                     </div>
                 </div>
 
                 <div className="space-y-4">
+                    <div className='grid grid-cols-2 items-center gap-4 '>
                     <div className="relative">
                         <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Pesquisar por número, objeto, entidade..." className={`${inputStyle} w-full pl-10 pr-4 py-3 border rounded-lg`} />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
@@ -167,7 +167,7 @@ const Processos = () => {
                         </Button>
                         {hasActiveFilters && <Button onClick={clearFilters} variant="ghost" size="sm" className={`${inputStyle} text-accent-red border border-red-200 rounded-lg h-8`}><X className="w-4 h-3" /> Limpar</Button>}
                     </div>
-
+                    </div>
                     <AnimatePresence>
                         {showFilters && (
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">

@@ -50,7 +50,7 @@ const Inicio = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         {/* Card Processos */}
-        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-lg shadow-sm p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-dark-bg-secondary  rounded-xl shadow-sm p-5 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Processos</div>
             <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
@@ -58,7 +58,7 @@ const Inicio = () => {
             </div>
           </div>
           <div
-            className="w-10 h-10 flex items-center justify-center rounded-md text-white shadow"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-white shadow"
             style={{ background: "linear-gradient(135deg,#1789D2,#0F7BC2)" }}
           >
             <FileText size={20} />
@@ -66,7 +66,7 @@ const Inicio = () => {
         </div>
 
         {/* Card Fornecedores */}
-        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-lg shadow-sm p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm p-5 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Fornecedores</div>
             <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
@@ -74,7 +74,7 @@ const Inicio = () => {
             </div>
           </div>
           <div
-            className="w-10 h-10 flex items-center justify-center rounded-md text-white shadow"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-white shadow"
             style={{ background: "linear-gradient(135deg,#1789D2,#0F7BC2)" }}
           >
             <Users size={20} />
@@ -82,7 +82,7 @@ const Inicio = () => {
         </div>
 
         {/* Card Entidades */}
-        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-lg shadow-sm p-5 flex items-center justify-between">
+        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm p-5 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Entidades</div>
             <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
@@ -90,7 +90,7 @@ const Inicio = () => {
             </div>
           </div>
           <div
-            className="w-10 h-10 flex items-center justify-center rounded-md text-white shadow"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-white shadow"
             style={{ background: "linear-gradient(135deg,#1789D2,#0F7BC2)" }}
           >
             <Building2 size={20} />
@@ -103,7 +103,7 @@ const Inicio = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-lg p-6 shadow-sm"
+        className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-xl p-6 shadow-sm"
       >
         <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
           Últimas Atualizações

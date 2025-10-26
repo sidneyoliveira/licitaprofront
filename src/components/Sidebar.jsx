@@ -25,14 +25,14 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
 
       {/* Sidebar principal */}
       <aside
-        className={`fixed z-50 top-0 left-0 h-full bg-white dark:bg-[#1E293B] shadow-xl transform transition-transform duration-300 ease-in-out
+        className={`fixed z-50 top-0 left-0 h-full bg-white dark:bg-dark-bg-secondary transform transition-transform duration-300 ease-in-out
           ${isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
           ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"} flex flex-col`}
       >
         {/* Logo e título */}
         <div className="flex items-center justify-center gap-1 px-4 py-4 mt-3">
           <div
-            className="w-10 h-10 flex items-center text-3xl font-extrabold text-gray-800 dark:text-white rounded-md shadow"
+            className="w-10 h-10 flex items-center text-3xl font-extrabold text-gray-800 dark:text-white "
           >
             L3
           </div>

@@ -21,52 +21,55 @@ const Layout = ({ children }) => {
   }, [location.pathname, isMobile]);
 
   return (
-    <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex">
-      
-      {/* Sidebar e overlay mobile */}
-      <AnimatePresence>
-        {(sidebarOpen || !isMobile) && (
-          <>
-            <Sidebar
-              isOpen={!isMobile ? sidebarOpen : true}
-              isMobile={isMobile}
-              onClose={() => setSidebarOpen(false)}
-            />
+    <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex relative overflow-hidden">
+  
+<div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-bl from-accent-blue to-[#0d3977] dark:bg-dark-bg-primary z-0" />
 
-            {/* Overlay escuro no modo mobile */}
-            {isMobile && (
-              <motion.div
-                className="fixed inset-0 bg-black/50 z-40"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSidebarOpen(false)}
-              />
-            )}
-          </>
+  {/* Sidebar e overlay mobile */}
+  <AnimatePresence>
+    {(sidebarOpen || !isMobile) && (
+      <>
+        <Sidebar
+          isOpen={!isMobile ? sidebarOpen : true}
+          isMobile={isMobile}
+          onClose={() => setSidebarOpen(false)}
+          className="z-50"
+        />
+
+        {isMobile && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
-      </AnimatePresence>
+      </>
+    )}
+  </AnimatePresence>
 
-      {/* Conteúdo principal */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-20') : ''
-        }`}
-      >
-        <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <motion.main
-          key={location.pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="p-4"
-        >
-          {children}
-        </motion.main>
-        {/* <Rodape toggleSidebar={() => setSidebarOpen(!sidebarOpen)} /> */}
-      </div>
-    </div>
+  {/* Conteúdo principal */}
+  <div
+    className={`flex-1 flex flex-col transition-all duration-300 relative z-10 ${
+      !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-20') : ''
+    }`}
+  >
+    <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+
+    <motion.main
+      key={location.pathname}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="p-4"
+    >
+      {children}
+    </motion.main>
+  </div>
+</div>
+
   );
 };
 
