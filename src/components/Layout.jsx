@@ -23,7 +23,7 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex relative overflow-hidden">
   
-<div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-bl from-accent-blue to-[#0d3977] dark:bg-dark-bg-primary z-0" />
+<div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-accent-blue to-[#0d3977] dark:bg-dark-bg-primary z-0" />
 
   {/* Sidebar e overlay mobile */}
   <AnimatePresence>

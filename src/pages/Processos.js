@@ -12,7 +12,7 @@ import { Search, Plus, Filter, Download, RefreshCw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Button = ({ children, variant, size, className, ...props }) => (
-    <button className={`flex items-center justify-center text-sm font-semibold gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 rounded-lg px-4 py-2 ${className}`} {...props}>
+    <button className={`flex items-center justify-center font-semibold gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 px-4 py-2 ${className}`} {...props}>
         {children}
     </button>
 );
@@ -126,21 +126,22 @@ const Processos = () => {
 
     const inputStyle = "w-full px-3 py-2 text-lg text-semibold rounded-xl focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
     const labelStyle = "text-xs font-medium text-gray-600 dark:text-gray-300 mb-1";
-    
+    const inputCampo = "w-full px-3 py-2 text-lg text-semibold focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-2xl border-[#bcd2e0] dark:border-dark-bg-primary";
+
     const hasActiveFilters = useMemo(() => {
         return Object.values(filters).some(v => v !== '') || activeStatus !== '' || sortBy !== 'data_processo' || sortOrder !== 'desc';
     }, [filters, activeStatus, sortBy, sortOrder]);
   
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 px-3">
             <Helmet>
-                <title>Minhas Licitações</title>
+                <title>Meus Processos</title>
             </Helmet>
 
             {publishingProcess && <ModalPublicacao processo={publishingProcess} closeModal={() => setPublishingProcess(null)} onPublished={handlePublicationSave} />}
             {deletingProcessId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={() => setDeletingProcessId(null)} />}
 
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl p-4 mt-3 md:p-6">
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl p-4 mt-3 md:px-8 py-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
                         <h1 className="text-4xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
@@ -155,15 +156,15 @@ const Processos = () => {
                 </div>
 
                 <div className="space-y-4">
-                    <div className='grid grid-cols-2 items-center gap-4 '>
+                    <div className='grid grid-cols-[4fr_1fr] items-center gap-4 '>
                     <div className="relative">
-                        <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Pesquisar por número, objeto, entidade..." className={`${inputStyle} w-full pl-10 pr-4 py-3 border rounded-lg`} />
+                        <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Pesquisar por número, objeto, entidade..." className={`${inputCampo} w-full pl-10 pr-4 py-2`} />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
                     </div>
-                    <div className="grid md:grid-cols-[1fr_1fr_2fr_2fr_2fr] gap-2">
-                        <Button className={`${inputStyle} w-4 h-8`} onClick={() => setShowFilters(!showFilters)} variant="outline">
-                            <Filter className="w-4 h-5"/> Filtros
-                            {hasActiveFilters && <span className="ml-1 px-2 py-0.5 bg-accent-blue/10 text-accent-blue border rounded-lg text-xs font-semibold">Ativos</span>}
+                    <div className="grid gap-2">
+                        <Button className={`${inputCampo} w-4 h-11 rounded-xl`} onClick={() => setShowFilters(!showFilters)} variant="outline">
+                            <Filter className="w-4 h-12"/> Filtros
+                            {hasActiveFilters && <span className="ml-1 px-2 py-1 bg-accent-blue/10 text-accent-blue border rounded-lg text-xs font-semibold">Ativos</span>}
                         </Button>
                         {hasActiveFilters && <Button onClick={clearFilters} variant="ghost" size="sm" className={`${inputStyle} text-accent-red border border-red-200 rounded-lg h-8`}><X className="w-4 h-3" /> Limpar</Button>}
                     </div>
@@ -172,10 +173,10 @@ const Processos = () => {
                         {showFilters && (
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 pt-2">
-                                    <select className={`${inputStyle}`} name="modalidade" value={filters.modalidade} onChange={handleFilterChange}><option value="">Todas Modalidades</option>{modalidades.map(m => <option key={m} value={m}>{m}</option>)}</select>
-                                    <select className={`${inputStyle}`} name="registro_precos" value={filters.registro_precos} onChange={handleFilterChange}><option value="">Reg. de Preços (Todos)</option><option value="true">Sim</option><option value="false">Não</option></select>
-                                    <input className={`${inputStyle}`} type="date" name="data_inicio" value={filters.data_inicio} onChange={handleFilterChange} />
-                                    <input className={`${inputStyle}`} type="date" name="data_fim" value={filters.data_fim} onChange={handleFilterChange} />
+                                    <select className={`${inputCampo}`} name="modalidade" value={filters.modalidade} onChange={handleFilterChange}><option value="">Todas Modalidades</option>{modalidades.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                                    <select className={`${inputCampo}`} name="registro_precos" value={filters.registro_precos} onChange={handleFilterChange}><option value="">Reg. de Preços (Todos)</option><option value="true">Sim</option><option value="false">Não</option></select>
+                                    <input className={`${inputCampo}`} type="date" name="data_inicio" value={filters.data_inicio} onChange={handleFilterChange} />
+                                    <input className={`${inputCampo}`} type="date" name="data_fim" value={filters.data_fim} onChange={handleFilterChange} />
                                 </div>
                             </motion.div>
                         )}
