@@ -30,26 +30,30 @@ const useAxios = () => {
             if (!isExpired) return req;
 
             try {
+
                 const response = await axios.post(`${baseURL}token/refresh/`, {
                     refresh: authTokens.refresh
-                    
+                }, {
+                    headers: {
+                    "Content-Type": "application/json"
+                    }
                 });
 
                 localStorage.setItem('authTokens', JSON.stringify(response.data));
                 setAuthTokens(response.data);
                 setUser(jwtDecode(response.data.access));
 
-                console.log("URL Refresh:", `${baseURL}token/refresh/`);
-                console.log("Sending refresh:", authTokens.refresh);
-                
                 req.headers.Authorization = `Bearer ${response.data.access}`;
                 return req;
 
-            } catch (error) {
+                } catch (error) {
+
+                console.error(" Response error:", error.response?.data);
+                console.error(" Full error:", error);
 
                 logoutUser();
                 return Promise.reject(error);
-            }
+                }
         });
 
         return instance;
