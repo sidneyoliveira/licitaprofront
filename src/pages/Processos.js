@@ -12,7 +12,7 @@ import { Search, Plus, Filter, Download, RefreshCw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Button = ({ children, variant, size, className, ...props }) => (
-    <button className={`flex items-center justify-center font-semibold gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 px-4 py-2 ${className}`} {...props}>
+    <button className={`flex items-center justify-center font-medium gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 px-4 py-2 ${className}`} {...props}>
         {children}
     </button>
 );
@@ -124,9 +124,9 @@ const Processos = () => {
 
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
 
-    const inputStyle = "w-full px-3 py-2 text-lg text-semibold rounded-xl focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
+    const inputStyle = "w-full px-3 py-2 text-md font-medium rounded-xl focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
     const labelStyle = "text-xs font-medium text-gray-600 dark:text-gray-300 mb-1";
-    const inputCampo = "w-full px-3 py-2 text-lg text-semibold focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-2xl border-[#bcd2e0] dark:border-dark-bg-primary";
+    const inputCampo = "w-full px-3 py-2 text-md text-medium focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-xl border-[#bcd2e0] dark:border-dark-bg-primary";
 
     const hasActiveFilters = useMemo(() => {
         return Object.values(filters).some(v => v !== '') || activeStatus !== '' || sortBy !== 'data_processo' || sortOrder !== 'desc';
@@ -141,17 +141,17 @@ const Processos = () => {
             {publishingProcess && <ModalPublicacao processo={publishingProcess} closeModal={() => setPublishingProcess(null)} onPublished={handlePublicationSave} />}
             {deletingProcessId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={() => setDeletingProcessId(null)} />}
 
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl p-4 mt-3 md:px-8 py-6">
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl p-4 mt-3 md:px-8 py-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
-                        <h1 className="text-4xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
-                        <p className="mt-1 text-lg text-light-text-secondary dark:text-dark-text-secondary">
+                        <h1 className="text-3xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
+                        <p className="mt-1 text-md text-light-text-secondary dark:text-dark-text-secondary">
                             Gerencie e acompanhe {processos.length} {processos.length === 1 ? 'licitação' : 'licitações'}
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} gap-2 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button>
-                        <Button onClick={handleCreate} className={`${inputStyle} gap-2 inline-flex items-center bg-accent-blue text-white shadow-md hover:bg-accent-blue/90 transition-colors`}><Plus className="w-4 h-4" /> Novo Processo</Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-items-end">
+                        <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button>
+                        <Button onClick={handleCreate} className={`${inputStyle} max-w-44 h-9 gap-1 inline-flex items-center bg-accent-blue text-white shadow-md hover:bg-accent-blue/90 transition-colors`}><Plus className="w-4 h-4 " /> Novo Processo</Button>
                     </div>
                 </div>
 

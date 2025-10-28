@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthContext from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import Breadcrumb from "./Breadcrumb";
+
 import { Bell, User, Menu, Sun, Moon, Archive as ArchiveIcon, LogOut as LogOutIcon } from 'lucide-react';
 
 const useClickOutside = (ref, handler) => {
@@ -28,27 +30,30 @@ const Header = ({ toggleSidebar }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="sticky top-0 z-40 mt-4 mx-6 rounded-3xl bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
+            className="sticky top-0 z-40 mt-4 mx-6 rounded-2xl bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
         >
             <div className="flex items-center justify-between p-3 h-16">
                 <button onClick={toggleSidebar} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                    <Menu className="w-5 h-5" />
+                    <Menu className="w-5 h-5 text-light-text-primary dark:text-dark-text-primary" />
                 </button>
+                <div className='itens-left flex-1 mx-4'>
+                    <Breadcrumb />
+                </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center">
                     <button onClick={toggleTheme} className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                        {isDark ? <Sun className="w-7 h-7" /> : <Moon className="w-7 h-7" />}
+                        {isDark ? <Sun className="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" /> : <Moon className="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" />}
                     </button>
 
                     <Link to="/notificacoes" className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors relative">
-                        <Bell className="w-7 h-7" />
+                        <Bell className="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" />
                         <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-yellow-400 rounded-full border-2 border-light-bg-secondary dark:border-dark-bg-secondary"></span>
                     </Link>
 
                     <div className="relative" ref={userMenuRef}>
                         <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                            <User className="w-7 h-7" />
-                                <span className="font-semibold text-lg">{(user?.first_name || user?.username || 'Olá, Usuario')}</span>
+                            <User className="w-6 h-6" />
+                                <span className="font-medium text-md text-light-text-primary dark:text-dark-text-primary">{(user?.first_name || user?.username || 'Olá, Usuario')}</span>
                         </button>
                         {userMenuOpen && (
                             <motion.div
