@@ -36,8 +36,7 @@ const Login = () => {
   return (
     <div className="flex h-screen bg-white overflow-hidden">
 
-      {/* LADO ESQUERDO - FORM */}
-      <div className="flex flex-col justify-center px-10 lg:px-16 w-full md:w-[50%] max-w-[720px] mx-auto">
+      <div className="flex flex-col justify-center mx-36 px-10 lg:px-16 w-full md:w-[50%] max-w-[600px]">
 
         <h1 className="text-3xl font-bold text-accent-blue mb-3">Acesse sua conta</h1>
         <p className="text-gray-600 mb-8">Faça login para gerenciar seus processos licitatórios.</p>
@@ -74,9 +73,7 @@ const Login = () => {
           <div>
             <div className="flex justify-between items-center">
               <label className="text-sm font-medium text-gray-700">Senha</label>
-              <button type="button" className="text-xs font-medium text-accent-blue hover:underline">
-                Esqueceu a senha?
-              </button>
+              
             </div>
             <input
               type="password"
@@ -86,6 +83,9 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <button type="button" className="text-xs justify-end font-medium text-accent-blue hover:underline">
+                Esqueceu a senha?
+              </button>
           </div>
 
           <button
