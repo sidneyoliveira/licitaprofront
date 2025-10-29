@@ -48,3 +48,33 @@ html {
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) var(--scroll-bg);
 }
+
+
+/* Estilo do botão invisível do Google personalizado */
+#googleSignInButton div[role="button"] {
+  font-family: 'Rubik', sans-serif !important; /* ✅ Fonte Rubik */
+  font-weight: 500 !important;
+  font-size: 15px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  width: 100% !important;
+  background: #f9fafb !important; /* bg-gray-50 */
+  color: #4b5563 !important; /* text-gray-700 */
+  border: 1px solid #d1d5db !important; /* border-gray-300 */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Hover state */
+#googleSignInButton div[role="button"]:hover {
+  background: #f3f4f6 !important; /* hover:bg-gray-100 */
+  cursor: pointer !important;
+}
+
+#googleSignInButton img {
+  width: 22px !important;
+  height: 22px !important;
+  margin-right: 10px !important;
+}

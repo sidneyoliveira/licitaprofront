@@ -1,4 +1,4 @@
-import React, { useEffect,useState, useContext } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -27,37 +27,49 @@ const Login = () => {
     }
   };
   
-  
-  // ✅ CALLBACK do Google
-  const handleGoogleCallback = async (response) => {
-    if (!response.credential) {
-      showToast("Erro ao coletar token do Google", "error");
-      return;
-    }
+// ✅ Adicione um ref para o botão do Google invisível
+const googleBtnRef = useRef(null);
 
-    try {
-      await loginWithGoogle(response.credential);
-    } catch (err) {
-      showToast("Erro ao autenticar com Google.", "error");
-    }
-  };
+// ✅ Callback do Google
+const handleGoogleCallback = async (response) => {
+  console.log("Token:", response?.credential);
+  if (!response?.credential) {
+    showToast("Falha ao obter credencial Google", "error");
+    return;
+  }
+  await loginWithGoogle(response.credential);
+};
+useEffect(() => {
+  if (window.google) {
+    window.google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      callback: handleGoogleCallback,
+      ux_mode: "popup",
+      auto_select: false,
+      use_fedcm_for_prompt: false,
+    });
 
-  // ✅ Inicializa o Google ao montar a tela (não no clique!)
-  useEffect(() => {
-    /* global google */
-    if (window.google) {
-      google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        callback: handleGoogleCallback,
-      });
-    }
-  }, []);
+    // ✅ Único botão do Google — e já estilizado via container
+    window.google.accounts.id.renderButton(
+      document.getElementById("googleSignInButton"),
+      {
+        type: "standard",
+        theme: "outline",            // ✅ fundo cinza claro
+        size: "large",               // ✅ maior e igual ao seu
+        width: "100%",               // ✅ ocupa toda a largura
+        text: "continue_with",       // ✅ texto maior e mais claro
+        shape: "pill",               // ✅ bordas arredondadas
+        logo_alignment: "left",      // ✅ ícone Google à esquerda
+      }
+    );
+  }
+}, []);
 
-  // ✅ Agora o clique apenas exibe o prompt
-  const handleGoogleAuth = () => {
-    /* global google */
-    google.accounts.id.prompt();
-  };
+// ✅ Seu botão força clique no botão Google invisível
+const handleGoogleAuth = () => {
+  console.log("Clicou no login com Google ✅");
+  googleBtnRef.current.querySelector("div").click();
+};
 
 
   return (
@@ -68,14 +80,19 @@ const Login = () => {
         <h1 className="text-3xl font-bold text-accent-blue mb-3">Acesse sua conta</h1>
         <p className="text-gray-600 mb-8">Faça login para gerenciar seus processos licitatórios.</p>
 
-        <button
+        <div id="googleSignInButton" className="w-full mt-2"></div>
+
+        {/* <button
           type="button"
           onClick={handleGoogleAuth}
           className="flex items-center justify-center gap-3 w-full py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition text-gray-700 shadow-sm"
-        >
+        > <div ref={googleBtnRef} style={{ display: "none" }}></div>
+
           <FcGoogle size={20} />
           Entrar com Google
-        </button>
+        </button> */}
+
+
 
         <div className="my-6 flex items-center gap-2">
           <span className="flex-grow border-t border-gray-300"></span>
