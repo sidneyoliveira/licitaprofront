@@ -1,9 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useEffect,useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { FcGoogle } from "react-icons/fc";
 import LogoBranco from "../assets/img/logo_branco.png";
+
+console.log("GOOGLE ID ENV:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -24,14 +26,39 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
+  
+  // ✅ CALLBACK do Google
+  const handleGoogleCallback = async (response) => {
+    if (!response.credential) {
+      showToast("Erro ao coletar token do Google", "error");
+      return;
+    }
 
-  const handleGoogleAuth = async () => {
     try {
-      await loginWithGoogle();
-    } catch (error) {
-      showToast('Erro ao autenticar com Google.', 'error');
+      await loginWithGoogle(response.credential);
+    } catch (err) {
+      showToast("Erro ao autenticar com Google.", "error");
     }
   };
+
+  // ✅ Inicializa o Google ao montar a tela (não no clique!)
+  useEffect(() => {
+    /* global google */
+    if (window.google) {
+      google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        callback: handleGoogleCallback,
+      });
+    }
+  }, []);
+
+  // ✅ Agora o clique apenas exibe o prompt
+  const handleGoogleAuth = () => {
+    /* global google */
+    google.accounts.id.prompt();
+  };
+
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">
