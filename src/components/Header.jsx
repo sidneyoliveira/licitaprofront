@@ -30,9 +30,9 @@ const Header = ({ toggleSidebar }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="sticky top-0 z-40 mt-4 mx-6 rounded-2xl bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
+            className="sticky top-0 z-40 mt-4 mx-6 rounded-3xl bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
         >
-            <div className="flex items-center justify-between p-3 h-16">
+            <div className="flex items-center justify-between p-4 h-12">
                 <button onClick={toggleSidebar} className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                     <Menu className="w-5 h-5 text-light-text-primary dark:text-dark-text-primary" />
                 </button>

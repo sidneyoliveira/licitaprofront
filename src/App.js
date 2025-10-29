@@ -21,6 +21,7 @@ import Notificacoes from './pages/Notificacoes';
 import Perfil from './pages/Perfil';
 import Configuracoes from './pages/Configuracoes';
 import PaginaProcesso from './pages/PaginaProcesso';
+import CompleteProfile from './pages/CompleteProfile';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
                         <Route path="/entidades" element={<Entidades />} /> 
                         <Route path="/fornecedores" element={<Fornecedores />} />
                         <Route path="/usuarios" element={<Usuarios />} />
+                        <Route path="/complete-profile" element={<CompleteProfile />} />
                         <Route path="/notificacoes" element={<Notificacoes />} />
                         <Route path="/perfil" element={<Perfil />} />
                         <Route path="/configuracoes" element={<Configuracoes />} />

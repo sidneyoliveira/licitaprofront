@@ -13,6 +13,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { loginUser, loginWithGoogle } = useContext(AuthContext);
   const { showToast } = useToast();
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,15 +31,24 @@ const Login = () => {
 // ✅ Adicione um ref para o botão do Google invisível
 const googleBtnRef = useRef(null);
 
-// ✅ Callback do Google
 const handleGoogleCallback = async (response) => {
   console.log("Token:", response?.credential);
+  
   if (!response?.credential) {
     showToast("Falha ao obter credencial Google", "error");
+    setGoogleLoading(false);
     return;
   }
-  await loginWithGoogle(response.credential);
+
+  try {
+    await loginWithGoogle(response.credential);
+  } catch {
+    showToast("Erro ao autenticar com Google.", "error");
+  } finally {
+    setGoogleLoading(false);
+  }
 };
+
 useEffect(() => {
   if (window.google) {
     window.google.accounts.id.initialize({
@@ -63,12 +73,13 @@ useEffect(() => {
       }
     );
   }
-}, []);
+}, [handleGoogleCallback]);
 
-// ✅ Seu botão força clique no botão Google invisível
+
 const handleGoogleAuth = () => {
   console.log("Clicou no login com Google ✅");
-  googleBtnRef.current.querySelector("div").click();
+  setGoogleLoading(true);
+  googleBtnRef.current?.querySelector("div")?.click();
 };
 
 
@@ -80,7 +91,7 @@ const handleGoogleAuth = () => {
         <h1 className="text-3xl font-bold text-accent-blue mb-3">Acesse sua conta</h1>
         <p className="text-gray-600 mb-8">Faça login para gerenciar seus processos licitatórios.</p>
 
-        <div id="googleSignInButton" className="w-full mt-2"></div>
+        <div id="googleSignInButton" className="w-full mt-2" onClick={handleGoogleAuth}></div>
 
         {/* <button
           type="button"
