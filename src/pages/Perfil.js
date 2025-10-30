@@ -13,6 +13,7 @@ const Perfil = () => {
   const api = useAxios();
   const { showToast } = useToast();
   const fileInputRef = useRef();
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // 🔹 Carrega dados do usuário
   useEffect(() => {
@@ -47,40 +48,58 @@ const Perfil = () => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setPreview(URL.createObjectURL(file));
-
-    const formData = new FormData();
-    formData.append("profile_image", file);
-
-    try {
-      await api.put("/me/", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      showToast("Foto de perfil atualizada com sucesso!", "success");
-    } catch {
-      showToast("Erro ao enviar a foto de perfil.", "error");
-    }
-  };
+  const handleImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file)); 
+  }
+};
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (passwords.password && passwords.password !== passwords.confirm_password) {
-      showToast("As senhas não coincidem!", "error");
-      return;
+  e.preventDefault();
+
+  if (passwords.password !== passwords.confirm_password) {
+    showToast("As senhas não coincidem!", "error");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+
+    // 🔹 Campos normais
+    Object.entries(user).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value);
+      }
+    });
+
+    // 🔹 Senha (opcional)
+    if (passwords.password) {
+      formData.append("password", passwords.password);
     }
 
-    try {
-      const payload = { ...user, password: passwords.password || undefined };
-      const { data } = await api.put("/me/", payload);
-      setUser(data);
-      setPasswords({ password: "", confirm_password: "" });
-      showToast("Perfil atualizado com sucesso!", "success");
-    } catch {
-      showToast("Erro ao atualizar perfil.", "error");
+    // 🔹 Imagem (se o usuário selecionou)
+    if (selectedFile) {
+      formData.append("profile_image", selectedFile);
     }
-  };
+
+    // Envio como multipart/form-data
+    const response = await api.put("/me/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    setUser(response.data);
+    showToast("Perfil atualizado com sucesso!", "success");
+    setPasswords({ password: "", confirm_password: "" });
+
+  } catch (error) {
+    console.error(error);
+    showToast("Erro ao atualizar perfil.", "error");
+  }
+};
 
   if (!user) return <div className="text-center py-10">Carregando perfil...</div>;
 
@@ -109,16 +128,16 @@ const Perfil = () => {
           {/* Foto */}
           <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md group">
             <img
-              src={
-                preview ||
-                user.profile_image ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  user.first_name || "U"
-                )}&background=0d3977&color=fff`
-              }
-              alt="Foto do Usuário"
-              className="object-cover w-full h-full group-hover:opacity-80 transition"
+                src={
+                    preview ||
+                    user.profile_image ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name || "U")}&background=0d3977&color=fff`
+                }
+                alt="Foto do Usuário"
+                className="object-cover w-full h-full group-hover:opacity-80 transition"
+                
             />
+
             <div
               className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition"
               onClick={() => fileInputRef.current.click()}

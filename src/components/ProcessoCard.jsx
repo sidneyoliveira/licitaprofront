@@ -1,36 +1,35 @@
 // frontend/src/components/ProcessoCard.jsx
 
 import React from 'react';
-import { Building2, Download, Eye, PencilLine, Trash2, CalendarDays, Clock3 } from 'lucide-react';
+import { Building2, Download, Eye, PencilLine, Trash2 } from 'lucide-react';
+import { data } from 'autoprefixer';
 
 const InfoPill = ({ label, value }) => (
-  <div className="rounded-2xl bg-light-bg-primary/60 dark:bg-white/5 px-4 py-3">
-    <p className="text-xs font-semibold uppercase tracking-wide text-light-text-secondary/70 dark:text-dark-text-secondary/70">
+  <div className="flex flex-col">
+    <span className="text-[13px] font-bold text-[#1a1a1a]/80 uppercase tracking-wide">
       {label}
-    </p>
-    <p className="mt-1 text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-      {value || '-'}
-    </p>
+    </span>
+    <span className="text-[15px] font-semibold text-[#001a33]">{value || '-'}</span>
   </div>
 );
 
 const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
   const getSituacaoStyle = (situacao) => {
-    const baseStyle = 'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold';
+    const baseStyle = 'px-3 py-1.5 rounded-md text-xs font-bold uppercase';
     switch (situacao) {
       case 'Aberto':
       case 'Publicado':
-        return `${baseStyle} bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200`;
+        return `${baseStyle} bg-[#007bff] text-white`;
       case 'Em Pesquisa':
       case 'Aguardando Publicação':
       case 'Em Contratação':
-        return `${baseStyle} bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200`;
+        return `${baseStyle} bg-amber-500/10 text-amber-700`;
       case 'Adjudicado/Homologado':
-        return `${baseStyle} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200`;
+        return `${baseStyle} bg-emerald-600/10 text-emerald-700`;
       case 'Revogado/Cancelado':
-        return `${baseStyle} bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200`;
+        return `${baseStyle} bg-rose-600/10 text-rose-700`;
       default:
-        return `${baseStyle} bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-200`;
+        return `${baseStyle} bg-slate-200 text-slate-700`;
     }
   };
 
@@ -61,54 +60,92 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
     return numeric.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
+  // 🟩 Função para gerar o CSV
+  const exportToCSV = () => {
+    const headers = [
+      'Número do Processo',
+      'Número do Certame',
+      'Modalidade',
+      'Classificação',
+      'Objeto',
+      'Secretaria',
+      'Entidade',
+      'Órgão',
+      'Data de Cadastro',
+      'Data do Certame',
+      'Registro de Preços',
+      'Valor de Referência',
+      'Situação'
+    ];
+
+    const values = [
+      processo.numero_processo || '',
+      processo.numero_certame || '',
+      processo.modalidade || '',
+      processo.classificacao || '',
+      processo.objeto || '',
+      processo.secretaria || '',
+      processo.entidade_nome || '',
+      processo.orgao || '',
+      cadastroFormatado || '',
+      aberturaFormatada || '',
+      processo.registro_precos ? 'Sim' : 'Não',
+      valorPrevisto || '',
+      processo.situacao || ''
+    ];
+
+    const csvContent = '\uFEFF' + [headers.join(';'), values.join(';')].join('\n');
+
+  // Cria o blob com codificação UTF-8
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `processo_${processo.numero_processo || 'dados'}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+  
   const aberturaFormatada = formatDate(processo.data_abertura, { dateStyle: 'short', timeStyle: 'short' });
   const cadastroFormatado = formatDate(processo.data_processo, { dateStyle: 'short' });
-  const valorPrevisto = formatCurrency(processo.valor_previsto ?? processo.valor_estimado ?? processo.valor_total);
+  const valorPrevisto = formatCurrency(processo.valor_referencia, {dateStyle: 'short'});
 
   return (
-    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-3xl p-6 space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-        <div className="flex-1 space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-accent-blue/10 text-accent-blue">
-              {processo.modalidade || 'Modalidade não informada'}
+    <div className="bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-0 overflow-hidden">
+      {/* Cabeçalho */}
+      <div className="flex flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-5 py-3 rounded-t-2xl">
+        <div className="flex flex-wrap items-center gap-3">
+          {processo.secretaria && (
+            <span className="px-3 py-1 text-sm font-medium bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-md border border-slate-200">
+              {processo.secretaria}
             </span>
-            {processo.entidade_nome && (
-              <span className="inline-flex items-center gap-2 text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">
-                <Building2 className="w-4 h-4" />
-                {processo.entidade_nome}
-              </span>
-            )}
-            {processo.situacao && (
-              <span className={getSituacaoStyle(processo.situacao)}>{processo.situacao}</span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <h3 className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary">
-              Processo Nº {processo.numero_processo || '—'}
-            </h3>
-            {processo.numero_certame && (
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-accent-blue text-white shadow-md">
-                Nº {numeroCertame}/{anoCertame}{siglaModalidade ? `-${siglaModalidade}` : ''}
-              </span>
-            )}
-          </div>
+          )}
+          {processo.entidade_nome && (
+            <span className="px-3 py-1 text-sm font-semibold bg-accent-blue text-white rounded-md">
+              {processo.entidade_nome}
+            </span>
+          )}
+          {processo.orgao && (
+            <span className="px-3 py-1 text-sm font-medium bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300  dark:bg-[#0F294A] border border-[#bcd2e0] dark:border-[#1c4274] rounded-md">
+              {processo.orgao_nome}
+            </span>
+          )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {onExport && (
-            <button
-              onClick={() => onExport(processo)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-accent-blue bg-accent-blue/10 hover:bg-accent-blue/20 transition-colors"
-            >
-              <Download className="w-4 h-4" /> Exportar
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+
+           <button
+            onClick={exportToCSV}
+            variant="outline"
+            className="max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors px-3 rounded-md font-medium text-sm"
+          >
+            <Download className="w-4 h-4" /> Exportar
+          </button>
+
           {onView && (
             <button
-              onClick={() => onView(processo.id)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-accent-blue text-white shadow-md hover:bg-accent-blue/90 transition-colors"
+              onClick={() => onView(processo)}
+              className="bg-accent-blue hover:bg-accent-blue/90 text-white px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors"
             >
               <Eye className="w-4 h-4" /> Visualizar
             </button>
@@ -116,8 +153,8 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
           {onEdit && (
             <button
               onClick={() => onEdit(processo)}
-              className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-light-bg-primary/80 dark:bg-white/10 text-accent-blue hover:bg-accent-blue/10 transition-colors"
-              title="Editar processo"
+              className="h-10 w-10 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-800"
+              title="Editar"
             >
               <PencilLine className="w-4 h-4" />
             </button>
@@ -125,8 +162,8 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
           {onDelete && (
             <button
               onClick={() => onDelete(processo.id)}
-              className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-light-bg-primary/80 dark:bg-white/10 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-              title="Excluir processo"
+              className="h-10 w-10 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-700 text-red-600 hover:bg-red-50 dark:hover:bg-red-800"
+              title="Excluir"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -134,53 +171,41 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-light-bg-primary/70 dark:bg-white/5 p-5 space-y-2">
-        {processo.classificacao && (
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue">{processo.classificacao}</p>
-        )}
-        <p className="text-sm md:text-base text-light-text-primary dark:text-dark-text-primary leading-relaxed">
-          {processo.objeto || 'Nenhum objeto informado para este processo.'}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <InfoPill
-          label="Data de Cadastro"
-          value={cadastroFormatado}
-        />
-        <InfoPill
-          label="Data de Abertura"
-          value={aberturaFormatada}
-        />
-        <InfoPill
-          label="Registro de Preços"
-          value={processo.registro_precos ? 'Sim' : 'Não'}
-        />
-        <InfoPill
-          label="Valor Previsto"
-          value={valorPrevisto || 'Não informado'}
-        />
-      </div>
-
-      {(processo.local_sessao || processo.horario_sessao) && (
-        <div className="flex flex-wrap items-center gap-4 text-sm text-light-text-secondary dark:text-dark-text-secondary">
-          {processo.local_sessao && (
-            <span className="inline-flex items-center gap-2">
-              <Building2 className="w-4 h-4" /> {processo.local_sessao}
-            </span>
-          )}
-          {processo.horario_sessao && (
-            <span className="inline-flex items-center gap-2">
-              <Clock3 className="w-4 h-4" /> {processo.horario_sessao}
-            </span>
-          )}
-          {processo.data_sessao && (
-            <span className="inline-flex items-center gap-2">
-              <CalendarDays className="w-4 h-4" /> {formatDate(processo.data_sessao, { dateStyle: 'short', timeStyle: 'short' })}
+      {/* Corpo */}
+      <div className="p-6 space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <h3 className="text-xl font-bold text-[#001a33] dark:text-white">
+            {processo.modalidade || 'Modalidade não informada'}
+          </h3>
+          {processo.numero_certame && (
+            <span className="bg-[#ffcc00] text-[#1a1a1a] text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
+              {numeroCertame}/{anoCertame}{siglaModalidade ? `-${siglaModalidade}` : ''}
             </span>
           )}
         </div>
-      )}
+
+        <p className="text-[15px] leading-relaxed text-[#1a1a1a]/80 dark:text-slate-200">
+          {processo.objeto || 'Nenhum objeto informado para este processo.'}
+        </p>
+
+        {/* Informações inferiores */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <InfoPill label="Data de Cadastro" value={cadastroFormatado} />
+          <InfoPill label="Data do Certame" value={aberturaFormatada} />
+          <InfoPill label="Registro de Preços" value={processo.registro_precos ? 'Sim' : 'Não'} />
+          <InfoPill label="Valor de Referência" value={valorPrevisto || 'Não informado'} />
+          <div className="flex flex-col items-start">
+            <span className="text-[13px] font-bold text-[#1a1a1a]/80 uppercase tracking-wide">
+              Situação
+            </span>
+            {processo.situacao && (
+              <span className={`${getSituacaoStyle(processo.situacao)} mt-1`}>
+                {processo.situacao}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

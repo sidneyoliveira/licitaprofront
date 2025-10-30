@@ -1,109 +1,108 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { FcGoogle } from "react-icons/fc";
+import React, { useState, useContext, useEffect } from "react";
+import { Link } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import LogoBranco from "../assets/img/logo_branco.png";
 
-console.log("GOOGLE ID ENV:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
-
+// ======= COMPONENTE LOGIN =======
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { loginUser, loginWithGoogle } = useContext(AuthContext);
   const { showToast } = useToast();
-  const [googleLoading, setGoogleLoading] = useState(false);
 
+  // ======= LOGIN NORMAL =======
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       await loginUser(username, password);
-    } catch (error) {
-      showToast('Credenciais inválidas ou servidor indisponível.', 'error');
+    } catch {
+      showToast("Credenciais inválidas ou servidor indisponível.", "error");
     } finally {
       setIsLoading(false);
     }
   };
-  
-// ✅ Adicione um ref para o botão do Google invisível
-const googleBtnRef = useRef(null);
 
-const handleGoogleCallback = async (response) => {
-  console.log("Token:", response?.credential);
-  
-  if (!response?.credential) {
-    showToast("Falha ao obter credencial Google", "error");
-    setGoogleLoading(false);
-    return;
-  }
+  // ======= LOGIN COM GOOGLE =======
+  const handleGoogleCallback = async (response) => {
+    if (!response?.credential) {
+      showToast("Falha ao obter credencial Google", "error");
+      return;
+    }
+    try {
+      await loginWithGoogle(response.credential);
+    } catch {
+      showToast("Erro ao autenticar com Google.", "error");
+    }
+  };
 
-  try {
-    await loginWithGoogle(response.credential);
-  } catch {
-    showToast("Erro ao autenticar com Google.", "error");
-  } finally {
-    setGoogleLoading(false);
-  }
-};
+  // ======= INICIALIZA O GOOGLE SIGN-IN =======
+  useEffect(() => {
+    const initializeGoogle = () => {
+      if (window.google?.accounts?.id) {
 
-useEffect(() => {
-  if (window.google) {
-    window.google.accounts.id.initialize({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      callback: handleGoogleCallback,
-      ux_mode: "popup",
-      auto_select: false,
-      use_fedcm_for_prompt: false,
-    });
+        window.google.accounts.id.initialize({
+          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+          ux_mode: "popup",
+          auto_select: false,
+          use_fedcm_for_prompt: false,
+        });
 
-    // ✅ Único botão do Google — e já estilizado via container
-    window.google.accounts.id.renderButton(
-      document.getElementById("googleSignInButton"),
-      {
-        type: "standard",
-        theme: "outline",            // ✅ fundo cinza claro
-        size: "large",               // ✅ maior e igual ao seu
-        width: "100%",               // ✅ ocupa toda a largura
-        text: "continue_with",       // ✅ texto maior e mais claro
-        shape: "pill",               // ✅ bordas arredondadas
-        logo_alignment: "left",      // ✅ ícone Google à esquerda
+        const buttonDiv = document.getElementById("googleSignInDiv");
+        if (buttonDiv) {
+
+          buttonDiv.style.display = "flex";
+          buttonDiv.style.justifyContent = "center";
+
+          window.google.accounts.id.renderButton(buttonDiv, {
+            theme: "outline",
+            size: "large",
+            shape: "pill",
+            width: 400,
+          });
+
+          // Corrige visualmente o tamanho total via CSS (força 100%)
+          const googleButton = buttonDiv.querySelector("div[role='button']");
+          if (googleButton) {
+            googleButton.style.justifyContent = "center";
+          }
+        }
       }
-    );
-  }
-}, [handleGoogleCallback]);
+    };
 
-
-const handleGoogleAuth = () => {
-  console.log("Clicou no login com Google ✅");
-  setGoogleLoading(true);
-  googleBtnRef.current?.querySelector("div")?.click();
-};
-
+    // Garante que o script esteja carregado
+    if (!window.google) {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogle;
+      document.body.appendChild(script);
+    } else {
+      initializeGoogle();
+    }
+  }, []);
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">
+      {/* ==== COLUNA ESQUERDA ==== */}
+      <div className="flex flex-col justify-center mx-10 md:mx-36 px-6 lg:px-16 w-full md:w-[50%] max-w-[600px]">
+        <h1 className="text-3xl font-bold text-accent-blue mb-2">
+          Acesse sua conta
+        </h1>
+        <p className="text-gray-600 mb-8">
+          Faça login para gerenciar seus processos licitatórios.
+        </p>
 
-      <div className="flex flex-col justify-center mx-36 px-10 lg:px-16 w-full md:w-[50%] max-w-[600px]">
-
-        <h1 className="text-3xl font-bold text-accent-blue mb-3">Acesse sua conta</h1>
-        <p className="text-gray-600 mb-8">Faça login para gerenciar seus processos licitatórios.</p>
-
-        <div id="googleSignInButton" className="w-full mt-2" onClick={handleGoogleAuth}></div>
-
-        {/* <button
-          type="button"
-          onClick={handleGoogleAuth}
-          className="flex items-center justify-center gap-3 w-full py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition text-gray-700 shadow-sm"
-        > <div ref={googleBtnRef} style={{ display: "none" }}></div>
-
-          <FcGoogle size={20} />
-          Entrar com Google
-        </button> */}
-
-
+        {/* ====== GOOGLE LOGIN ====== */}
+        <div
+          id="googleSignInDiv"
+          className="flex justify-center w-full"
+          style={{ minHeight: "48px" }}
+        ></div>
 
         <div className="my-6 flex items-center gap-2">
           <span className="flex-grow border-t border-gray-300"></span>
@@ -111,10 +110,12 @@ const handleGoogleAuth = () => {
           <span className="flex-grow border-t border-gray-300"></span>
         </div>
 
+        {/* ====== LOGIN NORMAL ====== */}
         <form onSubmit={handleSubmit} className="space-y-5">
-
           <div>
-            <label className="text-sm font-medium text-gray-700">Usuário ou E-mail</label>
+            <label className="text-sm font-medium text-gray-700">
+              Usuário ou E-mail
+            </label>
             <input
               type="text"
               className="w-full mt-1 px-3 py-3 border rounded-xl bg-white focus:ring-2 focus:ring-accent-blue focus:outline-none"
@@ -126,10 +127,7 @@ const handleGoogleAuth = () => {
           </div>
 
           <div>
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-gray-700">Senha</label>
-              
-            </div>
+            <label className="text-sm font-medium text-gray-700">Senha</label>
             <input
               type="password"
               className="w-full mt-1 px-3 py-3 border rounded-xl focus:ring-2 focus:ring-accent-blue focus:outline-none"
@@ -138,47 +136,53 @@ const handleGoogleAuth = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <button type="button" className="text-xs justify-end font-medium text-accent-blue hover:underline">
-                Esqueceu a senha?
-              </button>
+            <button
+              type="button"
+              className="text-xs font-medium text-accent-blue hover:underline mt-1"
+            >
+              Esqueceu a senha?
+            </button>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-accent-blue text-white py-3 rounded-xl font-semibold hover:bg-accent-blue transition disabled:opacity-50"
+            className="w-full bg-accent-blue text-white py-3 rounded-xl font-semibold hover:bg-[#0043c2] transition disabled:opacity-50"
           >
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {isLoading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
+        {/* ====== CADASTRO ====== */}
         <p className="text-sm text-gray-700 mt-6 text-center">
           Não tem uma conta?
-          <Link to="/register" className="font-semibold text-accent-blue hover:underline">
+          <Link
+            to="/register"
+            className="font-semibold text-accent-blue hover:underline"
+          >
             &nbsp;Cadastre-se
           </Link>
         </p>
       </div>
 
-      {/* LADO DIREITO - LOGO + FUNDO */}
-      <div className="hidden md:flex flex-1 items-center justify-center text-white bg-gradient-to-b from-accent-blue to-[#0d3977]">
+      {/* ==== COLUNA DIREITA ==== */}
+      <div className="hidden md:flex flex-1 items-center justify-center bg-gradient-to-b from-accent-blue to-[#0d3977] text-white">
         <div className="text-center px-6">
-
-          {/* LOGO */}
           <img
             src={LogoBranco}
             alt="L3 Solutions Logo"
             className="w-52 mx-auto drop-shadow-xl"
           />
 
-          <div class="flex items-center justify-center gap-6 px-4 py-4 mt-3">
-            <div class="w-10 h-10 flex items-center text-5xl font-extrabold text-white ">L3</div>
-            <h1 class="text-5xl font-normal tracking-tight text-gray-200">SOLUTIONS</h1>
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-5xl font-extrabold text-white">L3</div>
+            <h1 className="text-5xl font-normal tracking-tight text-gray-200">
+              SOLUTIONS
+            </h1>
           </div>
 
           <p className="mt-4 text-white/90 leading-relaxed">
-            Sistema de Gestão de<br/>
-            Processos Licitatórios
+            Gestão de Processos
           </p>
 
           <p className="mt-10 text-white/70 text-sm">
@@ -186,7 +190,6 @@ const handleGoogleAuth = () => {
           </p>
         </div>
       </div>
-
     </div>
   );
 };
