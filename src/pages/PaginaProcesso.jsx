@@ -101,9 +101,9 @@ const TabButton = ({ label, isActive, onClick, isDisabled }) => (
         type="button"
         onClick={onClick}
         disabled={isDisabled}
-        className={`px-4 py-3 text-sm font-bold border-b-2 transition-none
+        className={`px-4 py-3 text-md font-semibold border-b-2 transition-none
         ${isActive
-            ? 'text-[#004aad] border-[#FFD60A]'
+            ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
             : isDisabled
                 ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
                 : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
@@ -331,6 +331,7 @@ const FornecedorModal = ({
             </button>
           )}
         </div>
+        
 
         {showForm ? (
           <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-4 text-sm">
@@ -975,49 +976,32 @@ export default function PaginaProcesso() {
             )}
 
             {/* --- LAYOUT DA PÁGINA --- */}
-            <div className="bg-slate-100 dark:bg-dark-bg-primary min-h-full">
-                {/* Faixa institucional */}
-                <div className="bg-[#004aad] text-white">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                                <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center ring-1 ring-white/20">
-                                    <BuildingOffice2Icon className="h-5 w-5 text-white" />
-                                </div>
-                                <div>
-                                    <div className="text-sm uppercase tracking-[0.12em] opacity-90">Prefeitura Municipal de Itarema</div>
-                                    <h1 className="text-xl font-bold leading-tight">
-                                        {isNewProcess ? "Novo Processo Licitatório" : `Processo Nº ${formData.numero_processo || '...'}`}
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl p-4 mx-2 mt-3 md:px-8 py-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                    <h1 className="text-2xl font-bold leading-tight">
+                                        Novo Processo Licitatório
                                     </h1>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                        Preencha os dados para criar um novo processo licitatório.
+                                    </p>
                                 </div>
-                            </div>
-
-                            {/* Tarja do número de certame */}
-                            <div className="flex items-center gap-2">
-                                {formData.numero_certame && (
-                                    <span className="inline-flex items-center rounded-md bg-[#FFD60A] text-[#1a1a1a] px-4 py-2 text-sm font-extrabold shadow-sm">
-                                        {formData.numero_certame}
-                                    </span>
-                                )}
-                                <StatusTag status={formData.situacao} />
-                            </div>
+                            
                         </div>
-                    </div>
-                </div>
+            </div>
 
                 {/* Container principal */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl px-4 py-4 mx-2 mt-6 md:px-4">
 
                         {/* Abas */}
-                        <nav className="flex gap-6 px-6 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
+                        <nav className="flex gap-2 px-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
                             <TabButton label="Visão Geral" isActive={activeTab === "dadosGerais"} onClick={() => setActiveTab("dadosGerais")} />
                             <TabButton label="Itens do Processo" isActive={activeTab === "itens"} onClick={() => setActiveTab("itens")} isDisabled={isNewProcess} />
                             <TabButton label="Fornecedores" isActive={activeTab === "fornecedores"} onClick={() => setActiveTab("fornecedores")} isDisabled={isNewProcess} />
                         </nav>
 
                         {/* Conteúdo */}
-                        <main className="p-6">
+                        <main className="p-2 mx-4">
                             <AnimatePresence mode="wait">
                                 <motion.div
                                   key={activeTab}
@@ -1027,17 +1011,11 @@ export default function PaginaProcesso() {
                                   transition={{ duration: 0 }}
                                 >
                                     {/* --- ABA DADOS GERAIS --- */}
-                                    {activeTab === "dadosGerais" && (
-                                        isEditing ? (
+                                    {activeTab === "dadosGerais" && 
+
                                             // MODO DE EDIÇÃO (FORMULÁRIO)
                                             <form onSubmit={handleSaveDadosGerais} className="space-y-6">
-                                                {/* Cabeçalho da seção */}
-                                                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 bg-slate-50/40 dark:bg-slate-800/40">
-                                                    <div className="text-sm font-bold text-slate-800 dark:text-white">Dados do Processo</div>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400">Preencha os campos obrigatórios para registrar o processo.</p>
-                                                </div>
-
-                                                <div className="grid lg:grid-cols-2 gap-6">
+                                                <div className="grid lg:grid-cols-2 gap-4">
                                                     <div>
                                                         <label className={labelStyle}>Objeto *</label>
                                                         <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} h-28`} required />
@@ -1063,7 +1041,7 @@ export default function PaginaProcesso() {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid md:grid-cols-4 gap-6">
+                                                <div className="grid md:grid-cols-5 gap-4">
                                                     <div>
                                                         <label className={labelStyle}>Modalidade *</label>
                                                         <select name="modalidade" value={formData.modalidade} onChange={handleChange} className={inputStyle} required>
@@ -1086,14 +1064,17 @@ export default function PaginaProcesso() {
                                                         </select>
                                                     </div>
                                                     <div>
-                                                        <label className={labelStyle}>Situação *</label>
-                                                        <select name="situacao" value={formData.situacao} onChange={handleChange} className={inputStyle} required>
-                                                            {situacoes.map(s => (<option key={s} value={s}>{s}</option>))}
-                                                        </select>
+                                                        <label className={labelStyle}>Valor de Referência (R$)</label>
+                                                        <input name="valor_referencia" type="number" step="0.01" value={formData.valor_referencia || ''} onChange={handleChange} placeholder="0,00" className={`${inputStyle} text-right`} />
                                                     </div>
+                                                    <div>
+                                                        <label className={labelStyle}>Vigência (Meses) *</label>
+                                                        <input name="vigencia_meses" type="number" min="1" value={formData.vigencia_meses || ''} onChange={handleChange} placeholder="12" className={`${inputStyle} text-center`} />
+                                                    </div>
+                                                   
                                                 </div>
 
-                                                <div className="grid md:grid-cols-2 gap-6">
+                                                <div className="grid md:grid-cols-3 gap-4">
                                                     <div>
                                                         <label className={labelStyle}>Entidade *</label>
                                                         <select name="entidade" value={formData.entidade} onChange={handleChange} className={inputStyle} required>
@@ -1108,17 +1089,13 @@ export default function PaginaProcesso() {
                                                             {orgaos.map(o => (<option key={o.id} value={o.id}>{o.nome}</option>))}
                                                         </select>
                                                     </div>
-                                                </div>
-
-                                                <div className="grid md:grid-cols-4 gap-6">
-                                                    <div>
-                                                        <label className={labelStyle}>Valor de Referência (R$)</label>
-                                                        <input name="valor_referencia" type="number" step="0.01" value={formData.valor_referencia || ''} onChange={handleChange} placeholder="0,00" className={`${inputStyle} text-right`} />
+                                                     <div>
+                                                        <label className={labelStyle}>Situação *</label>
+                                                        <select name="situacao" value={formData.situacao} onChange={handleChange} className={inputStyle} required>
+                                                            {situacoes.map(s => (<option key={s} value={s}>{s}</option>))}
+                                                        </select>
                                                     </div>
-                                                    <div>
-                                                        <label className={labelStyle}>Vigência (Meses) *</label>
-                                                        <input name="vigencia_meses" type="number" min="1" value={formData.vigencia_meses || ''} onChange={handleChange} placeholder="12" className={`${inputStyle} text-center`} />
-                                                    </div>
+                                                    
                                                 </div>
 
                                                 <div className="flex justify-center gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -1126,44 +1103,44 @@ export default function PaginaProcesso() {
                                                     <ActionButton text={isNewProcess ? "Salvar e Continuar" : "Salvar Alterações"} onClick={handleSaveDadosGerais} variant="primary" icon={CheckCircleIcon} disabled={isLoading} />
                                                 </div>
                                             </form>
-                                        ) : (
-                                            // MODO DE VISUALIZAÇÃO
-                                            <div className="space-y-6">
-                                                <div className="flex flex-wrap items-start justify-between gap-4">
-                                                    <div className="flex-1 min-w-[260px]">
-                                                        <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Detalhes da Licitação</h2>
-                                                        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{formData.objeto}</p>
-                                                    </div>
-                                                    <button onClick={() => setIsEditing(true)} className="text-sm font-bold text-[#004aad] hover:text-[#003d91] inline-flex items-center gap-1">
-                                                        <PencilIcon className="w-4 h-4" />
-                                                        Editar
-                                                    </button>
-                                                </div>
+                                            
+                                        // ) : (
+                                        //     // MODO DE VISUALIZAÇÃO
+                                        //     <div className="space-y-6">
+                                        //         <div className="flex flex-wrap items-start justify-between gap-4">
+                                        //             <div className="flex-1 min-w-[260px]">
+                                        //                 <h2 className="font-extrabold text-lg text-slate-900 dark:text-white">Detalhes da Licitação</h2>
+                                        //                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{formData.objeto}</p>
+                                        //             </div>
+                                        //             <button onClick={() => setIsEditing(true)} className="text-sm font-bold text-[#004aad] hover:text-[#003d91] inline-flex items-center gap-1">
+                                        //                 <PencilIcon className="w-4 h-4" />
+                                        //                 Editar
+                                        //             </button>
+                                        //         </div>
 
-                                                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-5 bg-slate-50/40 dark:bg-slate-800/40">
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                                                        <DetailItem label="Status"><StatusTag status={formData.situacao} /></DetailItem>
-                                                        <DetailItem label="Abertura" value={formatDateTime(formData.data_abertura)}><CalendarDaysIcon className="w-5 h-5 text-slate-400" /></DetailItem>
-                                                        <DetailItem label="Modalidade" value={formData.modalidade} />
-                                                        <DetailItem label="Valor Estimado" value={formatCurrency(formData.valor_referencia)} />
-                                                        <DetailItem label="Vigência (Meses)" value={formData.vigencia_meses} />
-                                                        <DetailItem label="Nº do Certame" value={formData.numero_certame} />
-                                                        <DetailItem label="Data do Processo" value={formatDate(formData.data_processo)} />
-                                                        <DetailItem label="Entidade" value={entidadeNome} />
-                                                        <DetailItem label="Órgão" value={orgaoNome} />
-                                                        <DetailItem label="Registro de Preço" value={formData.registro_precos ? 'Sim' : 'Não'} />
-                                                    </div>
-                                                </div>
+                                        //         <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-5 bg-slate-50/40 dark:bg-slate-800/40">
+                                        //             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                                        //                 <DetailItem label="Status"><StatusTag status={formData.situacao} /></DetailItem>
+                                        //                 <DetailItem label="Abertura" value={formatDateTime(formData.data_abertura)}><CalendarDaysIcon className="w-5 h-5 text-slate-400" /></DetailItem>
+                                        //                 <DetailItem label="Modalidade" value={formData.modalidade} />
+                                        //                 <DetailItem label="Valor Estimado" value={formatCurrency(formData.valor_referencia)} />
+                                        //                 <DetailItem label="Vigência (Meses)" value={formData.vigencia_meses} />
+                                        //                 <DetailItem label="Nº do Certame" value={formData.numero_certame} />
+                                        //                 <DetailItem label="Data do Processo" value={formatDate(formData.data_processo)} />
+                                        //                 <DetailItem label="Entidade" value={entidadeNome} />
+                                        //                 <DetailItem label="Órgão" value={orgaoNome} />
+                                        //                 <DetailItem label="Registro de Preço" value={formData.registro_precos ? 'Sim' : 'Não'} />
+                                        //             </div>
+                                        //         </div>
 
-                                                <div className="flex flex-wrap justify-center items-center gap-3 pt-2">
-                                                    <ActionButton text="Gerar Relatório" onClick={() => alert('Função não implementada')} variant="outlined" />
-                                                    <ActionButton text="Anexar Arquivos" onClick={() => alert('Função não implementada')} variant="outlined" />
-                                                    <ActionButton text="Analisar Edital" onClick={() => alert('Função não implementada')} variant="secondary" />
-                                                </div>
-                                            </div>
-                                        )
-                                    )}
-
+                                        //         <div className="flex flex-wrap justify-center items-center gap-3 pt-2">
+                                        //             <ActionButton text="Gerar Relatório" onClick={() => alert('Função não implementada')} variant="outlined" />
+                                        //             <ActionButton text="Anexar Arquivos" onClick={() => alert('Função não implementada')} variant="outlined" />
+                                        //             <ActionButton text="Analisar Edital" onClick={() => alert('Função não implementada')} variant="secondary" />
+                                        //         </div>
+                                        //     </div>
+                                    }
+                                        
                                     {/* --- ABA ITENS --- */}
                                     {activeTab === "itens" && (
                                         <div className="space-y-6">
@@ -1291,8 +1268,6 @@ export default function PaginaProcesso() {
                             </AnimatePresence>
                         </main>
                     </div>
-                </div>
-            </div>
         </>
     );
 }
