@@ -124,9 +124,9 @@ const Processos = () => {
 
     const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Inexigibilidade Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento'];
 
-    const inputStyle = "w-full px-3 py-2 text-md font-medium rounded-xl focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
+    const inputStyle = "w-full px-3 py-2 text-md font-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
     const labelStyle = "text-xs font-medium text-gray-600 dark:text-gray-300 mb-1";
-    const inputCampo = "w-full px-3 py-2 text-md text-medium focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-xl border-[#bcd2e0] dark:border-dark-bg-primary";
+    const inputCampo = "w-full px-3 py-2 text-md text-medium focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-lg dark:border-dark-bg-primary";
 
     const hasActiveFilters = useMemo(() => {
         return Object.values(filters).some(v => v !== '') || activeStatus !== '' || sortBy !== 'data_processo' || sortOrder !== 'desc';
@@ -149,8 +149,8 @@ const Processos = () => {
                             Gerencie e acompanhe {processos.length} {processos.length === 1 ? 'licitação' : 'licitações'}
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-items-end">
-                        <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button>
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-2 justify-items-start">
+                        {/* <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button> */}
                         <Button onClick={handleCreate} className={`${inputStyle} max-w-44 h-9 gap-1 inline-flex items-center bg-accent-blue text-white shadow-md hover:bg-accent-blue/90 transition-colors`}><Plus className="w-4 h-4 " /> Novo Processo</Button>
                     </div>
                 </div>
@@ -162,8 +162,8 @@ const Processos = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
                     </div>
                     <div className="grid gap-2">
-                        <Button className={`${inputCampo} w-4 h-11 rounded-xl`} onClick={() => setShowFilters(!showFilters)} variant="outline">
-                            <Filter className="w-4 h-12"/> Filtros
+                        <Button className={`${inputCampo} w-4 h-8`} onClick={() => setShowFilters(!showFilters)} variant="outline">
+                            <Filter className="w-4 h-7"/> Filtros
                             {hasActiveFilters && <span className="ml-1 px-2 py-1 bg-accent-blue/10 text-accent-blue border rounded-lg text-xs font-semibold">Ativos</span>}
                         </Button>
                         {hasActiveFilters && <Button onClick={clearFilters} variant="ghost" size="sm" className={`${inputStyle} text-accent-red border border-red-200 rounded-lg h-8`}><X className="w-4 h-3" /> Limpar</Button>}

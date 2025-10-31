@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }) => {
   };
 
 
-  // ✅ Login padrão
   const loginUser = useCallback(async (username, password) => {
     try {
       const response = await axiosInstance.post('/token/', { username, password });
@@ -42,10 +41,13 @@ export const AuthProvider = ({ children }) => {
         const decoded = jwtDecode(data.access);
         setAuthTokens(data);
         setUser(decoded);
-
+        console.log("Usuário logado:", decoded);
+        
         if (isProfileIncomplete(decoded)) {
+          console.log("Perfil incompleto, redirecionando para atualização.");
           navigate("/perfil?pendente=true");
         } else {
+          console.log("Login bem-sucedido, redirecionando para a página inicial.");
           navigate("/");
         }
       }

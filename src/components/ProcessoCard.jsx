@@ -112,67 +112,74 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
 
   return (
     <div className="bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-0 overflow-hidden">
-      {/* Cabeçalho */}
-      <div className="flex flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-5 py-3 rounded-t-2xl">
-        <div className="flex flex-wrap items-center gap-3">
-          {processo.secretaria && (
-            <span className="px-3 py-1 text-sm font-medium bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-md border border-slate-200">
-              {processo.secretaria}
-            </span>
-          )}
-          {processo.entidade_nome && (
-            <span className="px-3 py-1 text-sm font-semibold bg-accent-blue text-white rounded-md">
-              {processo.entidade_nome}
-            </span>
-          )}
-          {processo.orgao && (
-            <span className="px-3 py-1 text-sm font-medium bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300  dark:bg-[#0F294A] border border-[#bcd2e0] dark:border-[#1c4274] rounded-md">
-              {processo.orgao_nome}
-            </span>
-          )}
-        </div>
+     {/* ======= Cabeçalho ======= */}
+<div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-8 py-3 rounded-t-2xl">
 
-        <div className="flex items-center gap-2">
+  {/* 🟦 Bloco: Entidade + Órgão */}
+  <div className="flex flex-wrap items-center gap-2 min-w-[250px] flex-1">
+    {processo.entidade_nome && (
+      <span 
+        className="truncate overflow-hidden text-ellipsis max-w-[250px] sm:max-w-[300px] md:max-w-[300px] 2xl:max-w-[700px] px-3 py-1 text-sm font-semibold bg-accent-blue text-white rounded-md"
+        title={processo.entidade_nome}
+      >
+        {processo.entidade_nome}
+      </span>
+    )}
 
-           <button
-            onClick={exportToCSV}
-            variant="outline"
-            className="max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors px-3 rounded-md font-medium text-sm"
-          >
-            <Download className="w-4 h-4" /> Exportar
-          </button>
+    {processo.orgao_nome && (
+      <span
+        className="truncate overflow-hidden text-ellipsis max-w-[250px] sm:max-w-[350px] md:max-w-[400px] 2xl:max-w-[700px] px-3 py-1 text-sm font-medium bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300 dark:bg-[#0F294A] border border-[#bcd2e0] dark:border-[#1c4274] rounded-md"
+        title={processo.orgao_nome}
+      >
+        {processo.orgao_nome}
+      </span>
+    )}
+  </div>
 
-          {onView && (
-            <button
-              onClick={() => onView(processo)}
-              className="bg-accent-blue hover:bg-accent-blue/90 text-white px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors"
-            >
-              <Eye className="w-4 h-4" /> Visualizar
-            </button>
-          )}
-          {onEdit && (
-            <button
-              onClick={() => onEdit(processo)}
-              className="h-10 w-10 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-800"
-              title="Editar"
-            >
-              <PencilLine className="w-4 h-4" />
-            </button>
-          )}
-          {onDelete && (
-            <button
-              onClick={() => onDelete(processo.id)}
-              className="h-10 w-10 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-700 text-red-600 hover:bg-red-50 dark:hover:bg-red-800"
-              title="Excluir"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
+  {/* 🟨 Bloco: Botões */}
+  <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2 flex-shrink-0">
+    <button
+      onClick={exportToCSV}
+      variant="outline"
+      className="inline-flex items-center gap-1 h-7 px-4 py-2 bg-secondary-green text-white rounded-md text-sm font-medium shadow-md hover:bg-secondary-green/90 transition-colors"
+    >
+      <Download className="w-4 h-4" /> Exportar
+    </button>
+
+    {onEdit && (
+      <button
+        onClick={() => onEdit(processo)}
+        className="inline-flex items-center gap-2 h-7 px-4 py-2 bg-accent-blue text-white text-sm font-semibold rounded-md hover:bg-accent-blue/90 transition-colors"
+      >
+        <Eye className="w-4 h-4" /> Visualizar
+      </button>
+    )}
+
+    {/* {onEdit && (
+      <button
+        onClick={() => onEdit(processo)}
+        className="h-9 w-9 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-800"
+        title="Editar"
+      >
+        <PencilLine className="w-4 h-4" />
+      </button>
+    )} */}
+
+    {onDelete && (
+      <button
+        onClick={() => onDelete(processo.id)}
+        className="h-7 px-4 py-2 flex items-center justify-center rounded-md bg-red-600 text-white hover:bg-red-500 transition-colorsdark:bg-slate-700 dark:hover:bg-red-800"
+        title="Excluir"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    )}
+  </div>
+</div>
+
 
       {/* Corpo */}
-      <div className="p-6 space-y-4">
+      <div className="px-8 py-3 space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-xl font-bold text-[#001a33] dark:text-white">
             {processo.modalidade || 'Modalidade não informada'}

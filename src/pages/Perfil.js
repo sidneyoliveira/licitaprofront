@@ -49,14 +49,14 @@ const Perfil = () => {
   };
 
   const handleImageUpload = (e) => {
-  const file = e.target.files[0];
+  const file = e.target.files?.[0];
   if (file) {
     setSelectedFile(file);
-    setPreview(URL.createObjectURL(file)); 
+    setPreview(URL.createObjectURL(file));
   }
 };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (passwords.password !== passwords.confirm_password) {
@@ -67,9 +67,9 @@ const Perfil = () => {
   try {
     const formData = new FormData();
 
-    // 🔹 Campos normais
+    // 🔹 Adiciona apenas campos válidos, ignorando profile_image
     Object.entries(user).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
+      if (key !== "profile_image" && value !== null && value !== undefined) {
         formData.append(key, value);
       }
     });
@@ -79,12 +79,15 @@ const Perfil = () => {
       formData.append("password", passwords.password);
     }
 
-    // 🔹 Imagem (se o usuário selecionou)
-    if (selectedFile) {
+    // 🔹 Imagem (somente se houver arquivo selecionado)
+    if (selectedFile instanceof File) {
       formData.append("profile_image", selectedFile);
     }
+    
+    console.log("Arquivo selecionado:", selectedFile);
+    console.log("É um File?", selectedFile instanceof File);
 
-    // Envio como multipart/form-data
+    // 🔹 Envia como multipart
     const response = await api.put("/me/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -95,8 +98,13 @@ const Perfil = () => {
     showToast("Perfil atualizado com sucesso!", "success");
     setPasswords({ password: "", confirm_password: "" });
 
+    if (preview) URL.revokeObjectURL(preview);
+
   } catch (error) {
     console.error(error);
+    if (error.response?.data) {
+      console.warn("Erro da API:", error.response.data);
+    }
     showToast("Erro ao atualizar perfil.", "error");
   }
 };
@@ -119,6 +127,7 @@ const Perfil = () => {
   return (
     <div className="min-h-screen flex justify-center py-12 px-6">
       <div className="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+        
         {/* ======= Header ======= */}
         <div className="bg-light-primary px-8 pt-3  text-center relative">
           <div className="absolute top-4 right-4 text-sm text-accent-blue">
@@ -162,18 +171,19 @@ const Perfil = () => {
         {/* ======= Form ======= */}
         <div className="px-8 py-3">
           {missingFields.length > 0 && (
-            <div className="mb-2 bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-center">
+            <div className="mb-2 bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md text-center">
               Seu cadastro está incompleto! Complete os campos obrigatórios.
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
+
             {/* Sessão Dados */}
             <section>
               <h2 className="text-lg font-semibold text-gray-800 mb-2 border-b">
                 Informações Pessoais
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Input label="Nome" name="first_name" value={user.first_name || ""} onChange={handleChange} />
                 <Input label="Sobrenome" name="last_name" value={user.last_name || ""} onChange={handleChange} />
                 <Input label="CPF" name="cpf" value={user.cpf || ""} onChange={handleChange} missing={missingFields.includes("cpf")} />
@@ -189,7 +199,7 @@ const Perfil = () => {
               <h2 className="text-lg font-semibold text-gray-800 mb-2 border-b pb-2">
                 Redefinição de Senha
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Input label="Nova senha" name="password" type="password" value={passwords.password} onChange={handlePasswordChange} />
                 <Input label="Confirmar nova senha" name="confirm_password" type="password" value={passwords.confirm_password} onChange={handlePasswordChange} />
               </div>
@@ -201,7 +211,7 @@ const Perfil = () => {
                 <h2 className="text-lg font-semibold text-gray-800 mb-2 border-b pb-2">
                   Permissões do Usuário
                 </h2>
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-600 leading-relaxed">
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-sm text-gray-600 leading-relaxed">
                   <p><strong>Superusuário</strong>: Acesso total ao sistema administrativo.</p>
                   <p>Gerencia licitações, usuários e configurações globais.</p>
                   <p>Pode visualizar logs e painéis internos.</p>
@@ -213,7 +223,7 @@ const Perfil = () => {
             <div className="text-center pt-6">
               <button
                 type="submit"
-                className="bg-[#0057FF] text-white px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-[#0043c2] transition-all duration-200"
+                className="bg-accent-blue text-white px-8 py-3 rounded-md font-semibold shadow-md hover:bg-[#0043c2] transition-all duration-200"
               >
                 Salvar Alterações
               </button>
@@ -237,7 +247,7 @@ const Input = ({ label, name, type = "text", value, onChange, disabled, missing 
       value={value}
       onChange={onChange}
       disabled={disabled}
-      className={`w-full px-4 py-2 rounded-xl border text-gray-800 focus:ring-2 focus:outline-none transition-all ${
+      className={`w-full px-4 py-2 rounded-md border text-gray-800 focus:ring-2 focus:outline-none transition-all ${
         disabled
           ? "bg-gray-100 cursor-not-allowed text-gray-500"
           : missing
