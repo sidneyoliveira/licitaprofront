@@ -144,14 +144,14 @@ const Processos = () => {
             <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl p-4 mt-3 md:px-8 py-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
-                        <h1 className="text-3xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
+                        <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
                         <p className="mt-1 text-md text-light-text-secondary dark:text-dark-text-secondary">
                             Gerencie e acompanhe {processos.length} {processos.length === 1 ? 'licitação' : 'licitações'}
                         </p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-2 justify-items-start">
                         {/* <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button> */}
-                        <Button onClick={handleCreate} className={`${inputStyle} max-w-44 h-9 gap-1 inline-flex items-center bg-accent-blue text-white shadow-md hover:bg-accent-blue/90 transition-colors`}><Plus className="w-4 h-4 " /> Novo Processo</Button>
+                        <Button onClick={handleCreate} className={`${inputStyle} max-w-44 h-9 gap-1 inline-flex items-center bg-accent-blue text-white hover:bg-accent-blue/90`}><Plus className="w-4 h-4 " /> Novo Processo</Button>
                     </div>
                 </div>
 

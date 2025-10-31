@@ -111,7 +111,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
   const valorPrevisto = formatCurrency(processo.valor_referencia, {dateStyle: 'short'});
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-0 overflow-hidden">
+    <div className="bg-white dark:bg-[#0f172a] rounded-2xl border border-slate-200 dark:border-slate-700 p-0 overflow-hidden">
      {/* ======= Cabeçalho ======= */}
 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-8 py-3 rounded-t-2xl">
 
@@ -141,7 +141,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
     <button
       onClick={exportToCSV}
       variant="outline"
-      className="inline-flex items-center gap-1 h-7 px-4 py-2 bg-secondary-green text-white rounded-md text-sm font-medium shadow-md hover:bg-secondary-green/90 transition-colors"
+      className="inline-flex items-center gap-1 h-7 px-4 py-2 bg-secondary-green text-white rounded-md text-sm font-medium hover:bg-secondary-green/90 transition-colors"
     >
       <Download className="w-4 h-4" /> Exportar
     </button>
@@ -185,7 +185,7 @@ const ProcessoCard = ({ processo, onEdit, onDelete, onView, onExport }) => {
             {processo.modalidade || 'Modalidade não informada'}
           </h3>
           {processo.numero_certame && (
-            <span className="bg-[#ffcc00] text-[#1a1a1a] text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
+            <span className="bg-[#ffcc00] text-[#1a1a1a] text-sm font-bold px-3 py-1.5 rounded-md">
               {numeroCertame}/{anoCertame}{siglaModalidade ? `-${siglaModalidade}` : ''}
             </span>
           )}

@@ -2,13 +2,6 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, FileText, Users, Building2, Settings, UserCheck } from "lucide-react";
 
-/**
- * Sidebar principal (novo designer L3 SOLUTIONS)
- * - Mantém as rotas originais do sistema
- * - Azul padrão do PDF (#1789D2)
- * - Responsiva, elegante e limpa
- */
-
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
   const navItem =
     "flex items-center gap-3 px-4 py-2.5 text-md  rounded-lg font-medium transition-colors";
@@ -30,7 +23,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
           ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"} flex flex-col`}
       >
         {/* Logo e título */}
-        <div className="flex items-center justify-center gap-1 px-4 py-4 mt-3">
+        <div className="flex items-center justify-center px-4 py-4 mt-3">
           <div
             className="w-10 h-10 flex items-center text-3xl font-extrabold text-gray-800 dark:text-white "
           >

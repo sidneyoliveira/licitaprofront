@@ -6,12 +6,16 @@ import Header from './Header';
 import Rodape from './Rodape';
 
 const Layout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024); 
   const location = useLocation();
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true); 
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -19,7 +23,6 @@ const Layout = ({ children }) => {
   useEffect(() => {
     if (isMobile) setSidebarOpen(false);
   }, [location.pathname, isMobile]);
-
   return (
     <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex relative overflow-hidden">
   
@@ -51,7 +54,7 @@ const Layout = ({ children }) => {
 
   {/* Conteúdo principal */}
   <div
-    className={`flex-1 flex flex-col transition-all duration-300 relative z-10 ${
+    className={`flex-1 flex flex-col relative z-10 ${
       !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-20') : ''
     }`}
   >
@@ -59,10 +62,6 @@ const Layout = ({ children }) => {
 
     <motion.main
       key={location.pathname}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
       className="p-4"
     >
       {children}

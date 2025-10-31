@@ -27,9 +27,6 @@ const Header = ({ toggleSidebar }) => {
 
     return (
         <motion.header
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
             className="sticky top-0 z-40 mt-4 mx-6 rounded-xl bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
         >
             <div className="flex items-center justify-between p-4 h-12">
@@ -60,7 +57,7 @@ const Header = ({ toggleSidebar }) => {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
-                                className="absolute right-0 mt-2 w-56 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md shadow-lg z-50 py-1"
+                                className="absolute right-0 mt-2 w-56 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md z-50 py-1"
                             >
                                 <div className="px-4 py-2 border-b dark:border-dark-border">
                                     <p className="text-sm font-semibold">{(user?.first_name || user?.username)}</p>

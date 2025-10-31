@@ -1165,7 +1165,7 @@ export default function PaginaProcesso() {
                                                             setItemSelecionado(null);
                                                             setIsItemModalOpen(true);
                                                         }}
-                                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#0f766e] rounded-md shadow-sm hover:bg-[#115e59]"
+                                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-accent-blue rounded-md shadow-sm hover:bg-accent-blue/90"
                                                     >
                                                         <PlusIcon className="w-5 h-5" />
                                                         Adicionar Item

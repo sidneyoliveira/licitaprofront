@@ -1,65 +1,73 @@
 // frontend/src/hooks/useAxios.js
 
-import axios from 'axios';
-import { useContext, useMemo } from 'react';
-import { jwtDecode } from 'jwt-decode';
-import AuthContext from '../context/AuthContext';
-import axiosInstance from '../api/AxiosInstance';
+import axios from "axios";
+import { useContext, useMemo } from "react";
+import { jwtDecode } from "jwt-decode";
+import AuthContext from "../context/AuthContext";
+import axiosInstance from "../api/AxiosInstance";
 
 const baseURL = axiosInstance.defaults.baseURL;
 
+// ✅ controla refresh simultâneo
+let refreshPromise = null;
+
 const useAxios = () => {
-    const { authTokens, setUser, setAuthTokens, logoutUser } = useContext(AuthContext);
+  const { authTokens, setUser, setAuthTokens, logoutUser } =
+    useContext(AuthContext);
 
-    const api = useMemo(() => {
-        const instance = axios.create({
-            baseURL,
-            headers: { Authorization: `Bearer ${authTokens?.access}` }
-        });
+  const api = useMemo(() => {
+    const instance = axios.create({
+      baseURL,
+      headers: { Authorization: `Bearer ${authTokens?.access}` },
+    });
 
-        instance.interceptors.request.use(async req => {
+    instance.interceptors.request.use(async (req) => {
+      if (!authTokens?.access || !authTokens?.refresh) return req;
 
-            if (!authTokens) {
-                return req;
-            }
+      const user = jwtDecode(authTokens.access);
+      const isExpired = Date.now() >= user.exp * 1000;
 
-            const user = jwtDecode(authTokens.access);
-            const isExpired = Date.now() >= user.exp * 1000;
+      if (!isExpired) return req;
 
+      console.warn("🔄 Access expirado → Solicitando refresh…");
 
-            if (!isExpired) return req;
+      // ✅ Se refresh já está acontecendo → aguardar o mesmo
+      if (!refreshPromise) {
+        refreshPromise = instance
+          .post(
+            "token/refresh/",
+            { refresh: authTokens.refresh },
+            { headers: { "Content-Type": "application/json" } }
+          )
+          .then((response) => {
+            console.log("✅ Novo access token:", response.data.access);
 
-            try {
+            // Atualiza auth
+            localStorage.setItem("authTokens", JSON.stringify(response.data));
+            setAuthTokens(response.data);
+            setUser(jwtDecode(response.data.access));
 
-                const response = await axios.post(`${baseURL}token/refresh/`, {
-                    refresh: authTokens.refresh
-                }, {
-                    headers: {
-                    "Content-Type": "application/json"
-                    }
-                });
+            return response.data.access;
+          })
+          .catch((error) => {
+            console.error("❌ Refresh falhou:", error?.response?.data || error);
+            logoutUser();
+            throw error;
+          })
+          .finally(() => {
+            refreshPromise = null; // ✅ Libera para o futuro
+          });
+      }
 
-                localStorage.setItem('authTokens', JSON.stringify(response.data));
-                setAuthTokens(response.data);
-                setUser(jwtDecode(response.data.access));
+      const newAccess = await refreshPromise;
+      req.headers.Authorization = `Bearer ${newAccess}`;
+      return req;
+    });
 
-                req.headers.Authorization = `Bearer ${response.data.access}`;
-                return req;
+    return instance;
+  }, [authTokens, setUser, setAuthTokens, logoutUser]);
 
-                } catch (error) {
-
-                console.error(" Response error:", error.response?.data);
-                console.error(" Full error:", error);
-
-                logoutUser();
-                return Promise.reject(error);
-                }
-        });
-
-        return instance;
-    }, [authTokens, setUser, setAuthTokens, logoutUser]);
-
-    return api;
+  return api;
 };
 
 export default useAxios;
