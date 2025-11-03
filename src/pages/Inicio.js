@@ -1,119 +1,104 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { FileText, Users, Building2 } from "lucide-react";
-import useAxios from "../hooks/useAxios";
+// src/pages/Inicio.js
+import React, { useState, useEffect, useContext } from 'react';
+import useAxios from '../hooks/useAxios';
+import Card from '../components/Card';
+import AuthContext from '../context/AuthContext';
+import { motion } from 'framer-motion';
 
-/**
- * Página Início (novo designer L3 SOLUTIONS)
- * - Mantém comunicação com backend via useAxios
- * - Visual modernizado com a cor azul #1789D2
- */
+const StatItem = ({ title, value }) => (
+  <div>
+    <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">{title}</p>
+    <p className="text-3xl font-bold">{value}</p>
+  </div>
+);
 
 const Inicio = () => {
+  const [stats, setStats] = useState(null);
+  const [userData, setUserData] = useState(null);
   const api = useAxios();
-  const [resumo, setResumo] = useState({ processos: 0, fornecedores: 0, entidades: 0 });
-  const [loading, setLoading] = useState(false);
+  const { user } = useContext(AuthContext);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
+  const getDisplayName = () => {
+    if (userData?.first_name)
+      return `${userData.first_name} `;
+    if (userData?.first_name)
+      return userData.first_name;
+    return user?.username || 'Usuário';
+  };
 
   useEffect(() => {
-    const fetchResumo = async () => {
-      setLoading(true);
+    const fetchData = async () => {
       try {
-        const res = await api.get("dashboard-stats/"); 
-        if (res.data) setResumo(res.data);
+        const [statsRes, userRes] = await Promise.all([
+          api.get('/dashboard-stats/'),
+          api.get('/me/'),
+        ]);
+        setStats(statsRes.data);
+        setUserData(userRes.data);
       } catch (error) {
-        console.error("Erro ao carregar resumo:", error);
-      } finally {
-        setLoading(false);
+        console.error('Erro ao buscar dados iniciais:', error);
       }
     };
 
-    fetchResumo();
+    fetchData();
   }, [api]);
 
+
+  if (!stats) {
+    return (
+      <div className="flex justify-center items-center h-64 text-dark-text-primary dark:text-dark-text-primary">
+        Carregando informações...
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 sm:p-6 space-y-6">
-      {/* Título */}
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-          Início
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Visão geral do sistema
-        </p>
+    <div
+      className="space-y-4"
+    >
+      {/* Saudação */}
+      <div className="flex items-center justify-between bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-lg p-4 shadow-sm">
+        <div>
+          <h1 className="text-xl font-semibold text-light-text-primary dark:text-dark-text-primary">
+            {getGreeting()}, <span className="text-blue-600 dark:text-blue-400">{getDisplayName()}</span>
+          </h1>
+          <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+            Bem-vindo de volta ao sistema. Aqui estão seus dados mais recentes.
+          </p>
+        </div>
       </div>
 
-      {/* Cards principais */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        {/* Card Processos */}
-        <div className="bg-white dark:bg-dark-bg-secondary  rounded-xl shadow-sm p-5 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Processos</div>
-            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-              {loading ? "..." : resumo.processos_em_andamento}
-            </div>
-          </div>
-          <div
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-white shadow"
-            style={{ background: "linear-gradient(135deg,#1789D2,#0F7BC2)" }}
-          >
-            <FileText size={20} />
-          </div>
-        </div>
+      {/* Cards de estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <StatItem title="Total de Processos" value={stats.total_processos} />
+        </Card>
+        <Card>
+          <StatItem title="Processos em Andamento" value={stats.processos_em_andamento} />
+        </Card>
+        <Card>
+          <StatItem title="Fornecedores Cadastrados" value={stats.total_fornecedores} />
+        </Card>
+        <Card>
+          <StatItem title="Órgãos Cadastrados" value={stats.total_orgaos} />
+        </Card>
+      </div>
 
-        {/* Card Fornecedores */}
-        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm p-5 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Fornecedores</div>
-            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-              {loading ? "..." : resumo.total_fornecedores}
-            </div>
-          </div>
-          <div
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-white shadow"
-            style={{ background: "linear-gradient(135deg,#1789D2,#0F7BC2)" }}
-          >
-            <Users size={20} />
-          </div>
-        </div>
-
-        {/* Card Entidades */}
-        <div className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm p-5 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Entidades</div>
-            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">
-              {loading ? "..." : resumo.total_orgaos}
-            </div>
-          </div>
-          <div
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-white shadow"
-            style={{ background: "linear-gradient(135deg,#1789D2,#0F7BC2)" }}
-          >
-            <Building2 size={20} />
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Seção adicional (opcional) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white dark:bg-[#1E293B] border border-gray-100 dark:border-gray-700 rounded-xl p-6 shadow-sm"
-      >
-        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-          Últimas Atualizações
-        </h2>
-        <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
-          <li>- Processos recentemente publicados</li>
-          <li>- Licitações atualizadas</li>
-          <li>- Fornecedores cadastrados</li>
-        </ul>
-      </motion.div>
+      {/* Atividade recente */}
+      <div>
+        <Card title="Atividade Recente">
+          <p className="text-light-text-secondary dark:text-dark-text-secondary">
+            Nenhuma atividade recente para mostrar.
+          </p>
+        </Card>
+      </div>
     </div>
   );
 };

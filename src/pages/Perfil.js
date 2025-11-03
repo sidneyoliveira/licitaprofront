@@ -125,7 +125,7 @@ const handleSubmit = async (e) => {
       .slice(0, 15);
 
   return (
-    <div className="min-h-screen flex justify-center py-12 px-6">
+    <div className="min-h-screen flex justify-center py-2 px-6">
       <div className="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
         
         {/* ======= Header ======= */}

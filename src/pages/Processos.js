@@ -133,7 +133,7 @@ const Processos = () => {
     }, [filters, activeStatus, sortBy, sortOrder]);
   
     return (
-        <div className="space-y-6 px-3">
+        <div className="space-y-6">
             <Helmet>
                 <title>Meus Processos</title>
             </Helmet>
@@ -151,7 +151,7 @@ const Processos = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-2 justify-items-start">
                         {/* <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button> */}
-                        <Button onClick={handleCreate} className={`${inputStyle} max-w-44 h-9 gap-1 inline-flex items-center bg-accent-blue text-white hover:bg-accent-blue/90`}><Plus className="w-4 h-4 " /> Novo Processo</Button>
+                        <Button onClick={handleCreate} className={`${inputStyle} max-w-35 h-8 gap-1 inline-flex items-center text-sm bg-accent-blue text-white hover:bg-accent-blue/90`}><Plus className="w-3 h-3 " /> Novo Processo</Button>
                     </div>
                 </div>
 

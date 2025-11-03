@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300  dark:bg-[#0F294A] border border-[#bcd2e0] dark:border-[#1c4274]"
+                  ? "bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300  dark:bg-[#0F294A] "
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }

@@ -1,17 +1,15 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = () => {
-    const { user } = useContext(AuthContext);
+  const { initializing, authTokens } = useAuth();
 
-    // Se o usuário não existir, redireciona para a página de login
-    if (!user) {
-        return <Navigate to="/login" />;
-    }
+  if (initializing) {
+    return <div className="p-6">Carregando…</div>;
+  }
 
-    // Se o usuário existir, renderiza a página filha (o dashboard)
-    return <Outlet />;
+  return authTokens ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

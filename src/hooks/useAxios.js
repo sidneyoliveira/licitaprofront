@@ -1,71 +1,87 @@
-// frontend/src/hooks/useAxios.js
+import axios from 'axios';
+import { useContext, useMemo } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import AuthContext from '../context/AuthContext';
 
-import axios from "axios";
-import { useContext, useMemo } from "react";
-import { jwtDecode } from "jwt-decode";
-import AuthContext from "../context/AuthContext";
-import axiosInstance from "../api/AxiosInstance";
+const BASE_URL = 'http://l3solution.net.br/api/';
+const axiosPublic = axios.create({ baseURL: BASE_URL });
 
-const baseURL = axiosInstance.defaults.baseURL;
-
-// ✅ controla refresh simultâneo
 let refreshPromise = null;
 
+const isPublicPath = (url = '') => {
+  const u = url.toLowerCase();
+  return u.includes('/token/') || u.includes('/google/');
+};
+
 const useAxios = () => {
-  const { authTokens, setUser, setAuthTokens, logoutUser } =
-    useContext(AuthContext);
+  const { authTokens, setAuthTokens, logoutUser } = useContext(AuthContext);
 
   const api = useMemo(() => {
-    const instance = axios.create({
-      baseURL,
-      headers: { Authorization: `Bearer ${authTokens?.access}` },
-    });
+    const instance = axios.create({ baseURL: BASE_URL });
 
-    instance.interceptors.request.use(async (req) => {
-      if (!authTokens?.access || !authTokens?.refresh) return req;
+    instance.interceptors.request.use(
+      async (req) => {
+        if (isPublicPath(req.url)) return req;
 
-      const user = jwtDecode(authTokens.access);
-      const isExpired = Date.now() >= user.exp * 1000;
+        const access = authTokens?.access;
+        if (!access) return req;
 
-      if (!isExpired) return req;
+        try {
+          const payload = jwtDecode(access);
+          const isExpired = Date.now() >= payload.exp * 1000;
 
-      console.warn("🔄 Access expirado → Solicitando refresh…");
+          if (!isExpired) {
+            req.headers.Authorization = `Bearer ${access}`;
+            return req;
+          }
+        } catch {
+          // se não decodificar, tenta refresh
+        }
 
-      // ✅ Se refresh já está acontecendo → aguardar o mesmo
-      if (!refreshPromise) {
-        refreshPromise = instance
-          .post(
-            "token/refresh/",
-            { refresh: authTokens.refresh },
-            { headers: { "Content-Type": "application/json" } }
-          )
-          .then((response) => {
-            console.log("✅ Novo access token:", response.data.access);
+        if (!refreshPromise) {
+          refreshPromise = axiosPublic
+            .post('/token/refresh/', { refresh: authTokens?.refresh })
+            .then((res) => {
+              const newTokens = res.data;
+              localStorage.setItem('authTokens', JSON.stringify(newTokens));
+              setAuthTokens(newTokens);
+              return newTokens;
+            })
+            .catch((err) => {
+              logoutUser();
+              throw err;
+            })
+            .finally(() => {
+              refreshPromise = null;
+            });
+        }
 
-            // Atualiza auth
-            localStorage.setItem("authTokens", JSON.stringify(response.data));
-            setAuthTokens(response.data);
-            setUser(jwtDecode(response.data.access));
+        const newTokens = await refreshPromise;
+        req.headers.Authorization = `Bearer ${newTokens.access}`;
+        return req;
+      },
+      (error) => Promise.reject(error)
+    );
 
-            return response.data.access;
-          })
-          .catch((error) => {
-            console.error("❌ Refresh falhou:", error?.response?.data || error);
-            logoutUser();
-            throw error;
-          })
-          .finally(() => {
-            refreshPromise = null; // ✅ Libera para o futuro
-          });
+    instance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const { config, response } = error;
+        const status = response?.status;
+
+        if (isPublicPath(config?.url)) {
+          return Promise.reject(error);
+        }
+
+        if (status === 401) {
+          try { logoutUser(); } catch {}
+        }
+        return Promise.reject(error);
       }
-
-      const newAccess = await refreshPromise;
-      req.headers.Authorization = `Bearer ${newAccess}`;
-      return req;
-    });
+    );
 
     return instance;
-  }, [authTokens, setUser, setAuthTokens, logoutUser]);
+  }, [authTokens, setAuthTokens, logoutUser]);
 
   return api;
 };

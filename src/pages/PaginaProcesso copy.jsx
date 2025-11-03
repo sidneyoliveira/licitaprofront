@@ -256,7 +256,7 @@ const StyledCheckbox = ({ checked, onChange, className = "" }) => {
 };
 
 // --- MAIN PAGE COMPONENT ---
-export default function PaginaProcesso() {
+export default function NewProcess() {
     const { id } = useParams();
     const navigate = useNavigate();
     const api = useAxios();

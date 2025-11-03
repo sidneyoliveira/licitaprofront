@@ -2,10 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    TrashIcon, PlusIcon, PencilIcon, ClipboardDocumentIcon, CalendarDaysIcon,
-    ClockIcon, DocumentTextIcon, ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon,
-    BuildingOffice2Icon, CheckCircleIcon, NoSymbolIcon, ArchiveBoxIcon,
-    ExclamationCircleIcon, ArrowPathIcon
+    TrashIcon, PlusIcon, PencilIcon, ClipboardDocumentIcon, ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon,
+    BuildingOffice2Icon, CheckCircleIcon, ArrowPathIcon
 } from '@heroicons/react/24/outline';
 
 import axios from 'axios';
@@ -659,7 +657,7 @@ const FornecedorTable = ({ fornecedores, handleAskDelete, onEdit }) => (
 );
 
 // --- COMPONENTE PRINCIPAL DA PÁGINA ---
-export default function PaginaProcesso() {
+export default function NewProcess() {
     const { id } = useParams();
     const navigate = useNavigate();
     const api = useAxios();

@@ -50,7 +50,7 @@ const Header = ({ toggleSidebar }) => {
                     <div className="relative" ref={userMenuRef}>
                         <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                             <User className="w-6 h-6" />
-                                <span className="font-medium text-md text-light-text-primary dark:text-dark-text-primary">{(user?.first_name || user?.username || 'Olá, Usuario')}</span>
+                                <span className="font-medium text-md text-light-text-primary dark:text-dark-text-primary">Olá, {(user?.first_name || user?.username || 'Usuario')}</span>
                         </button>
                         {userMenuOpen && (
                             <motion.div

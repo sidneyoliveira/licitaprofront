@@ -1,89 +1,93 @@
-import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useMemo,
+  useCallback,
+  useEffect,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import axiosInstance from '../api/AxiosInstance';
+import axiosPublic from '../api/axiosPublic';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  
   const [authTokens, setAuthTokens] = useState(() =>
     localStorage.getItem('authTokens')
       ? JSON.parse(localStorage.getItem('authTokens'))
       : null
   );
-
-  const [user, setUser] = useState(() =>
-    localStorage.getItem('authTokens')
-      ? jwtDecode(JSON.parse(localStorage.getItem('authTokens')).access)
-      : null
-  );
+  const [user, setUser] = useState(null);
+  const [initializing, setInitializing] = useState(true);
 
   const navigate = useNavigate();
 
-  // ✅ Verifica se perfil está incompleto para obrigar atualização
-  const isProfileIncomplete = (decodedUser) => {
-    if (!decodedUser) return true;
-    const required = ["cpf", "phone", "data_nascimento"];
-    return required.some(field => !decodedUser[field]);
+  const fetchUserData = useCallback(async (token) => {
+    const res = await axiosPublic.get('/me/', {
+      headers: { Authorization: `Bearer ${token.access}` },
+    });
+    setUser(res.data);
+    return res.data;
+  }, []);
+
+  const isProfileIncomplete = (userData) => {
+    if (!userData) return true;
+    const required = ['cpf', 'phone', 'data_nascimento'];
+    return required.some((field) => !userData[field]);
   };
 
+  const loginUser = useCallback(
+    async (username, password) => {
+      try {
+        const response = await axiosPublic.post('/token/', { username, password });
+        if (response.status === 200) {
+          const data = response.data;
+          localStorage.setItem('authTokens', JSON.stringify(data));
+          setAuthTokens(data);
 
-  const loginUser = useCallback(async (username, password) => {
-    try {
-      const response = await axiosInstance.post('/token/', { username, password });
+          const me = await fetchUserData(data);
 
-      if (response.status === 200) {
+          if (isProfileIncomplete(me)) {
+            navigate('/complete-profile');
+          } else {
+            navigate('/');
+          }
+        }
+      } catch (error) {
+        console.error('Erro no login:', error);
+        if (error.response?.data) {
+          throw new Error(error.response.data.detail || 'Ocorreu um erro desconhecido.');
+        }
+        throw new Error('Não foi possível conectar ao servidor.');
+      }
+    },
+    [fetchUserData, navigate]
+  );
+
+  const loginWithGoogle = useCallback(
+    async (googleCredential) => {
+      try {
+        const response = await axiosPublic.post('/google/', { token: googleCredential });
         const data = response.data;
         localStorage.setItem('authTokens', JSON.stringify(data));
-
-        const decoded = jwtDecode(data.access);
         setAuthTokens(data);
-        setUser(decoded);
-        console.log("Usuário logado:", decoded);
-        
-        if (isProfileIncomplete(decoded)) {
-          console.log("Perfil incompleto, redirecionando para atualização.");
-          navigate("/perfil?pendente=true");
+
+        const me = await fetchUserData(data);
+
+        if (isProfileIncomplete(me)) {
+          navigate('/complete-profile');
         } else {
-          console.log("Login bem-sucedido, redirecionando para a página inicial.");
-          navigate("/");
+          navigate('/');
         }
+      } catch (error) {
+        console.error('Erro Google Login →', error);
+        if (error.response?.data?.detail) throw new Error(error.response.data.detail);
+        throw new Error('Erro ao autenticar com Google.');
       }
-    } catch (error) {
-      if (error.response?.data) {
-        throw new Error(error.response.data.detail || 'Ocorreu um erro desconhecido.');
-      }
-      throw new Error('Não foi possível conectar ao servidor.');
-    }
-  }, [navigate]);
-
-
-  // ✅ Login Google
-  const loginWithGoogle = useCallback(async (googleCredential) => {
-    try {
-      const response = await axiosInstance.post('/google/', { token: googleCredential });
-      const data = response.data;
-
-      localStorage.setItem('authTokens', JSON.stringify(data));
-
-      const decoded = jwtDecode(data.access);
-      setAuthTokens(data);
-      setUser(decoded);
-
-      if (isProfileIncomplete(decoded)) {
-        navigate("/perfil?pendente=true");
-      } else {
-        navigate("/");
-      }
-
-    } catch (error) {
-      console.error('Erro Google Login →', error);
-      throw new Error('Erro ao autenticar com Google.');
-    }
-  }, [navigate]);
-
+    },
+    [fetchUserData, navigate]
+  );
 
   const logoutUser = useCallback(() => {
     setAuthTokens(null);
@@ -92,17 +96,40 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   }, [navigate]);
 
+  useEffect(() => {
+    let isMounted = true;
 
-  const contextData = useMemo(() => ({
-    user,
-    setUser,
-    authTokens,
-    setAuthTokens,
-    loginUser,
-    loginWithGoogle,
-    logoutUser
-  }), [user, authTokens, loginUser, loginWithGoogle, logoutUser]);
+    (async () => {
+      try {
+        if (authTokens) {
+          await fetchUserData(authTokens);
+        } else {
+          setUser(null);
+        }
+      } catch (e) {
+        console.warn('Falha ao validar sessão no boot, realizando logout.');
+        logoutUser();
+      } finally {
+        if (isMounted) setInitializing(false);
+      }
+    })();
 
+    return () => { isMounted = false; };
+  }, [authTokens, fetchUserData, logoutUser]);
+
+  const contextData = useMemo(
+    () => ({
+      initializing,
+      user,
+      setUser,
+      authTokens,
+      setAuthTokens,
+      loginUser,
+      loginWithGoogle,
+      logoutUser,
+    }),
+    [initializing, user, authTokens, loginUser, loginWithGoogle, logoutUser]
+  );
 
   return (
     <AuthContext.Provider value={contextData}>
