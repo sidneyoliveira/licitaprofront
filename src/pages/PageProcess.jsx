@@ -625,24 +625,32 @@ export default function PageProcess() {
   };
 
   const handleSaveDadosGerais = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const res = isNewProcess ? await api.post("/processos/", formData) : await api.put(`/processos/${processoId}/`, formData);
-      showToast(isNewProcess ? "Processo criado!" : "Processo atualizado!", "success");
-      const updatedData = res.data;
-      if (isNewProcess) {
-        // Após criar, fixamos o header e liberamos as abas
-        navigate(`/processos/editar/${updatedData.id}`, { replace: true });
-        setProcessoId(updatedData.id);
-        setIsEditing(false);
-      } else {
-        fetchDadosDoProcesso(updatedData.id);
-        setIsEditing(false);
-      }
-    } catch { showToast("Erro ao salvar o processo.", "error"); }
-    finally { setIsLoading(false); }
-  };
+  e.preventDefault();
+  setIsLoading(true);
+  try {
+    const res = isNewProcess
+      ? await api.post("/processos/", formData)
+      : await api.put(`/processos/${processoId}/`, formData);
+
+    showToast(isNewProcess ? "Processo criado!" : "Processo atualizado!", "success");
+    const updatedData = res.data;
+
+    if (isNewProcess) {
+      navigate(`/processos/editar/${updatedData.id}`, { replace: true });
+      setProcessoId(updatedData.id);
+      setIsEditing(false);
+    // na próxima montagem o useEffect já busca fornecedores
+    } else {
+      await fetchDadosDoProcesso(updatedData.id);
+     await fetchFornecedoresDoProcesso(updatedData.id); // <- garante que não some
+      setIsEditing(false);
+    }
+  } catch {
+    showToast("Erro ao salvar o processo.", "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // --- HANDLERS ITENS ---
   const handleSaveItem = async (itemData) => {
