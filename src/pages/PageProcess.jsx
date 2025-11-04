@@ -1,95 +1,77 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  TrashIcon, PlusIcon, PencilIcon, ClipboardDocumentIcon, ChevronLeftIcon, ChevronRightIcon, ArrowDownTrayIcon,
-  BuildingOffice2Icon, CheckCircleIcon, ArrowPathIcon
-} from '@heroicons/react/24/outline';
-
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
+
+// Seções
 import ItemsSection from '../components/ItemsSection';
 import FornecedoresSection from '../components/FornecedoresSection';
-import LotesSection from '../components/LotesSection'; 
+import LotesSection from '../components/LotesSection';
 
+// Infra
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
-import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import ProcessHeader from '../components/ProcessHeader';
 
-// --- CONSTANTES ---
-const modalidades = ['Pregão Eletrônico', 'Concorrência Eletrônica', 'Dispensa Eletrônica', 'Adesão a Registro de Preços', 'Credenciamento', 'Inexigibilidade Eletrônica'];
-const classificacoes = ['Compras', 'Serviços Comuns', 'Serviços de Engenharia Comuns', 'Obras Comuns'];
+/* =============================================================
+ * Constantes
+ * ============================================================= */
+const modalidades = [
+  'Pregão Eletrônico',
+  'Concorrência Eletrônica',
+  'Dispensa Eletrônica',
+  'Adesão a Registro de Preços',
+  'Credenciamento',
+  'Inexigibilidade Eletrônica',
+];
+const classificacoes = [
+  'Compras',
+  'Serviços Comuns',
+  'Serviços de Engenharia Comuns',
+  'Obras Comuns',
+];
 const organizacoes = ['Lote', 'Item'];
-const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicado', 'Em Contratação', 'Adjudicado/Homologado', 'Revogado/Cancelado'];
+const situacoes = [
+  'Aberto',
+  'Em Pesquisa',
+  'Aguardando Publicação',
+  'Publicado',
+  'Em Contratação',
+  'Adjudicado/Homologado',
+  'Revogado/Cancelado',
+];
 
-// --- ESTILOS REUTILIZÁVEIS ---
-const inputStyle = "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]";
-const labelStyle = "text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase";
+/* =============================================================
+ * Estilos reutilizáveis
+ * ============================================================= */
+const inputStyle =
+  'w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]';
+const labelStyle =
+  'text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase';
 
-// --- FUNÇÕES HELPER ---
-const formatDateTimeForInput = (isoString) => {
-  if (!isoString) return '';
-  try {
-    const d = new Date(isoString);
-    const timezoneOffset = d.getTimezoneOffset() * 60000;
-    const localDate = new Date(d.getTime() - timezoneOffset);
-    return localDate.toISOString().slice(0, 16);
-  } catch { return ''; }
+/* =============================================================
+ * Helpers
+ * ============================================================= */
+// Formata iso → "YYYY-MM-DDTHH:MM" para inputs datetime-local SEM converter fuso
+const toDatetimeLocalExact = (iso) => {
+  if (!iso) return '';
+  const cleaned = String(iso).replace(/Z$/i, '').replace(' ', 'T');
+  const m = cleaned.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})/);
+  return m ? `${m[1]}T${m[2]}:${m[3]}` : '';
 };
 
-const formatDate = (dateString) => {
-  if (!dateString) return 'Não informado';
-  const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' };
-  return new Date(dateString + 'T00:00:00-03:00').toLocaleDateString('pt-BR', options);
-};
-
-const formatDateTime = (isoString) => {
-  if (!isoString) return 'Não informada';
-  const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' };
-  return new Date(isoString).toLocaleDateString('pt-BR', options).replace(',', ' às');
-};
-
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return 'Não informado';
-  const n = Number(value);
-  if (Number.isNaN(n)) return 'Não informado';
-  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
-
-// --- COMPONENTES DE UI REUTILIZÁVEIS ---
-const DetailItem = ({ label, value, children }) => (
-  <div className="min-w-[180px]">
-    <div className={labelStyle}>{label}</div>
-    <div className="text-[15px] font-semibold text-slate-800 dark:text-dark-text-primary flex items-center gap-2 mt-1">
-      {children}
-      <span>{value || 'Não informado'}</span>
-    </div>
-  </div>
-);
-
-const StatusTag = ({ status }) => {
-  const statusStyles = {
-    'Publicado': 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-    'Adjudicado/Homologado': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-    'Em Pesquisa': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-    'Aberto': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-    'Revogado/Cancelado': 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
-    'default': 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-  };
-  const style = statusStyles[status] || statusStyles.default;
-  return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${style}`}>
-      <ArrowPathIcon className="w-4 h-4" />
-      {status}
-    </div>
-  );
-};
-
-const ActionButton = ({ text, onClick, variant = 'primary', icon: Icon, disabled = false, type="button" }) => {
-  const baseStyle = "flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-semibold text-sm transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed";
+/* =============================================================
+ * Botões básicos
+ * ============================================================= */
+const ActionButton = ({ text, onClick, variant = 'primary', icon: Icon, disabled = false, type = 'button' }) => {
+  const baseStyle =
+    'flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-semibold text-sm transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed';
   const styles = {
     primary: 'bg-[#004aad] text-white hover:bg-[#003d91] focus:ring-2 focus:ring-[#004aad]/30',
-    secondary: 'bg-[#0f766e] text-white hover:bg-[#115e59] focus:ring-2 focus:ring-teal-500/30',
-    outlined: 'bg-white dark:bg-dark-bg-secondary border border-slate-300 dark:border-dark-border text-slate-700 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary',
+    outlined:
+      'bg-white dark:bg-dark-bg-secondary border border-slate-300 dark:border-dark-border text-slate-700 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary',
   };
   return (
     <button type={type} onClick={onClick} className={`${baseStyle} ${styles[variant]}`} disabled={disabled}>
@@ -104,78 +86,108 @@ const TabButton = ({ label, isActive, onClick, isDisabled }) => (
     type="button"
     onClick={onClick}
     disabled={isDisabled}
-    className={`px-4 py-3 text-md font-semibold border-b-2 transition-none
-      ${isActive
+    className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+      isActive
         ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
         : isDisabled
-          ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
-          : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
-      }`}
+        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
+        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
+    }`}
   >
     {label}
   </button>
 );
 
-const StyledCheckbox = ({ checked, onChange, className = "" }) => {
-  return (
-    <label className={`relative inline-flex items-center justify-center cursor-pointer select-none ${className}`} aria-checked={checked} role="checkbox">
-      <input type="checkbox" checked={checked} onChange={onChange} className="peer absolute inset-0 z-20 m-0 h-full w-full cursor-pointer opacity-0" />
-      <div className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-dark-border transition-none peer-checked:border-[#004aad] peer-checked:bg-[#004aad]`}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={`h-3 w-3 text-white ${checked ? 'opacity-100' : 'opacity-0'}`}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-        </svg>
-      </div>
-    </label>
-  );
-};
-
-// --- COMPONENTES MODAIS ---
+/* =============================================================
+ * Modais
+ * ============================================================= */
 const ItemModal = ({ isOpen, onClose, onSave, itemSelecionado }) => {
-  const [formData, setFormData] = useState({
-    descricao: '',
-    unidade: '',
-    quantidade: '',
-    valor_estimado: ''
-  });
+  const [formData, setFormData] = useState({ descricao: '', unidade: '', quantidade: '', valor_estimado: '' });
 
   useEffect(() => {
-    if (itemSelecionado) setFormData(itemSelecionado);
-    else setFormData({ descricao: '', unidade: '', quantidade: '', valor_estimado: '' });
+    if (isOpen) {
+      setFormData(
+        itemSelecionado || { descricao: '', unidade: '', quantidade: '', valor_estimado: '' }
+      );
+    }
   }, [itemSelecionado, isOpen]);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (typeof onSave === 'function') onSave(formData);
+    onSave?.(formData);
   };
 
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4">
-      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 0 }} className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl w-full max-w-lg shadow-xl border border-slate-200 dark:border-slate-700">
-        <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-white">{itemSelecionado ? 'Editar Item' : 'Adicionar Item'}</h3>
+      <motion.div
+        initial={false}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 0 }}
+        className="bg-white dark:bg-dark-bg-secondary p-6 md:ml-40 rounded-xl w-full max-w-lg border border-slate-200 dark:border-slate-700"
+      >
+        <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-white">
+          {itemSelecionado ? 'Editar Item' : 'Adicionar Item'}
+        </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={labelStyle}>Descrição *</label>
-            <input name="descricao" value={formData.descricao} onChange={handleChange} className={inputStyle} required />
+            <input
+              name="descricao"
+              value={formData.descricao}
+              onChange={(e) => setFormData((p) => ({ ...p, descricao: e.target.value }))}
+              className={inputStyle}
+              required
+            />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={labelStyle}>Unidade</label>
-              <input name="unidade" value={formData.unidade} onChange={handleChange} className={inputStyle} />
+              <input
+                name="unidade"
+                value={formData.unidade}
+                onChange={(e) => setFormData((p) => ({ ...p, unidade: e.target.value }))}
+                className={inputStyle}
+              />
             </div>
             <div>
               <label className={labelStyle}>Quantidade *</label>
-              <input name="quantidade" type="number" value={formData.quantidade} onChange={handleChange} className={inputStyle} required />
+              <input
+                name="quantidade"
+                type="number"
+                value={formData.quantidade}
+                onChange={(e) => setFormData((p) => ({ ...p, quantidade: e.target.value }))}
+                className={inputStyle}
+                required
+              />
             </div>
             <div>
               <label className={labelStyle}>Valor Estimado *</label>
-              <input name="valor_estimado" type="number" step="0.01" value={formData.valor_estimado} onChange={handleChange} className={inputStyle} required />
+              <input
+                name="valor_estimado"
+                type="number"
+                step="0.01"
+                value={formData.valor_estimado}
+                onChange={(e) => setFormData((p) => ({ ...p, valor_estimado: e.target.value }))}
+                className={inputStyle}
+                required
+              />
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary">Cancelar</button>
-            <button type="submit" className="px-4 py-2 bg-[#0f766e] text-white rounded-md text-sm font-semibold hover:bg-[#115e59]"> {itemSelecionado ? 'Salvar Alterações' : 'Adicionar'} </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#0f766e] text-white rounded-md text-sm font-semibold hover:bg-[#115e59]"
+            >
+              {itemSelecionado ? 'Salvar Alterações' : 'Adicionar'}
+            </button>
           </div>
         </form>
       </motion.div>
@@ -190,7 +202,7 @@ const FornecedorModal = ({
   onSaveNew,
   onSaveEdit,
   catalogo = [],
-  fornecedorSelecionado
+  fornecedorSelecionado,
 }) => {
   const { showToast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
@@ -216,27 +228,37 @@ const FornecedorModal = ({
   const showForm = isEditing || isCreating;
 
   useEffect(() => {
-    if (isEditing && fornecedorSelecionado) {
+    if (!isOpen) return;
+    if (isEditing) {
       setFormData(fornecedorSelecionado);
       setIsCreating(true);
     } else {
       setFormData({
-        cnpj: '', razao_social: '', nome_fantasia: '', porte: '', telefone: '', email: '', cep: '', logradouro: '', numero: '', bairro: '', complemento: '', uf: '', municipio: '',
+        cnpj: '',
+        razao_social: '',
+        nome_fantasia: '',
+        porte: '',
+        telefone: '',
+        email: '',
+        cep: '',
+        logradouro: '',
+        numero: '',
+        bairro: '',
+        complemento: '',
+        uf: '',
+        municipio: '',
       });
       setIsCreating(false);
     }
   }, [isEditing, fornecedorSelecionado, isOpen]);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
   const buscarCNPJ = async () => {
     if (!formData.cnpj) return showToast('Digite um CNPJ válido.', 'error');
     try {
       const cnpjLimpo = formData.cnpj.replace(/[^\d]/g, '');
-      const res = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
-      const data = res.data;
-      setFormData({
-        ...formData,
+      const { data } = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
+      setFormData((prev) => ({
+        ...prev,
         razao_social: data.razao_social || '',
         nome_fantasia: data.nome_fantasia || '',
         porte: data.porte || '',
@@ -249,10 +271,10 @@ const FornecedorModal = ({
         complemento: data.complemento || '',
         uf: data.uf || '',
         municipio: data.municipio || '',
-      });
+      }));
       showToast('Dados carregados com sucesso!', 'success');
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
       showToast('Erro ao buscar CNPJ. Verifique o número e tente novamente.', 'error');
     }
   };
@@ -261,104 +283,135 @@ const FornecedorModal = ({
     e.preventDefault();
     setIsSaving(true);
     try {
-      if (isEditing) await onSaveEdit(formData); else await onSaveNew(formData);
-      onClose();
-    } finally { setIsSaving(false); }
+      if (isEditing) await onSaveEdit?.(formData);
+      else await onSaveNew?.(formData);
+      onClose?.();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const filteredCatalogo = (catalogo || []).filter((f) => {
+  const filteredCatalogo = useMemo(() => {
     const term = (searchTerm || '').toLowerCase();
-    return ((f?.razao_social || '').toLowerCase().includes(term) || (f?.cnpj || '').toLowerCase().includes(term));
-  });
+    return (catalogo || []).filter(
+      (f) => f?.razao_social?.toLowerCase().includes(term) || f?.cnpj?.toLowerCase().includes(term)
+    );
+  }, [catalogo, searchTerm]);
 
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4">
-      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 0 }} className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl shadow-xl w-full max-w-[900px] min-w-[360px] border border-slate-200 dark:border-slate-700">
+      <motion.div
+        initial={false}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 0 }}
+        className="bg-white dark:bg-dark-bg-secondary p-6 md:ml-40 rounded-xl shadow-xl w-full max-w-[900px] min-w-[360px] border border-slate-200 dark:border-slate-700"
+      >
         <div className="flex justify-between items-center mb-5">
           <h3 className="text-lg font-bold text-slate-800 dark:text-white">
             {isEditing ? 'Editar Fornecedor' : isCreating ? 'Cadastrar Novo Fornecedor' : 'Vincular Fornecedor'}
           </h3>
           {!isEditing && (
-            <button type="button" onClick={() => setIsCreating(!isCreating)} className="text-sm font-semibold text-[#004aad] hover:underline">
+            <button
+              type="button"
+              onClick={() => setIsCreating((v) => !v)}
+              className="text-sm font-semibold text-[#004aad] hover:underline"
+            >
               {isCreating ? 'Buscar no Catálogo' : 'Novo Fornecedor'}
             </button>
           )}
         </div>
+
         {showForm ? (
           <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <label className={labelStyle}>CNPJ</label>
               <div className="flex gap-2">
-                <input type="text" name="cnpj" value={formData.cnpj} onChange={handleChange} className={inputStyle} required />
+                <input type="text" name="cnpj" value={formData.cnpj} onChange={(e) => setFormData((p) => ({ ...p, cnpj: e.target.value }))} className={inputStyle} required />
                 {!isEditing && (
-                  <button type="button" onClick={buscarCNPJ} className="bg-[#004aad] text-white px-4 py-2 rounded-md hover:bg-[#003d91]">Buscar</button>
+                  <button type="button" onClick={buscarCNPJ} className="bg-[#004aad] text-white px-4 py-2 rounded-md hover:bg-[#003d91]">
+                    Buscar
+                  </button>
                 )}
               </div>
             </div>
             <div className="col-span-2">
               <label className={labelStyle}>Razão Social</label>
-              <input type="text" name="razao_social" value={formData.razao_social} onChange={handleChange} className={inputStyle} />
+              <input type="text" name="razao_social" value={formData.razao_social} onChange={(e) => setFormData((p) => ({ ...p, razao_social: e.target.value }))} className={inputStyle} />
             </div>
+
             <div className="col-span-3 grid grid-cols-[2fr_2fr_1fr_1fr] gap-4">
               <div>
                 <label className={labelStyle}>Nome Fantasia</label>
-                <input name="nome_fantasia" value={formData.nome_fantasia} onChange={handleChange} className={inputStyle} />
+                <input name="nome_fantasia" value={formData.nome_fantasia} onChange={(e) => setFormData((p) => ({ ...p, nome_fantasia: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>E-mail</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className={inputStyle} />
+                <input type="email" name="email" value={formData.email} onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>Telefone</label>
-                <input name="telefone" value={formData.telefone} onChange={handleChange} className={inputStyle} />
+                <input name="telefone" value={formData.telefone} onChange={(e) => setFormData((p) => ({ ...p, telefone: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>Porte</label>
-                <input name="porte" value={formData.porte} onChange={handleChange} className={inputStyle} />
+                <input name="porte" value={formData.porte} onChange={(e) => setFormData((p) => ({ ...p, porte: e.target.value }))} className={inputStyle} />
               </div>
             </div>
+
             <div className="col-span-3 grid grid-cols-[1fr_3fr_1fr] gap-4">
               <div>
                 <label className={labelStyle}>CEP</label>
-                <input name="cep" value={formData.cep} onChange={handleChange} className={inputStyle} />
+                <input name="cep" value={formData.cep} onChange={(e) => setFormData((p) => ({ ...p, cep: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>Logradouro</label>
-                <input name="logradouro" value={formData.logradouro} onChange={handleChange} className={inputStyle} />
+                <input name="logradouro" value={formData.logradouro} onChange={(e) => setFormData((p) => ({ ...p, logradouro: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>Número</label>
-                <input name="numero" value={formData.numero} onChange={handleChange} className={inputStyle} />
+                <input name="numero" value={formData.numero} onChange={(e) => setFormData((p) => ({ ...p, numero: e.target.value }))} className={inputStyle} />
               </div>
             </div>
+
             <div className="col-span-3 grid grid-cols-[2fr_2fr_2fr_1fr] gap-4">
               <div>
                 <label className={labelStyle}>Bairro</label>
-                <input name="bairro" value={formData.bairro} onChange={handleChange} className={inputStyle} />
+                <input name="bairro" value={formData.bairro} onChange={(e) => setFormData((p) => ({ ...p, bairro: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>Complemento</label>
-                <input name="complemento" value={formData.complemento} onChange={handleChange} className={inputStyle} />
+                <input name="complemento" value={formData.complemento} onChange={(e) => setFormData((p) => ({ ...p, complemento: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>Município</label>
-                <input name="municipio" value={formData.municipio} onChange={handleChange} className={inputStyle} />
+                <input name="municipio" value={formData.municipio} onChange={(e) => setFormData((p) => ({ ...p, municipio: e.target.value }))} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>UF</label>
-                <input name="uf" value={formData.uf} onChange={handleChange} className={inputStyle} />
+                <input name="uf" value={formData.uf} onChange={(e) => setFormData((p) => ({ ...p, uf: e.target.value }))} className={inputStyle} />
               </div>
             </div>
+
             <div className="col-span-3 flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 font-semibold text-sm">Cancelar</button>
-              <button type="submit" disabled={isSaving} className="px-4 py-2 rounded-md bg-[#0f766e] text-white hover:bg-[#115e59] disabled:opacity-70 font-semibold text-sm">{isSaving ? 'Salvando...' : 'Salvar'}</button>
+              <button type="button" onClick={onClose} className="px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 font-semibold text-sm">
+                Cancelar
+              </button>
+              <button type="submit" disabled={isSaving} className="px-4 py-2 rounded-md bg-[#0f766e] text-white hover:bg-[#115e59] disabled:opacity-70 font-semibold text-sm">
+                {isSaving ? 'Salvando...' : 'Salvar'}
+              </button>
             </div>
           </form>
         ) : (
           <>
-            <div className="space-y-4">
-              <input type="text" placeholder="Buscar por CNPJ ou Razão Social..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`${inputStyle}`} />
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Buscar por CNPJ ou Razão Social..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`${inputStyle}`}
+              />
               <div className="max-h-64 overflow-y-auto border rounded-lg divide-y bg-white dark:bg-dark-bg-secondary">
                 {filteredCatalogo.map((f) => (
                   <div key={f.id} className="p-3 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary">
@@ -366,13 +419,19 @@ const FornecedorModal = ({
                       <p className="font-semibold text-slate-800 dark:text-white">{f.razao_social}</p>
                       <p className="text-sm text-slate-500">{f.cnpj}</p>
                     </div>
-                    <button onClick={() => onLink(f.id)} className="px-4 py-2 bg-[#004aad] text-white rounded-md hover:bg-[#003d91] font-semibold text-sm">Vincular</button>
+                    <button onClick={() => onLink?.(f.id)} className="px-4 py-2 bg-[#004aad] text-white rounded-md hover:bg-[#003d91] font-semibold text-sm">
+                      Vincular
+                    </button>
                   </div>
                 ))}
-                {filteredCatalogo.length === 0 && (<p className="p-4 text-center text-slate-500">Nenhum fornecedor encontrado.</p>)}
+                {filteredCatalogo.length === 0 && (
+                  <p className="p-4 text-center text-slate-500">Nenhum fornecedor encontrado.</p>
+                )}
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={onClose} className="px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 font-semibold text-sm">Cancelar</button>
+                <button type="button" onClick={onClose} className="px-4 py-2 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 font-semibold text-sm">
+                  Cancelar
+                </button>
               </div>
             </div>
           </>
@@ -382,119 +441,9 @@ const FornecedorModal = ({
   );
 };
 
-// --- COMPONENTES DE TABELA ---
-const ItensTable = ({ itens, onEdit, handleAskDelete, selectedItems, onSelectItem, onSelectAll, areAllSelected }) => (
-  <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary shadow-sm">
-    <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
-      <thead className="bg-slate-50 dark:bg-slate-800/40">
-        <tr>
-          <th className="py-3 px-4 text-left w-12">
-            <StyledCheckbox checked={areAllSelected} onChange={onSelectAll} />
-          </th>
-          <th className="py-3 px-4 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Descrição</th>
-          <th className="py-3 px-3 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Quantidade</th>
-          <th className="py-3 px-3 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Valor</th>
-          <th className="py-3 px-6 text-center text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Ações</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-        {itens.map(item => (
-          <tr key={item.id} className={`${selectedItems.has(item.id) ? 'bg-blue-50/60 dark:bg-blue-900/20' : 'bg-white dark:bg-transparent'} hover:bg-slate-50 dark:hover:bg-slate-800/40`}>
-            <td className="py-4 px-4"><StyledCheckbox checked={selectedItems.has(item.id)} onChange={() => onSelectItem(item.id)} /></td>
-            <td className="py-4 px-4 text-sm text-slate-800 dark:text-slate-200">{item.descricao}</td>
-            <td className="px-3 py-4 text-sm text-slate-800 dark:text-slate-200">{item.quantidade}</td>
-            <td className="px-3 py-4 text-sm text-slate-800 dark:text-slate-200">{formatCurrency(item.valor_estimado)}</td>
-            <td className="py-4 px-6 text-center text-sm font-semibold">
-              <div className="flex gap-3 justify-center">
-                <button onClick={() => onEdit(item)} title="Editar" className="text-[#004aad] hover:text-[#003d91]"><PencilIcon className="w-5 h-5" /></button>
-                <button onClick={() => handleAskDelete("item", item)} title="Remover" className="text-rose-600 hover:text-rose-700"><TrashIcon className="w-5 h-5" /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    {itens.length === 0 && (
-      <div className="flex flex-col items-center justify-center p-10 text-center bg-white dark:bg-dark-bg-secondary">
-        <ClipboardDocumentIcon className="w-12 h-12 text-slate-300 dark:text-slate-600" />
-        <p className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200">Nenhum item adicionado</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Clique em “Adicionar Item” para cadastrar um.</p>
-      </div>
-    )}
-  </div>
-);
-
-const FornecedorTable = ({ fornecedores, handleAskDelete, onEdit }) => (
-  <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary shadow-sm">
-    <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
-      <thead className="bg-slate-50 dark:bg-slate-800/40">
-        <tr>
-          <th className="py-3 px-3 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">CNPJ</th>
-          <th className="py-3 px-6 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Razão Social</th>
-          <th className="py-3 px-6 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Nome Fantasia</th>
-          <th className="py-3 px-3 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Telefone</th>
-          <th className="py-3 px-6 text-center text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {fornecedores.length > 0 ? (
-          fornecedores.map((forn) => (
-            <tr key={forn.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-              <td className="px-3 py-4 text-sm text-slate-800 dark:text-slate-200">{forn.cnpj}</td>
-              <td className="py-4 px-6 text-sm text-slate-800 dark:text-slate-200">{forn.razao_social}</td>
-              <td className="px-3 py-4 text-sm text-slate-800 dark:text-slate-200">{forn.nome_fantasia}</td>
-              <td className="px-3 py-4 text-sm text-slate-800 dark:text-slate-200">{forn.telefone}</td>
-              <td className="px-6 py-4 text-center">
-                <div className="space-x-4">
-                  <button onClick={() => onEdit(forn)} className="text-[#004aad] hover:text-[#003d91]"><PencilIcon className="w-5 h-5 inline" /></button>
-                  <button onClick={() => handleAskDelete('fornecedor', forn)} className="text-rose-600 hover:text-rose-700"><TrashIcon className="w-5 h-5 inline" /></button>
-                </div>
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="5" className="text-center py-10">
-              <BuildingOffice2Icon className="w-12 h-12 text-slate-300 mx-auto" />
-              <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Nenhum fornecedor vinculado ao processo.</p>
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-);
-
-// --- HEADER/PROCESSCARD ---
-function ProcessHeader({ formData, entidadeNome, orgaoNome, onEdit }) {
-  return (
-    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl p-4 mx-2 mt-3 md:px-8 py-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex-1 min-w-[260px]">
-          <h1 className="text-2xl font-bold leading-tight">Processo Licitatório</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{formData?.objeto || 'Objeto não informado.'}</p>
-        </div>
-        <ActionButton text="Editar dados" onClick={onEdit} variant="outlined" icon={PencilIcon} />
-      </div>
-      <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-5 mt-4 bg-slate-50/40 dark:bg-slate-800/40">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          <DetailItem label="Status"><StatusTag status={formData.situacao} /></DetailItem>
-          <DetailItem label="Abertura" value={formatDateTime(formData.data_abertura)} />
-          <DetailItem label="Modalidade" value={formData.modalidade} />
-          <DetailItem label="Valor Estimado" value={formatCurrency(formData.valor_referencia)} />
-          <DetailItem label="Vigência (Meses)" value={formData.vigencia_meses} />
-          <DetailItem label="Nº do Certame" value={formData.numero_certame} />
-          <DetailItem label="Data do Processo" value={formatDate(formData.data_processo)} />
-          <DetailItem label="Entidade" value={entidadeNome} />
-          <DetailItem label="Órgão" value={orgaoNome} />
-          <DetailItem label="Registro de Preço" value={formData.registro_precos ? 'Sim' : 'Não'} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- COMPONENTE PRINCIPAL ---
+/* =============================================================
+ * Página principal
+ * ============================================================= */
 export default function PageProcess() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -503,11 +452,27 @@ export default function PageProcess() {
 
   const isNewProcess = !id;
   const [processoId, setProcessoId] = useState(id || null);
-  const [activeTab, setActiveTab] = useState("itens");
+  const [activeTab, setActiveTab] = useState('itens');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(isNewProcess);
 
-  const [formData, setFormData] = useState({ objeto: '', numero_processo: '', data_processo: '', modalidade: '', classificacao: '', tipo_organizacao: '', registro_precos: false, orgao: '', entidade: '', valor_referencia: '', numero_certame: '', data_abertura: '', situacao: 'Em Pesquisa', vigencia_meses: 12 });
+  const [formData, setFormData] = useState({
+    objeto: '',
+    numero_processo: '',
+    data_processo: '',
+    modalidade: '',
+    classificacao: '',
+    tipo_organizacao: '',
+    registro_precos: false,
+    orgao: '',
+    entidade: '',
+    valor_referencia: '',
+    numero_certame: '',
+    data_abertura: '',
+    situacao: 'Em Pesquisa',
+    vigencia_meses: 12,
+  });
+
   const [itens, setItens] = useState([]);
   const [fornecedoresDoProcesso, setFornecedoresDoProcesso] = useState([]);
   const [entidades, setEntidades] = useState([]);
@@ -515,11 +480,9 @@ export default function PageProcess() {
   const [catalogoFornecedores, setCatalogoFornecedores] = useState([]);
   const [entidadeNome, setEntidadeNome] = useState('');
   const [orgaoNome, setOrgaoNome] = useState('');
-
-  // Lotes (condicional)
   const [lotes, setLotes] = useState([]);
 
-  // Modais
+  // Modais & exclusões
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [itemSelecionado, setItemSelecionado] = useState(null);
   const [isFornecedorModalOpen, setIsFornecedorModalOpen] = useState(false);
@@ -528,76 +491,112 @@ export default function PageProcess() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState(null);
 
-  // Paginação (Itens)
+  /* ---------------- Paginação (itens) ---------------- */
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const totalPages = Math.ceil(itens.length / itemsPerPage);
-  const currentItems = itens.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const areAllCurrentItemsSelected = currentItems.length > 0 && currentItems.every(item => selectedItems.has(item.id));
+  const totalPages = useMemo(() => Math.ceil(itens.length / itemsPerPage), [itens.length, itemsPerPage]);
+  const currentItems = useMemo(
+    () => itens.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [itens, currentPage, itemsPerPage]
+  );
+  const areAllCurrentItemsSelected = useMemo(
+    () => currentItems.length > 0 && currentItems.every((item) => selectedItems.has(item.id)),
+    [currentItems, selectedItems]
+  );
 
-  // Paginação (Fornecedores)
+  /* ---------------- Paginação (fornecedores) ---------------- */
   const [currentPageForn, setCurrentPageForn] = useState(1);
   const [itemsPerPageForn, setItemsPerPageForn] = useState(5);
-  const totalPagesForn = Math.ceil(fornecedoresDoProcesso.length / itemsPerPageForn);
-  const currentFornecedores = fornecedoresDoProcesso.slice((currentPageForn - 1) * itemsPerPageForn, currentPageForn * itemsPerPageForn);
+  const totalPagesForn = useMemo(
+    () => Math.ceil(fornecedoresDoProcesso.length / itemsPerPageForn),
+    [fornecedoresDoProcesso.length, itemsPerPageForn]
+  );
+  const currentFornecedores = useMemo(
+    () => fornecedoresDoProcesso.slice((currentPageForn - 1) * itemsPerPageForn, currentPageForn * itemsPerPageForn),
+    [fornecedoresDoProcesso, currentPageForn, itemsPerPageForn]
+  );
 
-  const handleAskDelete = (type, item) => { setDeleteType(type); setItemToDelete(item); setShowConfirmModal(true); };
+  /* =============================================================
+   * Data fetching
+   * ============================================================= */
+  const fetchDadosDoProcesso = useCallback(
+    async (pid) => {
+      if (!pid) return;
+      setIsLoading(true);
+      try {
+        const { data } = await api.get(`/processos/${pid}/`);
+        setFormData({
+          ...data,
+          // mantém exatamente o que veio do backend (sem normalizar fuso)
+          data_abertura: data.data_abertura,
+          data_processo: data.data_processo || '',
+        });
+        // fornecedores via endpoint dedicado depois (evita limpar na ausência)
+        setProcessoId(data.id);
+        setEntidadeNome(data.entidade_nome || '');
+        setOrgaoNome(data.orgao_nome || '');
+      } catch (err) {
+        showToast('Erro ao carregar dados do processo.', 'error');
+        navigate('/processos');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [api, showToast, navigate]
+  );
 
-  // --- DATA FETCHING ---
-  const fetchDadosDoProcesso = useCallback(async (pid) => {
-    if (!pid) return;
-    setIsLoading(true);
-    try {
-      const res = await api.get(`/processos/${pid}/`);
-      const data = res.data;
-      setFormData({ ...data, data_abertura: formatDateTimeForInput(data.data_abertura), data_processo: data.data_processo || '' });
-      setFornecedoresDoProcesso(data.fornecedores_processo || data.fornecedores || []);
-      setProcessoId(data.id);
-      setEntidadeNome(data.entidade_nome || '');
-      setOrgaoNome(data.orgao_nome || '');
-    } catch (err) {
-      showToast("Erro ao carregar dados do processo.", "error");
-      navigate("/processos");
-    } finally { setIsLoading(false); }
-  }, [api, showToast, navigate]);
+  const fetchItens = useCallback(
+    async (pid) => {
+      if (!pid) return;
+      try {
+        const { data } = await api.get(`/processos/${pid}/itens/`);
+        setItens(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar itens:', error);
+        showToast('Erro ao carregar itens do processo.', 'error');
+      }
+    },
+    [api, showToast]
+  );
 
-  const fetchItens = useCallback(async (pid) => {
-    if (!pid) return;
-    try {
-      const res = await api.get(`/processos/${pid}/itens/`);
-      setItens(res.data || []);
-    } catch (error) {
-      console.error("Erro ao buscar itens:", error);
-      showToast("Erro ao carregar itens do processo.", "error");
-    }
-  }, [api, showToast]);
+  const fetchFornecedoresDoProcesso = useCallback(
+    async (pid) => {
+      if (!pid) return;
+      try {
+        const { data } = await api.get(`/processos/${pid}/fornecedores/`);
+        setFornecedoresDoProcesso(data || []);
+      } catch {
+        showToast('Erro ao carregar fornecedores do processo.', 'error');
+      }
+    },
+    [api, showToast]
+  );
 
-  const fetchFornecedoresDoProcesso = useCallback(async (pid) => {
-    if (!pid) return;
-    try {
-      const res = await api.get(`/processos/${pid}/fornecedores/`);
-      setFornecedoresDoProcesso(res.data || []);
-    } catch { showToast('Erro ao carregar fornecedores do processo.', 'error'); }
-  }, [api, showToast]);
-
-  const fetchLotes = useCallback(async (pid) => {
-    if (!pid) return;
-    try {
-      const res = await api.get(`/processos/${pid}/lotes/`);
-      setLotes(res.data || []);
-    } catch (e) {
-      // Endpoint opcional. Mantemos a UI funcional mesmo sem lotes.
-      setLotes([]);
-    }
-  }, [api]);
+  const fetchLotes = useCallback(
+    async (pid) => {
+      if (!pid) return;
+      try {
+        const { data } = await api.get(`/processos/${pid}/lotes/`);
+        setLotes(data || []);
+      } catch {
+        setLotes([]);
+      }
+    },
+    [api]
+  );
 
   const fetchAuxiliares = useCallback(async () => {
     try {
-      const [entRes, fornRes] = await Promise.all([api.get('/entidades/'), api.get('/fornecedores/')]);
-      setEntidades(entRes.data);
-      setCatalogoFornecedores(fornRes.data);
-    } catch { showToast('Erro ao carregar dados auxiliares.', 'error'); }
+      const [entRes, fornRes] = await Promise.all([
+        api.get('/entidades/'),
+        api.get('/fornecedores/'),
+      ]);
+      setEntidades(entRes.data || []);
+      setCatalogoFornecedores(fornRes.data || []);
+    } catch {
+      showToast('Erro ao carregar dados auxiliares.', 'error');
+    }
   }, [api, showToast]);
 
   useEffect(() => {
@@ -611,135 +610,156 @@ export default function PageProcess() {
   }, [id, fetchDadosDoProcesso, fetchAuxiliares, fetchItens, fetchFornecedoresDoProcesso, fetchLotes]);
 
   useEffect(() => {
-    if (formData.entidade) {
-      api.get(`/orgaos/?entidade=${formData.entidade}`).then(res => setOrgaos(res.data)).catch(() => setOrgaos([]));
-    } else { setOrgaos([]); }
+    if (!formData.entidade) return setOrgaos([]);
+    api
+      .get(`/orgaos/?entidade=${formData.entidade}`)
+      .then((res) => setOrgaos(res.data || []))
+      .catch(() => setOrgaos([]));
   }, [formData.entidade, api]);
 
-  // --- HANDLERS DADOS GERAIS ---
+  /* =============================================================
+   * Handlers Gerais
+   * ============================================================= */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const finalValue = name === "registro_precos" ? value === "true" : (type === "checkbox" ? checked : value);
+    const finalValue = name === 'registro_precos' ? value === 'true' : type === 'checkbox' ? checked : value;
     setFormData((prev) => ({ ...prev, [name]: finalValue }));
-    if (name === 'entidade' && formData.entidade !== value) { setFormData(prev => ({ ...prev, orgao: '' })); }
+    if (name === 'entidade' && formData.entidade !== value) {
+      setFormData((prev) => ({ ...prev, orgao: '' }));
+    }
   };
 
   const handleSaveDadosGerais = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  try {
-    const res = isNewProcess
-      ? await api.post("/processos/", formData)
-      : await api.put(`/processos/${processoId}/`, formData);
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const res = isNewProcess
+        ? await api.post('/processos/', formData)
+        : await api.put(`/processos/${processoId}/`, formData);
 
-    showToast(isNewProcess ? "Processo criado!" : "Processo atualizado!", "success");
-    const updatedData = res.data;
+      showToast(isNewProcess ? 'Processo criado!' : 'Processo atualizado!', 'success');
+      const updated = res.data;
 
-    if (isNewProcess) {
-      navigate(`/processos/editar/${updatedData.id}`, { replace: true });
-      setProcessoId(updatedData.id);
-      setIsEditing(false);
-    // na próxima montagem o useEffect já busca fornecedores
-    } else {
-      await fetchDadosDoProcesso(updatedData.id);
-     await fetchFornecedoresDoProcesso(updatedData.id); // <- garante que não some
-      setIsEditing(false);
+      if (isNewProcess) {
+        navigate(`/processos/editar/${updated.id}`, { replace: true });
+        setProcessoId(updated.id);
+        setIsEditing(false);
+      } else {
+        await fetchDadosDoProcesso(updated.id);
+        await fetchFornecedoresDoProcesso(updated.id); // evita sumir os fornecedores
+        setIsEditing(false);
+      }
+    } catch {
+      showToast('Erro ao salvar o processo.', 'error');
+    } finally {
+      setIsLoading(false);
     }
-  } catch {
-    showToast("Erro ao salvar o processo.", "error");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
-  // --- HANDLERS ITENS ---
+  /* ---------------- Itens ---------------- */
   const handleSaveItem = async (itemData) => {
     try {
       if (itemSelecionado) {
         await api.put(`/itens/${itemSelecionado.id}/`, itemData);
-        showToast("Item atualizado com sucesso!", "success");
+        showToast('Item atualizado com sucesso!', 'success');
       } else {
         await api.post(`/itens/`, { ...itemData, processo: processoId });
-        showToast("Item adicionado com sucesso!", "success");
+        showToast('Item adicionado com sucesso!', 'success');
       }
       setIsItemModalOpen(false);
       setItemSelecionado(null);
       fetchItens(processoId);
-    } catch { showToast("Erro ao salvar item.", "error"); }
+    } catch {
+      showToast('Erro ao salvar item.', 'error');
+    }
   };
 
   const handleSelectAll = () => {
-    const pageIds = currentItems.map(i => i.id);
-    const newSelected = new Set(selectedItems);
-    const allSelected = pageIds.every(id => newSelected.has(id));
-    if (allSelected) pageIds.forEach(id => newSelected.delete(id)); else pageIds.forEach(id => newSelected.add(id));
-    setSelectedItems(newSelected);
+    const pageIds = currentItems.map((i) => i.id);
+    const next = new Set(selectedItems);
+    const all = pageIds.every((id) => next.has(id));
+    (all ? pageIds.forEach((id) => next.delete(id)) : pageIds.forEach((id) => next.add(id)));
+    setSelectedItems(next);
   };
 
   const handleSelectItem = (itemId) => {
-    const newSelected = new Set(selectedItems);
-    newSelected.has(itemId) ? newSelected.delete(itemId) : newSelected.add(itemId);
-    setSelectedItems(newSelected);
+    const next = new Set(selectedItems);
+    next.has(itemId) ? next.delete(itemId) : next.add(itemId);
+    setSelectedItems(next);
   };
 
   const handleExportItems = () => {
-    if (selectedItems.size === 0) { showToast("Nenhum item selecionado para exportar.", "info"); return; }
-    const itemsToExport = itens.filter(item => selectedItems.has(item.id));
-    const headers = "Descricao,Especificacao,Unidade,Quantidade\n";
-    const csvContent = itemsToExport.map(item => {
-      const desc = `"${(item.descricao || '').replace(/"/g, '""')}"`;
-      const espec = `"${(item.especificacao || '').replace(/"/g, '""')}"`;
-      return [desc, espec, item.unidade, item.quantidade].join(',');
-    }).join('\n');
-
-    const blob = new Blob([headers + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", "itens_exportados.csv");
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (selectedItems.size === 0) {
+      showToast('Nenhum item selecionado para exportar.', 'info');
+      return;
     }
-    showToast(`${itemsToExport.length} itens exportados com sucesso!`, "success");
+    const itemsToExport = itens.filter((i) => selectedItems.has(i.id));
+    const headers = 'Descricao,Especificacao,Unidade,Quantidade\n';
+    const csvContent = itemsToExport
+      .map((item) => {
+        const desc = `"${(item.descricao || '').replace(/"/g, '""')}"`;
+        const espec = `"${(item.especificacao || '').replace(/"/g, '""')}"`;
+        return [desc, espec, item.unidade, item.quantidade].join(',');
+      })
+      .join('\n');
+    const blob = new Blob([headers + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = 'itens_exportados.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`${itemsToExport.length} itens exportados com sucesso!`, 'success');
   };
 
-  // --- FORNECEDORES ---
+  /* ---------------- Fornecedores ---------------- */
   const handleLinkFornecedor = async (fornecedorId) => {
     setIsFornecedorModalOpen(false);
     try {
       await api.post(`/processos/${processoId}/adicionar_fornecedor/`, { fornecedor_id: fornecedorId });
       showToast('Fornecedor vinculado!', 'success');
       fetchFornecedoresDoProcesso(processoId);
-    } catch (err) { showToast('Erro ao vincular fornecedor.', 'error'); }
+    } catch {
+      showToast('Erro ao vincular fornecedor.', 'error');
+    }
   };
 
   const handleSaveNewAndLinkFornecedor = async (newFornecedor) => {
     try {
-      const res = await api.post('/fornecedores/', newFornecedor);
-      const fornecedorCriado = res.data;
-      setCatalogoFornecedores((prev) => [fornecedorCriado, ...prev]);
-      await handleLinkFornecedor(fornecedorCriado.id);
-    } catch (err) { showToast('Erro ao cadastrar fornecedor.', 'error'); }
+      const { data } = await api.post('/fornecedores/', newFornecedor);
+      setCatalogoFornecedores((prev) => [data, ...prev]);
+      await handleLinkFornecedor(data.id);
+    } catch {
+      showToast('Erro ao cadastrar fornecedor.', 'error');
+    }
   };
 
-  const handleEditFornecedor = (fornecedor) => { setFornecedorSelecionado(fornecedor); setIsFornecedorModalOpen(true); };
+  const handleEditFornecedor = (fornecedor) => {
+    setFornecedorSelecionado(fornecedor);
+    setIsFornecedorModalOpen(true);
+  };
 
   const handleUpdateEditedFornecedor = async (fornecedorAtualizado) => {
     try {
-      const res = await api.put(`/fornecedores/${fornecedorAtualizado.id}/`, fornecedorAtualizado);
-      const fornecedorEditado = res.data;
-      setFornecedoresDoProcesso((prev) => prev.map((f) => (f.id === fornecedorEditado.id ? fornecedorEditado : f)));
-      setCatalogoFornecedores((prev) => prev.map((f) => (f.id === fornecedorEditado.id ? fornecedorEditado : f)));
+      const { data } = await api.put(`/fornecedores/${fornecedorAtualizado.id}/`, fornecedorAtualizado);
+      setFornecedoresDoProcesso((prev) => prev.map((f) => (f.id === data.id ? data : f)));
+      setCatalogoFornecedores((prev) => prev.map((f) => (f.id === data.id ? data : f)));
       showToast('Fornecedor atualizado.', 'success');
       setFornecedorSelecionado(null);
       setIsFornecedorModalOpen(false);
-    } catch (err) { showToast('Erro ao atualizar fornecedor.', 'error'); }
+    } catch {
+      showToast('Erro ao atualizar fornecedor.', 'error');
+    }
   };
 
-  // --- EXCLUSÃO ---
+  /* ---------------- Exclusões ---------------- */
+  const handleAskDelete = (type, item) => {
+    setDeleteType(type);
+    setItemToDelete(item);
+    setShowConfirmModal(true);
+  };
+
   const handleConfirmDelete = async () => {
     try {
       if (deleteType === 'fornecedor') {
@@ -751,7 +771,7 @@ export default function PageProcess() {
         showToast('Item removido com sucesso.', 'success');
         fetchItens(processoId);
       }
-    } catch (error) {
+    } catch {
       showToast('Erro ao remover.', 'error');
     } finally {
       setShowConfirmModal(false);
@@ -760,127 +780,286 @@ export default function PageProcess() {
     }
   };
 
-  // --- UI ---
+  /* =============================================================
+   * Render
+   * ============================================================= */
   return (
     <>
-      {/* MODAIS */}
-      <ItemModal isOpen={isItemModalOpen} onClose={() => { setIsItemModalOpen(false); setItemSelecionado(null); }} onSave={handleSaveItem} itemSelecionado={itemSelecionado} />
-      <FornecedorModal isOpen={isFornecedorModalOpen} onClose={() => { setIsFornecedorModalOpen(false); setFornecedorSelecionado(null); }} catalogo={catalogoFornecedores} onLink={handleLinkFornecedor} onSaveNew={handleSaveNewAndLinkFornecedor} onSaveEdit={handleUpdateEditedFornecedor} fornecedorSelecionado={fornecedorSelecionado} />
+      {/* Modais */}
+      <ItemModal
+        isOpen={isItemModalOpen}
+        onClose={() => {
+          setIsItemModalOpen(false);
+          setItemSelecionado(null);
+        }}
+        onSave={handleSaveItem}
+        itemSelecionado={itemSelecionado}
+      />
+
+      <FornecedorModal
+        isOpen={isFornecedorModalOpen}
+        onClose={() => {
+          setIsFornecedorModalOpen(false);
+          setFornecedorSelecionado(null);
+        }}
+        catalogo={catalogoFornecedores}
+        onLink={handleLinkFornecedor}
+        onSaveNew={handleSaveNewAndLinkFornecedor}
+        onSaveEdit={handleUpdateEditedFornecedor}
+        fornecedorSelecionado={fornecedorSelecionado}
+      />
+
       {showConfirmModal && (
-        <ConfirmDeleteModal message={deleteType === "fornecedor" ? `Deseja realmente remover o fornecedor "${itemToDelete?.nome || itemToDelete?.razao_social}" deste processo?` : `Deseja realmente excluir o item "${itemToDelete?.descricao}"?`} onConfirm={handleConfirmDelete} onCancel={() => setShowConfirmModal(false)} />
+        <ConfirmDeleteModal
+          message={
+            deleteType === 'fornecedor'
+              ? `Deseja realmente remover o fornecedor "${itemToDelete?.nome || itemToDelete?.razao_social}" deste processo?`
+              : `Deseja realmente excluir o item "${itemToDelete?.descricao}"?`
+          }
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setShowConfirmModal(false)}
+        />
       )}
 
-      {/* HEADER (ProcessCard) */}
+      {/* Cabeçalho (card) */}
       {!isEditing && (
-        <ProcessHeader formData={formData} entidadeNome={entidadeNome} orgaoNome={orgaoNome} onEdit={() => setIsEditing(true)} />
+        <ProcessHeader
+          formData={formData}
+          entidadeNome={entidadeNome}
+          orgaoNome={orgaoNome}
+          onEdit={() => setIsEditing(true)}
+        />
       )}
 
-      {/* FORM DE EDIÇÃO (aparece logo abaixo do cabeçario, no lugar dele quando isEditing=true) */}
+      {/* Formulário de edição */}
       {isEditing && (
-        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl p-4 mx-2 mt-3 md:px-8 py-4">
-          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-4">Dados Gerais do Processo</h2>
+        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl p-4 md:px-8 py-4">
+          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-4">
+            Dados Gerais do Processo
+          </h2>
           <form onSubmit={handleSaveDadosGerais} className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-4">
               <div>
                 <label className={labelStyle}>Objeto *</label>
-                <textarea name="objeto" value={formData.objeto} onChange={handleChange} className={`${inputStyle} h-28`} required />
+                <textarea
+                  name="objeto"
+                  value={formData.objeto}
+                  onChange={handleChange}
+                  className={`${inputStyle} h-28`}
+                  required
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelStyle}>Nº do Processo *</label>
-                  <input name="numero_processo" value={formData.numero_processo} onChange={handleChange} className={inputStyle} required />
+                  <input
+                    name="numero_processo"
+                    value={formData.numero_processo}
+                    onChange={handleChange}
+                    className={inputStyle}
+                    required
+                  />
                 </div>
                 <div>
                   <label className={labelStyle}>Data do Processo *</label>
-                  <input name="data_processo" type="date" value={formData.data_processo} onChange={handleChange} className={inputStyle} required />
+                  <input
+                    name="data_processo"
+                    type="date"
+                    value={formData.data_processo}
+                    onChange={handleChange}
+                    className={inputStyle}
+                    required
+                  />
                 </div>
                 <div>
                   <label className={labelStyle}>Nº do Certame</label>
-                  <input name="numero_certame" value={formData.numero_certame || ''} onChange={handleChange} className={inputStyle} />
+                  <input
+                    name="numero_certame"
+                    value={formData.numero_certame || ''}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
                 </div>
                 <div>
                   <label className={labelStyle}>Data/Hora Abertura</label>
-                  <input name="data_abertura" type="datetime-local" value={formData.data_abertura || ''} onChange={handleChange} className={inputStyle} />
+                  <input
+                    type="datetime-local"
+                    name="data_abertura"
+                    value={toDatetimeLocalExact(formData.data_abertura)}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
                 </div>
               </div>
             </div>
+
             <div className="grid md:grid-cols-5 gap-4">
               <div>
                 <label className={labelStyle}>Modalidade *</label>
-                <select name="modalidade" value={formData.modalidade} onChange={handleChange} className={inputStyle} required>
+                <select
+                  name="modalidade"
+                  value={formData.modalidade}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                >
                   <option value="">Selecione...</option>
-                  {modalidades.map(m => (<option key={m} value={m}>{m}</option>))}
+                  {modalidades.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className={labelStyle}>Classificação *</label>
-                <select name="classificacao" value={formData.classificacao} onChange={handleChange} className={inputStyle} required>
+                <select
+                  name="classificacao"
+                  value={formData.classificacao}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                >
                   <option value="">Selecione...</option>
-                  {classificacoes.map(c => (<option key={c} value={c}>{c}</option>))}
+                  {classificacoes.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className={labelStyle}>Organização *</label>
-                <select name="tipo_organizacao" value={formData.tipo_organizacao} onChange={handleChange} className={inputStyle} required>
+                <select
+                  name="tipo_organizacao"
+                  value={formData.tipo_organizacao}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                >
                   <option value="">Selecione...</option>
-                  {organizacoes.map(o => (<option key={o} value={o}>{o}</option>))}
+                  {organizacoes.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className={labelStyle}>Valor de Referência (R$)</label>
-                <input name="valor_referencia" type="number" step="0.01" value={formData.valor_referencia || ''} onChange={handleChange} placeholder="0,00" className={`${inputStyle} text-right`} />
+                <input
+                  name="valor_referencia"
+                  type="number"
+                  step="0.01"
+                  value={formData.valor_referencia || ''}
+                  onChange={handleChange}
+                  placeholder="0,00"
+                  className={`${inputStyle} text-right`}
+                />
               </div>
               <div>
                 <label className={labelStyle}>Vigência (Meses) *</label>
-                <input name="vigencia_meses" type="number" min="1" value={formData.vigencia_meses || ''} onChange={handleChange} placeholder="12" className={`${inputStyle} text-center`} />
+                <input
+                  name="vigencia_meses"
+                  type="number"
+                  min="1"
+                  value={formData.vigencia_meses || ''}
+                  onChange={handleChange}
+                  placeholder="12"
+                  className={`${inputStyle} text-center`}
+                />
               </div>
             </div>
+
             <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className={labelStyle}>Entidade *</label>
-                <select name="entidade" value={formData.entidade} onChange={handleChange} className={inputStyle} required>
+                <select
+                  name="entidade"
+                  value={formData.entidade}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                >
                   <option value="">Selecione...</option>
-                  {entidades.map(e => (<option key={e.id} value={e.id}>{e.nome}</option>))}
+                  {entidades.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.nome}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className={labelStyle}>Órgão *</label>
-                <select name="orgao" value={formData.orgao} onChange={handleChange} className={inputStyle} required disabled={!formData.entidade || orgaos.length === 0}>
-                  <option value="">{formData.entidade ? 'Selecione...' : 'Selecione uma entidade'}</option>
-                  {orgaos.map(o => (<option key={o.id} value={o.id}>{o.nome}</option>))}
+                <select
+                  name="orgao"
+                  value={formData.orgao}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                  disabled={!formData.entidade || orgaos.length === 0}
+                >
+                  <option value="">
+                    {formData.entidade ? 'Selecione...' : 'Selecione uma entidade'}
+                  </option>
+                  {orgaos.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.nome}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className={labelStyle}>Situação *</label>
-                <select name="situacao" value={formData.situacao} onChange={handleChange} className={inputStyle} required>
-                  {situacoes.map(s => (<option key={s} value={s}>{s}</option>))}
+                <select
+                  name="situacao"
+                  value={formData.situacao}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                >
+                  {situacoes.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
+
             <div className="flex justify-center gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <ActionButton text={isNewProcess ? "Cancelar" : "Cancelar Edição"} onClick={() => isNewProcess ? navigate(-1) : setIsEditing(false)} variant="outlined" />
-              <ActionButton text={isNewProcess ? "Salvar e Continuar" : "Salvar Alterações"} onClick={handleSaveDadosGerais} variant="primary" icon={CheckCircleIcon} disabled={isLoading} type="submit" />
+              <ActionButton
+                text={isNewProcess ? 'Cancelar' : 'Cancelar Edição'}
+                onClick={() => (isNewProcess ? navigate(-1) : setIsEditing(false))}
+                variant="outlined"
+              />
+              <ActionButton
+                text={isNewProcess ? 'Salvar e Continuar' : 'Salvar Alterações'}
+                onClick={handleSaveDadosGerais}
+                variant="primary"
+                icon={CheckCircleIcon}
+                disabled={isLoading}
+                type="submit"
+              />
             </div>
           </form>
         </div>
       )}
 
-      {/* CONTEÚDO ABAIXO DO CABEÇARIO: TABS (Itens / Lotes (se for) / Fornecedores) */}
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl px-4 py-4 mx-2 mt-6 md:px-4 mb-12">
+      {/* Tabs (Itens / Lotes / Fornecedores) */}
+      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl px-4 py-4 mt-2 md:px-4 mb-12">
         <nav className="flex gap-2 px-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
-          <TabButton label="Itens" isActive={activeTab === "itens"} onClick={() => setActiveTab("itens")} isDisabled={!processoId} />
+          <TabButton label="Itens" isActive={activeTab === 'itens'} onClick={() => setActiveTab('itens')} isDisabled={!processoId} />
           {formData?.tipo_organizacao === 'Lote' && (
-            <TabButton label="Lotes" isActive={activeTab === "lotes"} onClick={() => setActiveTab("lotes")} isDisabled={!processoId} />
+            <TabButton label="Lotes" isActive={activeTab === 'lotes'} onClick={() => setActiveTab('lotes')} isDisabled={!processoId} />
           )}
-          <TabButton label="Fornecedores" isActive={activeTab === "fornecedores"} onClick={() => setActiveTab("fornecedores")} isDisabled={!processoId} />
+          <TabButton label="Fornecedores" isActive={activeTab === 'fornecedores'} onClick={() => setActiveTab('fornecedores')} isDisabled={!processoId} />
         </nav>
 
         <main className="p-2 mx-4">
           <AnimatePresence mode="wait">
             <motion.div key={activeTab} initial={false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 1, y: 0 }} transition={{ duration: 0 }}>
-
-              {/* ITENS */}
-              {activeTab === "itens" && (
+              {activeTab === 'itens' && (
                 <ItemsSection
                   itens={itens}
                   currentItems={currentItems}
@@ -900,13 +1079,18 @@ export default function PageProcess() {
                 />
               )}
 
-              {/* LOTES (apenas se organização for Lote) */}
               {activeTab === "lotes" && formData?.tipo_organizacao === 'Lote' && (
-                <LotesSection lotes={lotes} showToast={showToast} />
+                <LotesSection
+                  processoId={processoId}
+                  lotes={lotes}
+                  itens={itens}                       
+                  reloadLotes={() => fetchLotes(processoId)}
+                  reloadItens={() => fetchItens(processoId)}
+                  showToast={showToast}
+                />
               )}
 
-              {/* FORNECEDORES */}
-              {activeTab === "fornecedores" && (
+              {activeTab === 'fornecedores' && (
                 <FornecedoresSection
                   fornecedoresDoProcesso={fornecedoresDoProcesso}
                   currentFornecedores={currentFornecedores}
@@ -918,7 +1102,7 @@ export default function PageProcess() {
                   setFornecedorSelecionado={setFornecedorSelecionado}
                   setIsFornecedorModalOpen={setIsFornecedorModalOpen}
                   handleAskDelete={handleAskDelete}
-                  onEdit={(forn) => setFornecedorSelecionado(forn)}
+                  onEdit={handleEditFornecedor}
                 />
               )}
             </motion.div>
@@ -929,8 +1113,9 @@ export default function PageProcess() {
   );
 }
 
-
-// 1) Skeleton de carregamento para usar em placeholders
+/* =============================================================
+ * Skeleton de carregamento (opcional)
+ * ============================================================= */
 export function ProcessLoading() {
   return (
     <div className="animate-pulse space-y-4 p-4 mx-2">
@@ -945,30 +1130,4 @@ export function ProcessLoading() {
       <div className="h-64 w-full bg-slate-200 dark:bg-slate-700 rounded" />
     </div>
   );
-}
-
-// 2) Hook de atalho de teclado (N para novo item, F para novo fornecedor, E para editar header)
-export function useProcessShortcuts({ onNewItem, onNewFornecedor, onEditHeader }) {
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-      if (e.key.toLowerCase() === 'n') { onNewItem?.(); }
-      if (e.key.toLowerCase() === 'f') { onNewFornecedor?.(); }
-      if (e.key.toLowerCase() === 'e') { onEditHeader?.(); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onNewItem, onNewFornecedor, onEditHeader]);
-}
-
-// 3) Badge utilitário exportado (caso necessário em outras telas)
-export function SituacaoBadge({ value }) {
-  const map = {
-    'Publicado': 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-    'Adjudicado/Homologado': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-    'Em Pesquisa': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-    'Aberto': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-    'Revogado/Cancelado': 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
-  };
-  return <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${map[value] || 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'}`}>{value}</span>;
 }

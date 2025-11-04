@@ -24,6 +24,15 @@ export default function ItemForm({ item, onSave }) {
           className="w-full rounded-md border px-3 py-2"
           required
         />
+      </div><div>
+        <label className="block font-semibold mb-1">Especificacao *</label>
+        <input
+          name="especificacao"
+          value={form.especificacao}
+          onChange={handleChange}
+          className="w-full rounded-md border px-3 py-2"
+          required
+        />
       </div>
       <div>
         <label className="block font-semibold mb-1">Quantidade *</label>

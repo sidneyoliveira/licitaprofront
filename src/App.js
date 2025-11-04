@@ -26,7 +26,7 @@ function App() {
   return (
     <>
       <Helmet>
-        <title>L3 Soluções - Gestão de Licitações</title>
+        <title>L3 Solutions - Gestão de Processos</title>
         <meta name="description" content="Sistema de gestão de processos licitatórios." />
       </Helmet>
 
