@@ -22,6 +22,197 @@ const situacoes = ['Aberto', 'Em Pesquisa', 'Aguardando Publicação', 'Publicad
 const inputStyle = "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]";
 const labelStyle = "text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase";
 
+
+// === PNCP - listas de códigos (uso em selects) ===
+const SITUACAO_CONTRATACAO = [
+  { value: 1, label: 'Divulgada no PNCP' },
+  { value: 2, label: 'Revogada' },
+  { value: 3, label: 'Anulada' },
+  { value: 4, label: 'Suspensa' },
+];
+
+const SITUACAO_ITEM = [
+  { value: 1, label: 'Em Andamento' },
+  { value: 2, label: 'Homologado' },
+  { value: 3, label: 'Anulado/Revogado/Cancelado' },
+  { value: 4, label: 'Deserto' },
+  { value: 5, label: 'Fracassado' },
+];
+
+const TIPO_BENEFICIO = [
+  { value: 1, label: 'Participação exclusiva para ME/EPP' },
+  { value: 2, label: 'Subcontratação para ME/EPP' },
+  { value: 3, label: 'Cota reservada para ME/EPP' },
+  { value: 4, label: 'Sem benefício' },
+  { value: 5, label: 'Não se aplica' },
+];
+
+const SITUACAO_RESULTADO_ITEM = [
+  { value: 1, label: 'Informado' },
+  { value: 2, label: 'Cancelado' },
+];
+
+const TIPO_CONTRATO = [
+  { value: 1, label: 'Contrato (termo inicial)' },
+  { value: 2, label: 'Comodato' },
+  { value: 3, label: 'Arrendamento' },
+  { value: 4, label: 'Concessão' },
+  { value: 5, label: 'Termo de Adesão' },
+  { value: 6, label: 'Convênio (revogado)' },
+  { value: 7, label: 'Empenho' },
+  { value: 8, label: 'Outros' },
+  { value: 9, label: 'TED (revogado)' },
+  { value: 10, label: 'ACT (revogado)' },
+  { value: 11, label: 'Termo de Compromisso (revogado)' },
+  { value: 12, label: 'Carta Contrato' },
+];
+
+const TIPO_TERMO_CONTRATO = [
+  { value: 1, label: 'Termo de Rescisão' },
+  { value: 2, label: 'Termo Aditivo' },
+  { value: 3, label: 'Termo de Apostilamento' },
+];
+
+const CATEGORIA_PROCESSO = [
+  { value: 1, label: 'Cessão' },
+  { value: 2, label: 'Compras' },
+  { value: 3, label: 'Informática (TIC)' },
+  { value: 4, label: 'Internacional' },
+  { value: 5, label: 'Locação Imóveis' },
+  { value: 6, label: 'Mão de Obra' },
+  { value: 7, label: 'Obras' },
+  { value: 8, label: 'Serviços' },
+  { value: 9, label: 'Serviços de Engenharia' },
+  { value: 10, label: 'Serviços de Saúde' },
+  { value: 11, label: 'Alienação de bens móveis/imóveis' },
+];
+
+const TIPO_DOCUMENTO = [
+  { value: 1, label: 'Aviso de Contratação Direta' },
+  { value: 2, label: 'Edital' },
+  { value: 3, label: 'Minuta do Contrato' },
+  { value: 4, label: 'Termo de Referência' },
+  { value: 5, label: 'Anteprojeto' },
+  { value: 6, label: 'Projeto Básico' },
+  { value: 7, label: 'Estudo Técnico Preliminar' },
+  { value: 8, label: 'Projeto Executivo' },
+  { value: 9, label: 'Mapa de Riscos' },
+  { value: 10, label: 'DFD' },
+  { value: 11, label: 'Ata de Registro de Preço' },       // ata
+  { value: 12, label: 'Contrato' },                        // contrato
+  { value: 13, label: 'Termo de Rescisão' },               // contrato
+  { value: 14, label: 'Termo Aditivo' },                   // contrato
+  { value: 15, label: 'Termo de Apostilamento' },          // contrato
+  { value: 16, label: 'Outros documentos do processo' },
+  { value: 17, label: 'Nota de Empenho' },                 // contrato
+  { value: 18, label: 'Relatório Final de Contrato' },     // contrato
+  { value: 19, label: 'Minuta de Ata de Registro de Preços' },
+  { value: 20, label: 'Ato que autoriza a Contratação Direta' },
+];
+
+const NATUREZA_JURIDICA = [
+  { value: 0, label: '0000 - Natureza Jurídica não informada' },
+  { value: 1015, label: '1015 - Órgão Público do Poder Executivo Federal' },
+  { value: 1023, label: '1023 - Órgão Público do Poder Executivo Estadual/DF' },
+  { value: 1031, label: '1031 - Órgão Público do Poder Executivo Municipal' },
+  { value: 1040, label: '1040 - Órgão Público do Poder Legislativo Federal' },
+  { value: 1058, label: '1058 - Órgão Público do Poder Legislativo Estadual/DF' },
+  { value: 1066, label: '1066 - Órgão Público do Poder Legislativo Municipal' },
+  { value: 1074, label: '1074 - Órgão Público do Poder Judiciário Federal' },
+  { value: 1082, label: '1082 - Órgão Público do Poder Judiciário Estadual' },
+  { value: 1104, label: '1104 - Autarquia Federal' },
+  { value: 1112, label: '1112 - Autarquia Estadual/DF' },
+  { value: 1120, label: '1120 - Autarquia Municipal' },
+  { value: 1139, label: '1139 - Fundação Pública Dir. Público Federal' },
+  { value: 1147, label: '1147 - Fundação Pública Dir. Público Estadual/DF' },
+  { value: 1155, label: '1155 - Fundação Pública Dir. Público Municipal' },
+  { value: 1163, label: '1163 - Órgão Público Autônomo Federal' },
+  { value: 1171, label: '1171 - Órgão Público Autônomo Estadual/DF' },
+  { value: 1180, label: '1180 - Órgão Público Autônomo Municipal' },
+  { value: 1198, label: '1198 - Comissão Polinacional' },
+  { value: 1210, label: '1210 - Consórcio Público de Direito Público' },
+  { value: 1228, label: '1228 - Consórcio Público de Direito Privado' },
+  { value: 1236, label: '1236 - Estado ou Distrito Federal' },
+  { value: 1244, label: '1244 - Município' },
+  { value: 1252, label: '1252 - Fundação Pública de Direito Privado Federal' },
+  { value: 1260, label: '1260 - Fundação Pública de Direito Privado Estadual/DF' },
+  { value: 1279, label: '1279 - Fundação Pública de Direito Privado Municipal' },
+  { value: 1287, label: '1287 - Fundo Público da Administração Indireta Federal' },
+  { value: 1295, label: '1295 - Fundo Público da Administração Indireta Estadual/DF' },
+  { value: 1309, label: '1309 - Fundo Público da Administração Indireta Municipal' },
+  { value: 1317, label: '1317 - Fundo Público da Administração Direta Federal' },
+  { value: 1325, label: '1325 - Fundo Público da Administração Direta Estadual/DF' },
+  { value: 1333, label: '1333 - Fundo Público da Administração Direta Municipal' },
+  { value: 1341, label: '1341 - União' },
+  { value: 2011, label: '2011 - Empresa Pública' },
+  { value: 2038, label: '2038 - Sociedade de Economia Mista' },
+  { value: 2046, label: '2046 - Sociedade Anônima Aberta' },
+  { value: 2054, label: '2054 - Sociedade Anônima Fechada' },
+  { value: 2062, label: '2062 - Sociedade Empresária Limitada' },
+  { value: 2070, label: '2070 - Sociedade Empresária em Nome Coletivo' },
+  { value: 2089, label: '2089 - Sociedade Empresária em Comandita Simples' },
+  { value: 2097, label: '2097 - Sociedade Empresária em Comandita por Ações' },
+  { value: 2100, label: '2100 - Sociedade Mercantil de Capital e Indústria' },
+  { value: 2127, label: '2127 - Sociedade em Conta de Participação' },
+  { value: 2135, label: '2135 - Empresário (Individual)' },
+  { value: 2143, label: '2143 - Cooperativa' },
+  { value: 2151, label: '2151 - Consórcio de Sociedades' },
+  { value: 2160, label: '2160 - Grupo de Sociedades' },
+  { value: 2178, label: '2178 - Estab. no Brasil de Sociedade Estrangeira' },
+  { value: 2194, label: '2194 - Estab. no Brasil de Empresa Binacional Argentino-Brasileira' },
+  { value: 2216, label: '2216 - Empresa Domiciliada no Exterior' },
+  { value: 2224, label: '2224 - Clube/Fundo de Investimento' },
+  { value: 2232, label: '2232 - Sociedade Simples Pura' },
+  { value: 2240, label: '2240 - Sociedade Simples Limitada' },
+  { value: 2259, label: '2259 - Sociedade Simples em Nome Coletivo' },
+  { value: 2267, label: '2267 - Sociedade Simples em Comandita Simples' },
+  { value: 2275, label: '2275 - Empresa Binacional' },
+  { value: 2283, label: '2283 - Consórcio de Empregadores' },
+  { value: 2291, label: '2291 - Consórcio Simples' },
+  { value: 2305, label: '2305 - EIRELI (Empresária)' },
+  { value: 2313, label: '2313 - EIRELI (Simples)' },
+  { value: 2321, label: '2321 - Sociedade Unipessoal de Advocacia' },
+  { value: 2330, label: '2330 - Cooperativas de Consumo' },
+  { value: 2348, label: '2348 - Empresa Simples de Inovação - Inova Simples' },
+  { value: 2356, label: '2356 - Investidor Não Residente' },
+  { value: 3034, label: '3034 - Serviço Notarial e Registral (Cartório)' },
+  { value: 3069, label: '3069 - Fundação Privada' },
+  { value: 3077, label: '3077 - Serviço Social Autônomo' },
+  { value: 3085, label: '3085 - Condomínio Edilício' },
+  { value: 3107, label: '3107 - Comissão de Conciliação Prévia' },
+  { value: 3115, label: '3115 - Entidade de Mediação e Arbitragem' },
+  { value: 3131, label: '3131 - Entidade Sindical' },
+  { value: 3204, label: '3204 - Estab. no Brasil de Fundação/Associação Estrangeiras' },
+  { value: 3212, label: '3212 - Fundação/Associação Domiciliada no Exterior' },
+  { value: 3220, label: '3220 - Organização Religiosa' },
+  { value: 3239, label: '3239 - Comunidade Indígena' },
+  { value: 3247, label: '3247 - Fundo Privado' },
+  { value: 3255, label: '3255 - Dir. Nacional de Partido Político' },
+  { value: 3263, label: '3263 - Dir. Regional de Partido Político' },
+  { value: 3271, label: '3271 - Dir. Local de Partido Político' },
+  { value: 3280, label: '3280 - Comitê Financeiro de Partido Político' },
+  { value: 3298, label: '3298 - Frente Plebiscitária/Referendária' },
+  { value: 3301, label: '3301 - Organização Social (OS)' },
+  { value: 3328, label: '3328 - Plano de Benefícios de Previdência Fechada' },
+  { value: 3999, label: '3999 - Associação Privada' },
+  { value: 4014, label: '4014 - Empresa Individual Imobiliária' },
+  { value: 4090, label: '4090 - Candidato a Cargo Político Eletivo' },
+  { value: 4120, label: '4120 - Produtor Rural (Pessoa Física)' },
+  { value: 5010, label: '5010 - Organização Internacional' },
+  { value: 5029, label: '5029 - Representação Diplomática Estrangeira' },
+  { value: 5037, label: '5037 - Outras Instituições Extraterritoriais' },
+  { value: 8885, label: '8885 - Natureza Jurídica não informada' },
+];
+
+const PORTE_EMPRESA = [
+  { value: 1, label: 'ME - Microempresa' },
+  { value: 2, label: 'EPP - Empresa de Pequeno Porte' },
+  { value: 3, label: 'Demais' },
+  { value: 4, label: 'Não se aplica (PF)' },
+  { value: 5, label: 'Não informado' },
+];
+
+
 // --- FUNÇÕES HELPER ---
 const formatDateTimeForInput = (isoString) => {
     if (!isoString) return '';
@@ -31,18 +222,6 @@ const formatDateTimeForInput = (isoString) => {
         const localDate = new Date(d.getTime() - timezoneOffset);
         return localDate.toISOString().slice(0, 16);
     } catch { return ''; }
-};
-
-const formatDate = (dateString) => {
-    if (!dateString) return 'Não informado';
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' };
-    return new Date(dateString + 'T00:00:00-03:00').toLocaleDateString('pt-BR', options);
-};
-
-const formatDateTime = (isoString) => {
-    if (!isoString) return 'Não informada';
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' };
-    return new Date(isoString).toLocaleDateString('pt-BR', options).replace(',', ' às');
 };
 
 const formatCurrency = (value) => {
@@ -1096,7 +1275,7 @@ export default function NewProcess() {
                                                     
                                                 </div>
 
-                                                <div className="flex justify-center gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                                <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
                                                     <ActionButton text={isNewProcess ? "Cancelar" : "Cancelar Edição"} onClick={() => isNewProcess ? navigate(-1) : setIsEditing(false)} variant="outlined" />
                                                     <ActionButton text={isNewProcess ? "Salvar e Continuar" : "Salvar Alterações"} onClick={handleSaveDadosGerais} variant="primary" icon={CheckCircleIcon} disabled={isLoading} />
                                                 </div>
