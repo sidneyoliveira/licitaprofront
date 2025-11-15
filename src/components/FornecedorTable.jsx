@@ -33,7 +33,7 @@ export default function FornecedorTable({ fornecedores = [], onAdd, onEdit, onDe
   }, [fornecedores, page]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b">
         <div>
           <h3 className="text-sm font-semibold text-gray-800">Fornecedores</h3>

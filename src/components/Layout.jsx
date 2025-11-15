@@ -30,7 +30,7 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex relative overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-60 bg-gradient-to-b from-accent-blue to-[#0d3977] dark:bg-dark-bg-primary z-0" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-accent-blue to-[#0d3977] dark:bg-dark-bg-primary z-0" />
 
       <AnimatePresence>
         {(sidebarOpen || !isMobile) && (
@@ -63,7 +63,7 @@ const Layout = () => {
 
         <motion.main
           key={location.pathname}
-          className="p-4 mx-2"
+          className="p-1 mx-2 my-2"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}

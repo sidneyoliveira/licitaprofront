@@ -47,7 +47,7 @@ const formatCurrency = (value) => {
 };
 
 const getSituacaoStyle = (situacao) => {
-  const baseStyle = 'px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider';
+  const baseStyle = 'px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider';
   switch (situacao) {
     case 'Aberto':
     case 'Publicado':
@@ -205,7 +205,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
 
   // 3. Renderização
   return (
-    <div className="flex flex-col bg-white dark:bg-dark-bg-primary rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
+    <div className="flex flex-col bg-white dark:bg-dark-bg-primary rounded-lg shadow-sm overflow-hidden">
       {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-b border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg-secondary">
         <div className="flex flex-col md:flex-row md:items-center gap-3 md:flex-1 md:w-20 sm:w-12" style={{ minWidth: 0 }}>
@@ -237,7 +237,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
             type="button"
             onClick={handleView}
             onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 transition-colors"
+            className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-sm font-medium bg-accent-blue text-white hover:bg-accent-blue/90 transition-colors"
             title="Visualizar Processo"
           >
             <Eye className="w-4 h-4" />

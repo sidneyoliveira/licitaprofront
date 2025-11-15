@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircleIcon } from '@heroicons/react/24/outline';
+
 import axios from 'axios';
 
 // Seções
 import ItemsSection from '../components/ItemsSection';
 import FornecedoresSection from '../components/FornecedoresSection';
 import LotesSection from '../components/LotesSection';
+import DadosGeraisForm from '../components/DadosGeraisForm';
 
 // Infra
 import useAxios from '../hooks/useAxios';
@@ -16,87 +17,19 @@ import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import ProcessHeader from '../components/ProcessHeader';
 
 /* =============================================================
- * Constantes
- * ============================================================= */
-const modalidades = [
-  'Pregão Eletrônico',
-  'Concorrência Eletrônica',
-  'Dispensa Eletrônica',
-  'Adesão a Registro de Preços',
-  'Credenciamento',
-  'Inexigibilidade Eletrônica',
-];
-const classificacoes = [
-  'Compras',
-  'Serviços Comuns',
-  'Serviços de Engenharia Comuns',
-  'Obras Comuns',
-];
-const organizacoes = ['Lote', 'Item'];
-const situacoes = [
-  'Aberto',
-  'Em Pesquisa',
-  'Aguardando Publicação',
-  'Publicado',
-  'Em Contratação',
-  'Adjudicado/Homologado',
-  'Revogado/Cancelado',
-];
-
-/* =============================================================
- * Estilos reutilizáveis
+ * Helpers
  * ============================================================= */
 const inputStyle =
   'w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]';
 const labelStyle =
   'text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase';
 
-/* =============================================================
- * Helpers
- * ============================================================= */
-// Formata iso → "YYYY-MM-DDTHH:MM" para inputs datetime-local SEM converter fuso
 const toDatetimeLocalExact = (iso) => {
   if (!iso) return '';
   const cleaned = String(iso).replace(/Z$/i, '').replace(' ', 'T');
   const m = cleaned.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})/);
   return m ? `${m[1]}T${m[2]}:${m[3]}` : '';
 };
-
-/* =============================================================
- * Botões básicos
- * ============================================================= */
-const ActionButton = ({ text, onClick, variant = 'primary', icon: Icon, disabled = false, type = 'button' }) => {
-  const baseStyle =
-    'flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-semibold text-sm transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed';
-  const styles = {
-    primary: 'bg-[#004aad] text-white hover:bg-[#003d91] focus:ring-2 focus:ring-[#004aad]/30',
-    outlined:
-      'bg-white dark:bg-dark-bg-secondary border border-slate-300 dark:border-dark-border text-slate-700 dark:text-dark-text-secondary hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary',
-  };
-  return (
-    <button type={type} onClick={onClick} className={`${baseStyle} ${styles[variant]}`} disabled={disabled}>
-      {Icon && <Icon className="w-5 h-5" />}
-      <span>{text}</span>
-    </button>
-  );
-};
-
-const TabButton = ({ label, isActive, onClick, isDisabled }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={isDisabled}
-    className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
-      isActive
-        ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
-        : isDisabled
-        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
-        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
-    }`}
-  >
-    {label}
-  </button>
-);
 
 /* =============================================================
  * Modais
@@ -106,9 +39,7 @@ const ItemModal = ({ isOpen, onClose, onSave, itemSelecionado }) => {
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(
-        itemSelecionado || { descricao: '', unidade: '', quantidade: '', valor_estimado: '' }
-      );
+      setFormData(itemSelecionado || { descricao: '', unidade: '', quantidade: '', valor_estimado: '' });
     }
   }, [itemSelecionado, isOpen]);
 
@@ -124,7 +55,7 @@ const ItemModal = ({ isOpen, onClose, onSave, itemSelecionado }) => {
         initial={false}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 0 }}
-        className="bg-white dark:bg-dark-bg-secondary p-6 md:ml-40 rounded-xl w-full max-w-lg border border-slate-200 dark:border-slate-700"
+        className="bg-white dark:bg-dark-bg-secondary p-6 md:ml-40 rounded-lg w-full max-w-lg border border-slate-200 dark:border-slate-700"
       >
         <h3 className="text-lg font-bold mb-4 text-slate-800 dark:text-white">
           {itemSelecionado ? 'Editar Item' : 'Adicionar Item'}
@@ -274,7 +205,7 @@ const FornecedorModal = ({
       }));
       showToast('Dados carregados com sucesso!', 'success');
     } catch (e) {
-      console.error(e);
+
       showToast('Erro ao buscar CNPJ. Verifique o número e tente novamente.', 'error');
     }
   };
@@ -300,12 +231,13 @@ const FornecedorModal = ({
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4">
+    <>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4"></div>
       <motion.div
         initial={false}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 0 }}
-        className="bg-white dark:bg-dark-bg-secondary p-6 md:ml-40 rounded-xl shadow-xl w-full max-w-[900px] min-w-[360px] border border-slate-200 dark:border-slate-700"
+        className="bg-white dark:bg-dark-bg-secondary p-6 md:ml-40 rounded-lg shadow-xl w-full max-w-[900px] min-w-[360px] border border-slate-200 dark:border-slate-700"
       >
         <div className="flex justify-between items-center mb-5">
           <h3 className="text-lg font-bold text-slate-800 dark:text-white">
@@ -410,7 +342,7 @@ const FornecedorModal = ({
                 placeholder="Buscar por CNPJ ou Razão Social..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`${inputStyle}`}
+                className={inputStyle}
               />
               <div className="max-h-64 overflow-y-auto border rounded-lg divide-y bg-white dark:bg-dark-bg-secondary">
                 {filteredCatalogo.map((f) => (
@@ -437,7 +369,7 @@ const FornecedorModal = ({
           </>
         )}
       </motion.div>
-    </div>
+    </>
   );
 };
 
@@ -471,6 +403,10 @@ export default function PageProcess() {
     data_abertura: '',
     situacao: 'Em Pesquisa',
     vigencia_meses: 12,
+    fundamentacao: '',
+    amparo_legal: '',
+    modo_disputa: '',
+    criterio_julgamento: '',
   });
 
   const [itens, setItens] = useState([]);
@@ -491,7 +427,7 @@ export default function PageProcess() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState(null);
 
-  /* ---------------- Paginação (itens) ---------------- */
+  // Paginação (itens)
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -505,7 +441,7 @@ export default function PageProcess() {
     [currentItems, selectedItems]
   );
 
-  /* ---------------- Paginação (fornecedores) ---------------- */
+  // Paginação (fornecedores)
   const [currentPageForn, setCurrentPageForn] = useState(1);
   const [itemsPerPageForn, setItemsPerPageForn] = useState(5);
   const totalPagesForn = useMemo(
@@ -528,15 +464,15 @@ export default function PageProcess() {
         const { data } = await api.get(`/processos/${pid}/`);
         setFormData({
           ...data,
-          // mantém exatamente o que veio do backend (sem normalizar fuso)
+
           data_abertura: data.data_abertura,
           data_processo: data.data_processo || '',
         });
-        // fornecedores via endpoint dedicado depois (evita limpar na ausência)
+
         setProcessoId(data.id);
         setEntidadeNome(data.entidade_nome || '');
         setOrgaoNome(data.orgao_nome || '');
-      } catch (err) {
+      } catch {
         showToast('Erro ao carregar dados do processo.', 'error');
         navigate('/processos');
       } finally {
@@ -546,14 +482,36 @@ export default function PageProcess() {
     [api, showToast, navigate]
   );
 
+  const loadOrgaosForEntidade = useCallback(async (entidadeId) => {
+    if (!entidadeId) {
+      setOrgaos([]);
+      setFormData(prev => ({ ...prev, orgao: '' }));
+      return;
+    }
+    try {
+      const res = await api.get('/orgaos/', { params: { entidade: entidadeId } });
+      const lista = Array.isArray(res.data) ? res.data : [];
+      setOrgaos(lista);
+      setFormData(prev => {
+        if (prev.orgao && !lista.some(o => o.id === prev.orgao)) {
+          return { ...prev, orgao: '' };
+        }
+        return prev;
+      });
+    } catch {
+      showToast('Erro ao carregar órgãos da entidade selecionada.', 'error');
+      setOrgaos([]);
+      setFormData(prev => ({ ...prev, orgao: '' }));
+    }
+  }, [api, showToast]);
+
   const fetchItens = useCallback(
     async (pid) => {
       if (!pid) return;
       try {
         const { data } = await api.get(`/processos/${pid}/itens/`);
         setItens(data || []);
-      } catch (error) {
-        console.error('Erro ao buscar itens:', error);
+      } catch {
         showToast('Erro ao carregar itens do processo.', 'error');
       }
     },
@@ -620,12 +578,13 @@ export default function PageProcess() {
   /* =============================================================
    * Handlers Gerais
    * ============================================================= */
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const finalValue = name === 'registro_precos' ? value === 'true' : type === 'checkbox' ? checked : value;
-    setFormData((prev) => ({ ...prev, [name]: finalValue }));
-    if (name === 'entidade' && formData.entidade !== value) {
-      setFormData((prev) => ({ ...prev, orgao: '' }));
+  const handleChangeDadosGerais = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === "entidade") {
+      setFormData(prev => ({ ...prev, entidade: value, orgao: "" }));
+      loadOrgaosForEntidade(value);
     }
   };
 
@@ -646,7 +605,7 @@ export default function PageProcess() {
         setIsEditing(false);
       } else {
         await fetchDadosDoProcesso(updated.id);
-        await fetchFornecedoresDoProcesso(updated.id); // evita sumir os fornecedores
+        await fetchFornecedoresDoProcesso(updated.id);
         setIsEditing(false);
       }
     } catch {
@@ -656,7 +615,7 @@ export default function PageProcess() {
     }
   };
 
-  /* ---------------- Itens ---------------- */
+  // Itens
   const handleSaveItem = async (itemData) => {
     try {
       if (itemSelecionado) {
@@ -713,7 +672,7 @@ export default function PageProcess() {
     showToast(`${itemsToExport.length} itens exportados com sucesso!`, 'success');
   };
 
-  /* ---------------- Fornecedores ---------------- */
+  // Fornecedores
   const handleLinkFornecedor = async (fornecedorId) => {
     setIsFornecedorModalOpen(false);
     try {
@@ -753,7 +712,7 @@ export default function PageProcess() {
     }
   };
 
-  /* ---------------- Exclusões ---------------- */
+  // Exclusões
   const handleAskDelete = (type, item) => {
     setDeleteType(type);
     setItemToDelete(item);
@@ -828,232 +787,84 @@ export default function PageProcess() {
           entidadeNome={entidadeNome}
           orgaoNome={orgaoNome}
           onEdit={() => setIsEditing(true)}
+          extraFields={[
+            { label: 'Fundamentação', value: formData.fundamentacao },
+            { label: 'Amparo Legal', value: formData.amparo_legal },
+            { label: 'Classificação', value: formData.classificacao },
+            { label: 'Modo de Disputa', value: formData.modo_disputa },
+            { label: 'Critério de Julgamento', value: formData.criterio_julgamento },
+            { label: 'Organização', value: formData.tipo_organizacao },
+            { label: 'Vigência (meses)', value: formData.vigencia_meses },
+          ]}
         />
       )}
 
       {/* Formulário de edição */}
       {isEditing && (
-        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl p-4 md:px-8 py-4">
+        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg p-4 md:px-8 py-4">
           <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-4">
             Dados Gerais do Processo
           </h2>
-          <form onSubmit={handleSaveDadosGerais} className="space-y-6">
-            <div className="grid lg:grid-cols-2 gap-4">
-              <div>
-                <label className={labelStyle}>Objeto *</label>
-                <textarea
-                  name="objeto"
-                  value={formData.objeto}
-                  onChange={handleChange}
-                  className={`${inputStyle} h-28`}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelStyle}>Nº do Processo *</label>
-                  <input
-                    name="numero_processo"
-                    value={formData.numero_processo}
-                    onChange={handleChange}
-                    className={inputStyle}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelStyle}>Data do Processo *</label>
-                  <input
-                    name="data_processo"
-                    type="date"
-                    value={formData.data_processo}
-                    onChange={handleChange}
-                    className={inputStyle}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelStyle}>Nº do Certame</label>
-                  <input
-                    name="numero_certame"
-                    value={formData.numero_certame || ''}
-                    onChange={handleChange}
-                    className={inputStyle}
-                  />
-                </div>
-                <div>
-                  <label className={labelStyle}>Data/Hora Abertura</label>
-                  <input
-                    type="datetime-local"
-                    name="data_abertura"
-                    value={toDatetimeLocalExact(formData.data_abertura)}
-                    onChange={handleChange}
-                    className={inputStyle}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-5 gap-4">
-              <div>
-                <label className={labelStyle}>Modalidade *</label>
-                <select
-                  name="modalidade"
-                  value={formData.modalidade}
-                  onChange={handleChange}
-                  className={inputStyle}
-                  required
-                >
-                  <option value="">Selecione...</option>
-                  {modalidades.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelStyle}>Classificação *</label>
-                <select
-                  name="classificacao"
-                  value={formData.classificacao}
-                  onChange={handleChange}
-                  className={inputStyle}
-                  required
-                >
-                  <option value="">Selecione...</option>
-                  {classificacoes.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelStyle}>Organização *</label>
-                <select
-                  name="tipo_organizacao"
-                  value={formData.tipo_organizacao}
-                  onChange={handleChange}
-                  className={inputStyle}
-                  required
-                >
-                  <option value="">Selecione...</option>
-                  {organizacoes.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelStyle}>Valor de Referência (R$)</label>
-                <input
-                  name="valor_referencia"
-                  type="number"
-                  step="0.01"
-                  value={formData.valor_referencia || ''}
-                  onChange={handleChange}
-                  placeholder="0,00"
-                  className={`${inputStyle} text-right`}
-                />
-              </div>
-              <div>
-                <label className={labelStyle}>Vigência (Meses) *</label>
-                <input
-                  name="vigencia_meses"
-                  type="number"
-                  min="1"
-                  value={formData.vigencia_meses || ''}
-                  onChange={handleChange}
-                  placeholder="12"
-                  className={`${inputStyle} text-center`}
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <label className={labelStyle}>Entidade *</label>
-                <select
-                  name="entidade"
-                  value={formData.entidade}
-                  onChange={handleChange}
-                  className={inputStyle}
-                  required
-                >
-                  <option value="">Selecione...</option>
-                  {entidades.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelStyle}>Órgão *</label>
-                <select
-                  name="orgao"
-                  value={formData.orgao}
-                  onChange={handleChange}
-                  className={inputStyle}
-                  required
-                  disabled={!formData.entidade || orgaos.length === 0}
-                >
-                  <option value="">
-                    {formData.entidade ? 'Selecione...' : 'Selecione uma entidade'}
-                  </option>
-                  {orgaos.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelStyle}>Situação *</label>
-                <select
-                  name="situacao"
-                  value={formData.situacao}
-                  onChange={handleChange}
-                  className={inputStyle}
-                  required
-                >
-                  {situacoes.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <ActionButton
-                text={isNewProcess ? 'Cancelar' : 'Cancelar Edição'}
-                onClick={() => (isNewProcess ? navigate(-1) : setIsEditing(false))}
-                variant="outlined"
-              />
-              <ActionButton
-                text={isNewProcess ? 'Salvar e Continuar' : 'Salvar Alterações'}
-                onClick={handleSaveDadosGerais}
-                variant="primary"
-                icon={CheckCircleIcon}
-                disabled={isLoading}
-                type="submit"
-              />
-            </div>
-          </form>
+          <DadosGeraisForm
+            formData={formData}
+            onChange={handleChangeDadosGerais}
+            onSubmit={handleSaveDadosGerais}
+            onCancel={() => (isNewProcess ? navigate(-1) : setIsEditing(false))}
+            isLoading={isLoading}
+            isNew={isNewProcess}
+            entidades={entidades}
+            orgaos={orgaos}
+          />
         </div>
       )}
 
       {/* Tabs (Itens / Lotes / Fornecedores) */}
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-xl px-4 py-4 mt-2 md:px-4 mb-12">
+      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg px-4 py-4 mt-2 md:px-4 mb-12">
         <nav className="flex gap-2 px-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
-          <TabButton label="Itens" isActive={activeTab === 'itens'} onClick={() => setActiveTab('itens')} isDisabled={!processoId} />
+          <button
+            type="button"
+            onClick={() => setActiveTab('itens')}
+            disabled={!processoId}
+            className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+              activeTab === 'itens'
+                ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
+                : !processoId
+                ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
+                : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
+            }`}
+          >
+            Itens
+          </button>
           {formData?.tipo_organizacao === 'Lote' && (
-            <TabButton label="Lotes" isActive={activeTab === 'lotes'} onClick={() => setActiveTab('lotes')} isDisabled={!processoId} />
+            <button
+              type="button"
+              onClick={() => setActiveTab('lotes')}
+              disabled={!processoId}
+              className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+                activeTab === 'lotes'
+                  ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
+                  : !processoId
+                  ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
+                  : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
+              }`}
+            >
+              Lotes
+            </button>
           )}
-          <TabButton label="Fornecedores" isActive={activeTab === 'fornecedores'} onClick={() => setActiveTab('fornecedores')} isDisabled={!processoId} />
+          <button
+            type="button"
+            onClick={() => setActiveTab('fornecedores')}
+            disabled={!processoId}
+            className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+              activeTab === 'fornecedores'
+                ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
+                : !processoId
+                ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
+                : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
+            }`}
+          >
+            Fornecedores
+          </button>
         </nav>
 
         <main className="p-2 mx-4">
@@ -1083,7 +894,7 @@ export default function PageProcess() {
                 <LotesSection
                   processoId={processoId}
                   lotes={lotes}
-                  itens={itens}                       
+                  itens={itens}
                   reloadLotes={() => fetchLotes(processoId)}
                   reloadItens={() => fetchItens(processoId)}
                   showToast={showToast}
@@ -1118,7 +929,7 @@ export default function PageProcess() {
  * ============================================================= */
 export function ProcessLoading() {
   return (
-    <div className="animate-pulse space-y-4 p-4 mx-2">
+    <div className="animate-pulse space-y-4 p-1 mx-2">
       <div className="h-8 w-1/3 bg-slate-200 dark:bg-slate-700 rounded" />
       <div className="h-24 w-full bg-slate-200 dark:bg-slate-700 rounded" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

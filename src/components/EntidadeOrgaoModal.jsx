@@ -8,7 +8,7 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
   const { data, type, parentEntidadeId } = item;
   const isEditing = data && data.id;
-  const isEntidade = type === 'entidade';
+  const isEntidade = type === 'Entidade';
 
   const [formData, setFormData] = useState({});
   const [isImportingPncp, setIsImportingPncp] = useState(false);
@@ -36,7 +36,7 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const endpoint = isEntidade ? 'entidades' : 'orgaos';
+    const endpoint = isEntidade ? 'entidade' : 'orgaos';
     try {
       if (isEditing) {
         await api.put(`/${endpoint}/${data.id}/`, formData);
@@ -86,7 +86,7 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
           <XMarkIcon className="w-6 h-6" />
         </button>
         <h2 className="text-xl font-bold mb-4">
-          {isEditing ? `Editar ${type}` : `Cadastrar Novo ${type}`}
+          {isEditing ? `Editar ${type}` : `Cadastrar ${type}`}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">

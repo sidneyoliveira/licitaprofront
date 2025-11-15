@@ -41,7 +41,7 @@ const Modal = ({ isOpen, onClose, children, maxWidth = "max-w-xl" }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onClick={onClose} />
-      <div className={`relative w-full ${maxWidth} bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-xl md:ml-40 p-5`}>
+      <div className={`relative w-full ${maxWidth} bg-white dark:bg-dark-bg-secondary rounded-md shadow-xl md:ml-40 p-5`}>
         {children}
       </div>
     </div>

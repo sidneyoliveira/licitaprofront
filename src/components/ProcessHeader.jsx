@@ -1,9 +1,21 @@
 // src/components/ProcessHeader.jsx
 import React, { useMemo } from "react";
 import { Pencil, Download } from "lucide-react";
+import {
+  MODALIDADES,
+  CLASSIFICACOES,
+  SITUACOES,
+  MODO_DISPUTA,
+  CRITERIO_JULGAMENTO,
+  ORGANIZACOES,
+  FUNDAMENTACOES,
+  AMPARO_LEGAL,
+  getAmparoOptions,
+  fromCode,
+} from "../utils/constantes";
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Util: truncar texto (igual ao ProcessoCard)                               */
+/* Utils                                                                     */
 /* ────────────────────────────────────────────────────────────────────────── */
 const Ellipsize = ({ lines = 1, title, as: Tag = "span", className = "", children }) => {
   const style =
@@ -21,9 +33,6 @@ const Ellipsize = ({ lines = 1, title, as: Tag = "span", className = "", childre
   );
 };
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Mapa modalidade -> sigla (mesmo do ProcessoCard)                           */
-/* ────────────────────────────────────────────────────────────────────────── */
 const modalidadeMap = {
   "Pregão Eletrônico": { sigla: "PE" },
   "Concorrência Eletrônica": { sigla: "CE" },
@@ -33,18 +42,16 @@ const modalidadeMap = {
   "Inexigibilidade Eletrônica": { sigla: "IE" },
 };
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Helpers de formatação (SEM usar new Date — preserva exatamente a string)  */
-/* ────────────────────────────────────────────────────────────────────────── */
-// Aceita "YYYY-MM-DD", "YYYY-MM-DDTHH:MM[:SS]Z", "YYYY-MM-DD HH:MM[:SS]±hh:mm"
+
 const formatDateExact = (iso, { showTime = true } = {}) => {
+
   if (!iso || typeof iso !== "string") return null;
 
-  // remove timezone no fim (Z, +03:00, -0300 etc.)
+
   const cleaned = iso.replace(/Z$/i, "").replace(/([+-]\d{2}:?\d{2})$/i, "");
   const norm = cleaned.replace("T", " ").trim();
 
-  // YYYY-MM-DD [HH:MM[:SS]]
+
   const m = norm.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
   if (!m) return null;
 
@@ -62,7 +69,7 @@ const formatCurrency = (value) => {
 };
 
 const getSituacaoStyle = (situacao) => {
-  const base = "px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider";
+  const base = "px-3 py-1 rounded-md text-xs font-medium uppercase tracking-wider";
   switch (situacao) {
     case "Aberto":
     case "Publicado":
@@ -80,14 +87,46 @@ const getSituacaoStyle = (situacao) => {
   }
 };
 
+// Resolve label a partir de value/label/code vindos do backend
+const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
+  // Tenta por 'label' que já veio:
+  const byLabel = fromCode(options, fallbackLabel);
+  if (byLabel) return byLabel.label;
+
+  // Tenta pelo code/value:
+  const byCode = fromCode(options, codeOrLabel);
+  if (byCode) return byCode.label;
+
+  // Fallback: o que veio do backend (ex.: já em português)
+  return fallbackLabel || "";
+};
+
+// Achata o AMPARO_LEGAL para procurar por code numérico (ex.: 301)
+const flattenAmparo = () => {
+  const flat = [];
+  Object.values(AMPARO_LEGAL).forEach((val) => {
+    if (Array.isArray(val)) {
+      flat.push(...val);
+    } else if (val && typeof val === "object") {
+      Object.values(val).forEach((arr) => {
+        if (Array.isArray(arr)) flat.push(...arr);
+      });
+    }
+  });
+  return flat;
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Subcomponentes                                                            */
+/* ────────────────────────────────────────────────────────────────────────── */
 const InfoPill = React.memo(({ label, value }) => (
   <div className="flex flex-col" style={{ minWidth: 0 }}>
-    <span className="text-[13px] font-bold text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
+    <span className="text-xs font-medium text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
       {label}
     </span>
     <Ellipsize
       lines={1}
-      className="text-[15px] font-semibold text-slate-800 dark:text-dark-text-primary"
+      className="text-[13px] font-medium text-slate-800 dark:text-dark-text-primary"
       title={value}
     >
       {value || "–"}
@@ -99,7 +138,7 @@ const SituacaoBadge = React.memo(({ situacao }) => {
   if (!situacao) return null;
   return (
     <div className="flex flex-col" style={{ minWidth: 0 }}>
-      <span className="text-[13px] font-bold text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
+      <span className="text-[13px] font-medium text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
         Situação
       </span>
       <Ellipsize lines={1} className={`${getSituacaoStyle(situacao)} mt-1`} title={situacao}>
@@ -110,25 +149,95 @@ const SituacaoBadge = React.memo(({ situacao }) => {
 });
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Componente                                                                 */
+/* Componente Principal                                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 export default function ProcessHeader({
   formData = {},
   entidadeNome,
   orgaoNome,
-  onEdit,        // abre edição de dados gerais
-  onExportCSV,   // opcional
+  onEdit,
+  onExportCSV,
 }) {
+  // Preferir nomes recebidos por prop, senão usar os que vêm no objeto
+  const entidadeNomeFinal = entidadeNome || formData?.entidade_nome || formData?.entidade_obj?.nome || "";
+  const orgaoNomeFinal = orgaoNome || formData?.orgao_nome || formData?.orgao_obj?.nome || "";
+
+  // Labels normalizados (funcionam com *_code, *_id ou label direto)
+  const modalidadeLabel = useMemo(
+    () => resolveLabel(MODALIDADES, formData?.modalidade_code || formData?.modalidade, formData?.modalidade),
+    [formData?.modalidade_code, formData?.modalidade]
+  );
+
+  const classificacaoLabel = useMemo(
+    () => resolveLabel(CLASSIFICACOES, formData?.classificacao_code || formData?.classificacao, formData?.classificacao),
+    [formData?.classificacao_code, formData?.classificacao]
+  );
+
+  const situacaoLabel = useMemo(
+    () => resolveLabel(SITUACOES, formData?.situacao_code || formData?.situacao, formData?.situacao),
+    [formData?.situacao_code, formData?.situacao]
+  );
+
+  const organizacaoLabel = useMemo(
+    () => resolveLabel(ORGANIZACOES, formData?.tipo_organizacao_code || formData?.tipo_organizacao, formData?.tipo_organizacao),
+    [formData?.tipo_organizacao_code, formData?.tipo_organizacao]
+  );
+
+  const modoDisputaLabel = useMemo(
+    () => resolveLabel(MODO_DISPUTA, formData?.modo_disputa_id || formData?.modo_disputa, formData?.modo_disputa),
+    [formData?.modo_disputa_id, formData?.modo_disputa]
+  );
+
+  const criterioJulgamentoLabel = useMemo(
+    () => resolveLabel(CRITERIO_JULGAMENTO, formData?.criterio_julgamento_id || formData?.criterio_julgamento, formData?.criterio_julgamento),
+    [formData?.criterio_julgamento_id, formData?.criterio_julgamento]
+  );
+
+  const fundamentacaoLabel = useMemo(() => {
+    // Pode vir como 'lei_14133' (value) ou label
+    const found = fromCode(FUNDAMENTACOES, formData?.fundamentacao);
+    return found ? found.label : formData?.fundamentacao || "";
+  }, [formData?.fundamentacao]);
+
+  const amparoLegalLabel = useMemo(() => {
+    // Tenta resolver usando a fundamentação + modalidade
+    const fundVal = fromCode(FUNDAMENTACOES, formData?.fundamentacao)?.value || null;
+    const modVal =
+      fromCode(MODALIDADES, formData?.modalidade_code || formData?.modalidade)?.value || null;
+
+    if (fundVal && modVal) {
+      const opts = getAmparoOptions(fundVal, modVal);
+      const found = fromCode(opts, formData?.amparo_legal || formData?.amparo_legal_id);
+      if (found) return found.label;
+    }
+
+    // Fallback: procurar no AMPARO_LEGAL achatado por code numérico / value
+    const flat = flattenAmparo();
+    const fromId = fromCode(flat, formData?.amparo_legal_id);
+    if (fromId) return fromId.label;
+    const fromVal = fromCode(flat, formData?.amparo_legal);
+    if (fromVal) return fromVal.label;
+
+    return formData?.amparo_legal || "";
+  }, [
+    formData?.fundamentacao,
+    formData?.modalidade_code,
+    formData?.modalidade,
+    formData?.amparo_legal,
+    formData?.amparo_legal_id,
+  ]);
+
+  const registroPrecos = formData?.registro_precos ?? formData?.registro_preco ?? false;
+
   const { siglaModalidade, numeroCertame, anoCertame } = useMemo(() => {
     const [num, ano] = formData?.numero_certame?.split("/") || [];
     return {
       numeroCertame: num,
       anoCertame: ano || new Date().getFullYear(),
-      siglaModalidade: modalidadeMap[formData?.modalidade]?.sigla || "",
+      siglaModalidade: modalidadeMap[modalidadeLabel]?.sigla || "",
     };
-  }, [formData?.numero_certame, formData?.modalidade]);
+  }, [formData?.numero_certame, modalidadeLabel]);
 
-  // *** Datas exibidas exatamente como vieram do backend ***
   const cadastroFormatado = useMemo(
     () => formatDateExact(formData?.data_processo, { showTime: false }),
     [formData?.data_processo]
@@ -137,7 +246,7 @@ export default function ProcessHeader({
     () => formatDateExact(formData?.data_abertura, { showTime: true }),
     [formData?.data_abertura]
   );
-
+  
   const valorPrevisto = useMemo(
     () => formatCurrency(formData?.valor_referencia),
     [formData?.valor_referencia]
@@ -147,42 +256,48 @@ export default function ProcessHeader({
     if (!onExportCSV) return;
     onExportCSV({
       ...formData,
-      entidade_nome: entidadeNome,
-      orgao_nome: orgaoNome,
+      entidade_nome: entidadeNomeFinal,
+      orgao_nome: orgaoNomeFinal,
       cadastroFormatado,
       aberturaFormatada,
       valorPrevisto,
+      modalidade_label: modalidadeLabel,
+      classificacao_label: classificacaoLabel,
+      situacao_label: situacaoLabel,
+      tipo_organizacao_label: organizacaoLabel,
+      modo_disputa_label: modoDisputaLabel,
+      criterio_julgamento_label: criterioJulgamentoLabel,
+      fundamentacao_label: fundamentacaoLabel,
+      amparo_legal_label: amparoLegalLabel,
     });
   };
 
   return (
-    <div className="flex flex-col bg-white dark:bg-dark-bg-primary rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
-      {/* Barra superior (estilo ProcessoCard) */}
+    <div className="flex flex-col bg-white dark:bg-dark-bg-primary rounded-md border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
+      {/* Barra superior */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-3 border-b border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg-secondary">
         <div className="flex flex-col md:flex-row md:items-center gap-3 md:flex-1" style={{ minWidth: 0 }}>
-          {entidadeNome && (
+          {entidadeNomeFinal && (
             <Ellipsize
               lines={1}
               as="span"
               className="block px-3 py-1 text-sm font-semibold bg-accent-blue text-white rounded-md"
-              title={entidadeNome}
+              title={entidadeNomeFinal}
             >
-              {entidadeNome}
+              {entidadeNomeFinal}
             </Ellipsize>
           )}
-          {orgaoNome && (
+          {orgaoNomeFinal && (
             <Ellipsize
               lines={1}
               as="span"
               className="block px-3 py-1 text-sm font-medium bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-primary rounded-md"
-              title={orgaoNome}
+              title={orgaoNomeFinal}
             >
-              {orgaoNome}
+              {orgaoNomeFinal}
             </Ellipsize>
           )}
         </div>
-
-        {/* Ações */}
         <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
           <button
             type="button"
@@ -193,7 +308,6 @@ export default function ProcessHeader({
             <Pencil className="w-4 h-4" />
             <span>Editar</span>
           </button>
-
           {onExportCSV && (
             <button
               type="button"
@@ -215,9 +329,9 @@ export default function ProcessHeader({
             lines={1}
             as="h3"
             className="text-xl font-bold text-slate-900 dark:text-dark-text-primary"
-            title={formData?.modalidade}
+            title={modalidadeLabel}
           >
-            {formData?.modalidade || "Modalidade não informada"}
+            {modalidadeLabel || "Modalidade não informada"}
           </Ellipsize>
 
           {(numeroCertame || formData?.numero_processo) && (
@@ -238,12 +352,20 @@ export default function ProcessHeader({
           {formData?.objeto || "Nenhum objeto informado para este processo."}
         </Ellipsize>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-6 gap-y-5 pt-4 border-t border-slate-200 dark:border-dark-border">
-          <InfoPill label="Data de Cadastro" value={cadastroFormatado} />
-          <InfoPill label="Data do Certame" value={aberturaFormatada} />
-          <InfoPill label="Registro de Preços" value={formData?.registro_precos ? "Sim" : "Não"} />
-          <InfoPill label="Valor de Referência" value={valorPrevisto || "Não informado"} />
-          <SituacaoBadge situacao={formData?.situacao} />
+        {/* Dados Gerais */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-2 pt-4 border-t border-slate-200 dark:border-dark-border">
+          <InfoPill label="Fundamentação" value={fundamentacaoLabel} />
+          <InfoPill label="Amparo Legal" value={amparoLegalLabel} />
+          <InfoPill label="Classificação" value={classificacaoLabel} />
+          <InfoPill label="Modo de Disputa" value={modoDisputaLabel} />
+          <InfoPill label="Julgamento" value={criterioJulgamentoLabel} />
+          <InfoPill label="Organização" value={organizacaoLabel} />
+          <InfoPill label="Cadastro" value={cadastroFormatado} />
+          <InfoPill label="Certame" value={aberturaFormatada} />
+          <InfoPill label="Reg. de Preços" value={registroPrecos ? "Sim" : "Não"} />
+          <InfoPill label="Estimado" value={valorPrevisto || "Não informado"} />
+          <InfoPill label="Vigência" value={formData?.vigencia_meses ? `${formData.vigencia_meses} meses` : ""} />
+          <SituacaoBadge situacao={situacaoLabel} />
         </div>
       </div>
     </div>

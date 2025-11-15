@@ -133,7 +133,7 @@ const Processos = () => {
     }, [filters, activeStatus, sortBy, sortOrder]);
   
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <Helmet>
                 <title>Meus Processos</title>
             </Helmet>
@@ -141,7 +141,7 @@ const Processos = () => {
             {publishingProcess && <ModalPublicacao processo={publishingProcess} closeModal={() => setPublishingProcess(null)} onPublished={handlePublicationSave} />}
             {deletingProcessId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={() => setDeletingProcessId(null)} />}
 
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl p-4 mt-3 md:px-8 py-6">
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-md p-4 first-letter:md:px-8 py-4">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                     <div>
                         <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary ">Meus Processos</h1>
@@ -184,7 +184,7 @@ const Processos = () => {
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2">
                 {isLoading ? (
                     <div className="text-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mx-auto"></div></div>
                 ) : processos.length > 0 ? (
