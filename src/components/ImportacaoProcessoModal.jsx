@@ -370,43 +370,27 @@ export default function ImportacaoProcessoModal({
 
   // envio dos dados (sempre via XLSX para casar com o backend /processos/importar-xlsx/)
   const submitImport = async () => {
-    if (!file) {
-      showToast("Selecione um arquivo .xlsx antes de importar.", "error");
-      return;
-    }
-    if (!parsed?.processos?.length) {
-      showToast("Nada para importar. Clique em 'Ler arquivo' para validar a planilha.", "error");
-      return;
-    }
-    setSubmitting(true);
-    setLogs([]);
-    try {
-      // passo 1: (opcional) garantir fornecedores
-      if (parsed.fornecedores?.length) {
-        await ensureFornecedores(parsed.fornecedores);
-      }
-
-      // passo 2: enviar XLSX bruto como multipart (campo "file")
-      addLog("Enviando planilha para /processos/importar-xlsx/ ...");
-      const form = new FormData();
-      form.append("file", file); // <- o backend aceita "file" (e também 'xlsx', 'arquivo', 'planilha')
-      await api.post("/processos/importar-xlsx/", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      showToast("Importação concluída com sucesso!", "success");
-      onImported?.();
-      closeAll();
-    } catch (err2) {
-      console.error(err2);
-      showToast(
-        "Não foi possível importar. Verifique o backend ou o arquivo.",
-        "error"
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  if (!file) {
+    showToast("Escolha um arquivo .xlsx", "error");
+    return;
+  }
+  setSubmitting(true);
+  try {
+    const form = new FormData();
+    form.append("arquivo", file); // <- chave igual à da view
+    await api.post("/processos/importar-xlsx/", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    showToast("Importação concluída!", "success");
+    onImported?.();
+    closeAll();
+  } catch (err) {
+    console.error(err);
+    showToast("Falha na importação. Verifique o arquivo e as colunas.", "error");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const counters = useMemo(() => {
     if (!parsed) return { processos: 0, itens: 0, fornecedores: 0 };
