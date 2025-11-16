@@ -10,6 +10,8 @@ import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { useToast } from '../context/ToastContext';
 import { Search, Plus, Filter, Download, RefreshCw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ImportacaoProcessoModal from "../components/ImportacaoProcessoModal";
+import { UploadCloud } from "lucide-react";
 
 const Button = ({ children, variant, size, className, ...props }) => (
     <button className={`flex items-center justify-center font-medium gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 px-4 py-2 ${className}`} {...props}>
@@ -38,6 +40,7 @@ const Processos = () => {
     const api = useAxios();
     const { showToast } = useToast();
     const navigate = useNavigate();
+    const [importOpen, setImportOpen] = useState(false);
 
     const fetchProcessos = useCallback(async () => {
         setIsLoading(true);
@@ -149,8 +152,13 @@ const Processos = () => {
                             Gerencie e acompanhe {processos.length} {processos.length === 1 ? 'licitação' : 'licitações'}
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-1 gap-2 justify-items-start">
+                    <div className="grid grid-cols-2 md:grid-cols-2 gap-2 justify-items-start">
                         {/* <Button onClick={exportToCSV} variant="outline" className={`${inputStyle} max-w-36 h-9 gap-1 inline-flex items-center bg-secondary-green text-white shadow-md hover:bg-secondary-green/90 transition-colors`}><Download className="w-4 h-4" /> Exportar</Button> */}
+                         <Button
+                            onClick={() => setImportOpen(true)}
+                            className={`${inputStyle} max-w-35 h-8 gap-1 inline-flex items-center text-sm border`}          >
+                            <UploadCloud className="w-4 h-4" /> Importar
+                        </Button>
                         <Button onClick={handleCreate} className={`${inputStyle} max-w-35 h-8 gap-1 inline-flex items-center text-sm bg-accent-blue text-white hover:bg-accent-blue/90`}><Plus className="w-3 h-3 " /> Novo Processo</Button>
                     </div>
                 </div>
@@ -183,7 +191,14 @@ const Processos = () => {
                     </AnimatePresence>
                 </div>
             </div>
-
+            {/* Modal de Importação */}
+                <ImportacaoProcessoModal
+                open={importOpen}
+                onClose={() => setImportOpen(false)}
+                onImported={fetchProcessos}
+                // se você já hospedar o template no backend, mude o link abaixo:
+                templateUrl={"/Modelo_Simples_Importacao.xlsx"}
+                />
             <div className="space-y-2">
                 {isLoading ? (
                     <div className="text-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mx-auto"></div></div>
