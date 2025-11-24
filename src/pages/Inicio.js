@@ -87,7 +87,7 @@ const Line = ({ w = "w-24" }) => (
 );
 
 const CardSkeleton = () => (
-  <div className="p-4 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary space-y-2">
+  <div className="p-4 rounded-lg bg-white dark:bg-dark-bg-primary space-y-2">
     <Line w="w-32" />
     <Line w="w-16" />
   </div>
@@ -181,7 +181,7 @@ const Inicio = () => {
       </Helmet>
 
       {/* Saudação */}
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg p-4 shadow-sm">
+      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/60 shadow-sm">
@@ -204,7 +204,7 @@ const Inicio = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <Button
               onClick={() => navigate("/processos/novo")}
               className={`${inputStyle} h-9 text-sm bg-accent-blue text-white hover:bg-accent-blue/90`}
@@ -214,12 +214,12 @@ const Inicio = () => {
             </Button>
             <Button
               onClick={handleRefresh}
-              className="h-9 px-3 rounded-lg border border-light-border dark:border-dark-border text-slate-600 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5"
+              className="h-9 px-3 rounded-lg  text-slate-600 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5"
               title="Atualizar"
             >
               <RefreshCw className="w-4 h-4" />
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -241,7 +241,7 @@ const Inicio = () => {
               transition={{ duration: 0.25, delay: idx * 0.05 }}
             >
               <Link to={to}>
-                <div className="p-4 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary hover:shadow-sm transition">
+                <div className="p-4 rounded-lg bg-white dark:bg-dark-bg-primary hover:shadow-sm transition">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
@@ -263,7 +263,7 @@ const Inicio = () => {
       {/* Atalhos */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         <Link to="/fornecedores">
-          <div className="p-3 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
+          <div className="p-3 rounded-lg  bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-accent-blue" />
               <span className="font-medium">Fornecedores</span>
@@ -272,7 +272,7 @@ const Inicio = () => {
           </div>
         </Link>
         <Link to="/entidades">
-          <div className="p-3 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
+          <div className="p-3 rounded-lg  bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent-blue" />
               <span className="font-medium">Entidades e Unidades</span>
@@ -281,7 +281,7 @@ const Inicio = () => {
           </div>
         </Link>
         <Link to="/usuarios">
-          <div className="p-3 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
+          <div className="p-3 rounded-lg bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserIcon className="w-5 h-5 text-accent-blue" />
               <span className="font-medium">Usuários</span>
@@ -290,7 +290,7 @@ const Inicio = () => {
           </div>
         </Link>
         <Link to="/processos">
-          <div className="p-3 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
+          <div className="p-3 rounded-lg bg-white dark:bg-dark-bg-primary hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-accent-blue" />
               <span className="font-medium">Processos</span>
@@ -302,7 +302,7 @@ const Inicio = () => {
 
       {/* Atividade recente */}
       <div>
-        <div className="p-4 rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary">
+        <div className="p-4 rounded-lg bg-white dark:bg-dark-bg-primary">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-accent-blue" />

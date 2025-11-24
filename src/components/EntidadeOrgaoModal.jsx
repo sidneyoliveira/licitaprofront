@@ -5,12 +5,27 @@ import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
-export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
-  const { data, type, parentEntidadeId } = item;
-  const isEditing = data && data.id;
-  const isEntidade = type === 'Entidade';
+export const EntidadeOrgaoModal = ({
+  item = {},
+  entidades = [],
+  onClose,
+  onSave,
+}) => {
+  // Garante defaults pra não quebrar se item vier undefined/null
+  const { data = null, type = '', parentEntidadeId = '' } = item || {};
 
-  const [formData, setFormData] = useState({});
+  // Normaliza o tipo para evitar problemas com maiúsculas/minúsculas/acentos
+  const normalizedType = String(type).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const isEntidade = normalizedType === 'entidade';
+  const isOrgao = !isEntidade; // qualquer coisa que não seja "entidade" vira órgão
+
+  const isEditing = !!(data && data.id);
+
+  const [formData, setFormData] = useState({
+    nome: '',
+    cnpj: '',
+    entidade: '',
+  });
   const [isImportingPncp, setIsImportingPncp] = useState(false);
 
   const api = useAxios();
@@ -18,25 +33,29 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
 
   useEffect(() => {
     if (isEntidade) {
+      // Formulário de ENTIDADE
       setFormData({
         nome: data?.nome || '',
         cnpj: data?.cnpj || '',
+        entidade: '', // não usado aqui, mas mantido no state
       });
     } else {
-      // é Órgão
+      // Formulário de ÓRGÃO
       setFormData({
         nome: data?.nome || '',
         entidade: data?.entidade || parentEntidadeId || '',
+        cnpj: '', // não usado aqui
       });
     }
-  }, [item, isEntidade, data, parentEntidadeId]);
+  }, [isEntidade, data, parentEntidadeId]);
 
   const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const endpoint = isEntidade ? 'entidade' : 'orgaos';
+
     try {
       if (isEditing) {
         await api.put(`/${endpoint}/${data.id}/`, formData);
@@ -45,33 +64,39 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
         await api.post(`/${endpoint}/`, formData);
         showToast(`${type} cadastrado com sucesso!`, 'success');
       }
-      onSave();
+      onSave && onSave();
     } catch (error) {
+      console.error(error);
       showToast(`Erro ao salvar ${type}.`, 'error');
     }
   };
 
   // ===== Importação PNCP: só aparece em "Nova Entidade" =====
   const handleImportPncp = async () => {
+    // Segurança extra: só permite ENTIDADE nova
     if (!isEntidade || isEditing) return;
+
     const digits = (formData.cnpj || '').replace(/\D/g, '');
     if (digits.length !== 14) {
       showToast('Informe um CNPJ válido com 14 dígitos.', 'error');
       return;
     }
+
     setIsImportingPncp(true);
     try {
       const res = await api.post('/orgaos/importar-pncp/', { cnpj: digits });
       const ent = res.data?.entidade;
       const created = res.data?.created ?? 0;
       const updated = res.data?.updated ?? 0;
+
       showToast(
         `PNCP: ${created} órgãos criados e ${updated} atualizados para ${ent?.nome || 'a entidade'}.`,
         'success'
       );
-      // Atualiza listas e fecha modal conforme fluxo existente
-      onSave();
+
+      onSave && onSave();
     } catch (err) {
+      console.error(err);
       const msg = err?.response?.data?.detail || 'Erro ao importar do PNCP.';
       showToast(msg, 'error');
     } finally {
@@ -85,6 +110,7 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
         <button onClick={onClose} className="absolute top-4 right-4">
           <XMarkIcon className="w-6 h-6" />
         </button>
+
         <h2 className="text-xl font-bold mb-4">
           {isEditing ? `Editar ${type}` : `Cadastrar ${type}`}
         </h2>
@@ -114,6 +140,7 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
                     onChange={handleChange}
                     className="flex-1 p-2 border rounded-lg"
                   />
+                  {/* Botão PNCP: só em nova entidade */}
                   {!isEditing && (
                     <button
                       type="button"
@@ -140,11 +167,12 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
                   required
                 >
                   <option value="">Selecione uma entidade...</option>
-                  {entidades.map((ent) => (
-                    <option key={ent.id} value={ent.id}>
-                      {ent.nome}
-                    </option>
-                  ))}
+                  {Array.isArray(entidades) &&
+                    entidades.map((ent) => (
+                      <option key={ent.id} value={ent.id}>
+                        {ent.nome}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div>
@@ -171,7 +199,7 @@ export const EntidadeOrgaoModal = ({ item, entidades, onClose, onSave }) => {
             </button>
             <button
               type="submit"
-              className="py-2 px-4 bg-accent-blue text-white rounded-lg text-sm"
+              className="py-2 px-4 bg-accent-blue text-white rounded-lg text-sm disabled:opacity-60"
               disabled={isImportingPncp}
             >
               {isEditing ? 'Atualizar' : 'Salvar'}

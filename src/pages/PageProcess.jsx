@@ -232,7 +232,7 @@ const FornecedorModal = ({
   if (!isOpen) return null;
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4"></div>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4">
       <motion.div
         initial={false}
         animate={{ opacity: 1, y: 0 }}
@@ -369,6 +369,7 @@ const FornecedorModal = ({
           </>
         )}
       </motion.div>
+      </div>
     </>
   );
 };
@@ -738,190 +739,200 @@ export default function PageProcess() {
       setDeleteType(null);
     }
   };
+/* =============================================================
+ * Render
+ * ============================================================= */
+return (
+  <>
+    {/* Modais */}
+    <ItemModal
+      isOpen={isItemModalOpen}
+      onClose={() => {
+        setIsItemModalOpen(false);
+        setItemSelecionado(null);
+      }}
+      onSave={handleSaveItem}
+      itemSelecionado={itemSelecionado}
+    />
 
-  /* =============================================================
-   * Render
-   * ============================================================= */
-  return (
-    <>
-      {/* Modais */}
-      <ItemModal
-        isOpen={isItemModalOpen}
-        onClose={() => {
-          setIsItemModalOpen(false);
-          setItemSelecionado(null);
-        }}
-        onSave={handleSaveItem}
-        itemSelecionado={itemSelecionado}
-      />
-
-      <FornecedorModal
-        isOpen={isFornecedorModalOpen}
-        onClose={() => {
-          setIsFornecedorModalOpen(false);
-          setFornecedorSelecionado(null);
-        }}
-        catalogo={catalogoFornecedores}
-        onLink={handleLinkFornecedor}
-        onSaveNew={handleSaveNewAndLinkFornecedor}
-        onSaveEdit={handleUpdateEditedFornecedor}
-        fornecedorSelecionado={fornecedorSelecionado}
-      />
-
-      {showConfirmModal && (
-        <ConfirmDeleteModal
-          message={
-            deleteType === 'fornecedor'
-              ? `Deseja realmente remover o fornecedor "${itemToDelete?.nome || itemToDelete?.razao_social}" deste processo?`
-              : `Deseja realmente excluir o item "${itemToDelete?.descricao}"?`
-          }
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setShowConfirmModal(false)}
+    {isFornecedorModalOpen && (
+      <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40">
+        <FornecedorModal
+          isOpen={isFornecedorModalOpen}
+          onClose={() => {
+            setIsFornecedorModalOpen(false);
+            setFornecedorSelecionado(null);
+          }}
+          catalogo={catalogoFornecedores}
+          onLink={handleLinkFornecedor}
+          onSaveNew={handleSaveNewAndLinkFornecedor}
+          onSaveEdit={handleUpdateEditedFornecedor}
+          fornecedorSelecionado={fornecedorSelecionado}
         />
-      )}
-
-      {/* Cabeçalho (card) */}
-      {!isEditing && (
-        <ProcessHeader
-          formData={formData}
-          entidadeNome={entidadeNome}
-          orgaoNome={orgaoNome}
-          onEdit={() => setIsEditing(true)}
-          extraFields={[
-            { label: 'Fundamentação', value: formData.fundamentacao },
-            { label: 'Amparo Legal', value: formData.amparo_legal },
-            { label: 'Classificação', value: formData.classificacao },
-            { label: 'Modo de Disputa', value: formData.modo_disputa },
-            { label: 'Critério de Julgamento', value: formData.criterio_julgamento },
-            { label: 'Organização', value: formData.tipo_organizacao },
-            { label: 'Vigência (meses)', value: formData.vigencia_meses },
-          ]}
-        />
-      )}
-
-      {/* Formulário de edição */}
-      {isEditing && (
-        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg p-4 md:px-8 py-4">
-          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-4">
-            Dados Gerais do Processo
-          </h2>
-          <DadosGeraisForm
-            formData={formData}
-            onChange={handleChangeDadosGerais}
-            onSubmit={handleSaveDadosGerais}
-            onCancel={() => (isNewProcess ? navigate(-1) : setIsEditing(false))}
-            isLoading={isLoading}
-            isNew={isNewProcess}
-            entidades={entidades}
-            orgaos={orgaos}
-          />
-        </div>
-      )}
-
-      {/* Tabs (Itens / Lotes / Fornecedores) */}
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg px-4 py-4 mt-2 md:px-4 mb-12">
-        <nav className="flex gap-2 px-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
-          <button
-            type="button"
-            onClick={() => setActiveTab('itens')}
-            disabled={!processoId}
-            className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
-              activeTab === 'itens'
-                ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
-                : !processoId
-                ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
-                : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
-            }`}
-          >
-            Itens
-          </button>
-          {formData?.tipo_organizacao === 'Lote' && (
-            <button
-              type="button"
-              onClick={() => setActiveTab('lotes')}
-              disabled={!processoId}
-              className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
-                activeTab === 'lotes'
-                  ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
-                  : !processoId
-                  ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
-                  : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
-              }`}
-            >
-              Lotes
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => setActiveTab('fornecedores')}
-            disabled={!processoId}
-            className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
-              activeTab === 'fornecedores'
-                ? 'text-accent-blue dark:text-dark-text-primary border-[#FFD60A]'
-                : !processoId
-                ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent'
-                : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent'
-            }`}
-          >
-            Fornecedores
-          </button>
-        </nav>
-
-        <main className="p-2 mx-4">
-          <AnimatePresence mode="wait">
-            <motion.div key={activeTab} initial={false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 1, y: 0 }} transition={{ duration: 0 }}>
-              {activeTab === 'itens' && (
-                <ItemsSection
-                  itens={itens}
-                  currentItems={currentItems}
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  itemsPerPage={itemsPerPage}
-                  setItemsPerPage={setItemsPerPage}
-                  setCurrentPage={setCurrentPage}
-                  areAllCurrentItemsSelected={areAllCurrentItemsSelected}
-                  selectedItems={selectedItems}
-                  handleSelectItem={handleSelectItem}
-                  handleSelectAll={handleSelectAll}
-                  setIsItemModalOpen={setIsItemModalOpen}
-                  setItemSelecionado={setItemSelecionado}
-                  handleAskDelete={handleAskDelete}
-                  handleExportItems={handleExportItems}
-                />
-              )}
-
-              {activeTab === "lotes" && formData?.tipo_organizacao === 'Lote' && (
-                <LotesSection
-                  processoId={processoId}
-                  lotes={lotes}
-                  itens={itens}
-                  reloadLotes={() => fetchLotes(processoId)}
-                  reloadItens={() => fetchItens(processoId)}
-                  showToast={showToast}
-                />
-              )}
-
-              {activeTab === 'fornecedores' && (
-                <FornecedoresSection
-                  fornecedoresDoProcesso={fornecedoresDoProcesso}
-                  currentFornecedores={currentFornecedores}
-                  totalPagesForn={totalPagesForn}
-                  currentPageForn={currentPageForn}
-                  itemsPerPageForn={itemsPerPageForn}
-                  setItemsPerPageForn={setItemsPerPageForn}
-                  setCurrentPageForn={setCurrentPageForn}
-                  setFornecedorSelecionado={setFornecedorSelecionado}
-                  setIsFornecedorModalOpen={setIsFornecedorModalOpen}
-                  handleAskDelete={handleAskDelete}
-                  onEdit={handleEditFornecedor}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </main>
       </div>
-    </>
-  );
+    )}
+
+    {showConfirmModal && (
+      <ConfirmDeleteModal
+        message={
+          deleteType === "fornecedor"
+            ? `Deseja realmente remover o fornecedor "${itemToDelete?.nome || itemToDelete?.razao_social}" deste processo?`
+            : `Deseja realmente excluir o item "${itemToDelete?.descricao}"?`
+        }
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowConfirmModal(false)}
+      />
+    )}
+
+    {/* Cabeçalho (card) */}
+    {!isEditing && (
+      <ProcessHeader
+        formData={formData}
+        entidadeNome={entidadeNome}
+        orgaoNome={orgaoNome}
+        onEdit={() => setIsEditing(true)}
+        extraFields={[
+          { label: "Fundamentação", value: formData.fundamentacao },
+          { label: "Amparo Legal", value: formData.amparo_legal },
+          { label: "Classificação", value: formData.classificacao },
+          { label: "Modo de Disputa", value: formData.modo_disputa },
+          { label: "Critério de Julgamento", value: formData.criterio_julgamento },
+          { label: "Organização", value: formData.tipo_organizacao },
+          { label: "Vigência (meses)", value: formData.vigencia_meses },
+        ]}
+      />
+    )}
+
+    {/* Formulário de edição */}
+    {isEditing && (
+      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg p-4 md:px-8 py-4">
+        <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-4">
+          Dados Gerais do Processo
+        </h2>
+        <DadosGeraisForm
+          formData={formData}
+          onChange={handleChangeDadosGerais}
+          onSubmit={handleSaveDadosGerais}
+          onCancel={() => (isNewProcess ? navigate(-1) : setIsEditing(false))}
+          isLoading={isLoading}
+          isNew={isNewProcess}
+          entidades={entidades}
+          orgaos={orgaos}
+        />
+      </div>
+    )}
+
+    {/* Tabs (Itens / Lotes / Fornecedores) */}
+    <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg px-4 py-4 mt-2 md:px-4 mb-12">
+      <nav className="flex gap-2 px-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
+        <button
+          type="button"
+          onClick={() => setActiveTab("itens")}
+          disabled={!processoId}
+          className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+            activeTab === "itens"
+              ? "text-accent-blue dark:text-dark-text-primary border-[#FFD60A]"
+              : !processoId
+              ? "text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent"
+              : "text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent"
+          }`}
+        >
+          Itens
+        </button>
+        {formData?.tipo_organizacao === "Lote" && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("lotes")}
+            disabled={!processoId}
+            className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+              activeTab === "lotes"
+                ? "text-accent-blue dark:text-dark-text-primary border-[#FFD60A]"
+                : !processoId
+                ? "text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent"
+                : "text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent"
+            }`}
+          >
+            Lotes
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setActiveTab("fornecedores")}
+          disabled={!processoId}
+          className={`px-4 py-3 text-md font-semibold border-b-2 transition-none ${
+            activeTab === "fornecedores"
+              ? "text-accent-blue dark:text-dark-text-primary border-[#FFD60A]"
+              : !processoId
+              ? "text-slate-400 dark:text-slate-600 cursor-not-allowed border-transparent"
+              : "text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border-transparent"
+          }`}
+        >
+          Fornecedores
+        </button>
+      </nav>
+
+      <main className="p-2 mx-4">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0 }}
+          >
+            {activeTab === "itens" && (
+              <ItemsSection
+                itens={itens}
+                currentItems={currentItems}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                setItemsPerPage={setItemsPerPage}
+                setCurrentPage={setCurrentPage}
+                areAllCurrentItemsSelected={areAllCurrentItemsSelected}
+                selectedItems={selectedItems}
+                handleSelectItem={handleSelectItem}
+                handleSelectAll={handleSelectAll}
+                setIsItemModalOpen={setIsItemModalOpen}
+                setItemSelecionado={setItemSelecionado}
+                handleAskDelete={handleAskDelete}
+                handleExportItems={handleExportItems}
+              />
+            )}
+
+            {activeTab === "lotes" && formData?.tipo_organizacao === "Lote" && (
+              <LotesSection
+                processoId={processoId}
+                lotes={lotes}
+                itens={itens}
+                reloadLotes={() => fetchLotes(processoId)}
+                reloadItens={() => fetchItens(processoId)}
+                showToast={showToast}
+              />
+            )}
+
+            {activeTab === "fornecedores" && (
+              <FornecedoresSection
+                fornecedoresDoProcesso={fornecedoresDoProcesso}
+                currentFornecedores={currentFornecedores}
+                totalPagesForn={totalPagesForn}
+                currentPageForn={currentPageForn}
+                itemsPerPageForn={itemsPerPageForn}
+                setItemsPerPageForn={setItemsPerPageForn}
+                setCurrentPageForn={setCurrentPageForn}
+                setFornecedorSelecionado={setFornecedorSelecionado}
+                setIsFornecedorModalOpen={setIsFornecedorModalOpen}
+                handleAskDelete={handleAskDelete}
+                onEdit={handleEditFornecedor}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+    </div>
+  </>
+);
+
 }
 
 /* =============================================================

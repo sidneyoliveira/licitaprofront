@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import LogoBranco from "../assets/img/logo_branco.png";
+import LogoLL from "../assets/img/logo_ll.png";
 
 // ======= COMPONENTE LOGIN =======
 const Login = () => {
@@ -185,8 +186,18 @@ const Login = () => {
             Gestão de Processos
           </p>
 
-          <p className="mt-10 text-white/70 text-sm">
-            © {new Date().getFullYear()} L3 Solutions
+          <p className="mt-10 text-white/70 text-sm flex items-center justify-center gap-2">
+            <a href="https://www.llassessoriaeservicos.com.br/"  target="_blank" className="inline-flex items-center gap-2">
+              <img
+                src={LogoLL}
+                alt="L&L Acessoria e Serviços"
+                className="h-10 object-contain"
+                
+              />
+            </a>
+            <span className="w-px h-4 bg-white/30" />
+            <span>© {new Date().getFullYear()} L&L Assessoria e Serviços</span>
+
           </p>
         </div>
       </div>

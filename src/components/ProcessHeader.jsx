@@ -12,6 +12,7 @@ import {
   AMPARO_LEGAL,
   getAmparoOptions,
   fromCode,
+  toCode
 } from "../utils/constantes";
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -146,78 +147,135 @@ const SituacaoBadge = React.memo(({ situacao }) => {
       </Ellipsize>
     </div>
   );
-});
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Componente Principal                                                      */
-/* ────────────────────────────────────────────────────────────────────────── */
-export default function ProcessHeader({
+});export default function ProcessHeader({
   formData = {},
   entidadeNome,
   orgaoNome,
   onEdit,
   onExportCSV,
 }) {
-  // Preferir nomes recebidos por prop, senão usar os que vêm no objeto
-  const entidadeNomeFinal = entidadeNome || formData?.entidade_nome || formData?.entidade_obj?.nome || "";
-  const orgaoNomeFinal = orgaoNome || formData?.orgao_nome || formData?.orgao_obj?.nome || "";
+  const entidadeNomeFinal =
+    entidadeNome ||
+    formData?.entidade_nome ||
+    formData?.entidade_obj?.nome ||
+    "";
 
-  // Labels normalizados (funcionam com *_code, *_id ou label direto)
+  const orgaoNomeFinal =
+    orgaoNome ||
+    formData?.orgao_nome ||
+    formData?.orgao_obj?.nome ||
+    "";
+
+  // Modalidade (usa code ou texto e resolve label oficial)
   const modalidadeLabel = useMemo(
-    () => resolveLabel(MODALIDADES, formData?.modalidade_code || formData?.modalidade, formData?.modalidade),
+    () =>
+      resolveLabel(
+        MODALIDADES,
+        formData?.modalidade_code || formData?.modalidade,
+        formData?.modalidade
+      ),
     [formData?.modalidade_code, formData?.modalidade]
   );
 
+  // Classificação
   const classificacaoLabel = useMemo(
-    () => resolveLabel(CLASSIFICACOES, formData?.classificacao_code || formData?.classificacao, formData?.classificacao),
+    () =>
+      resolveLabel(
+        CLASSIFICACOES,
+        formData?.classificacao_code || formData?.classificacao,
+        formData?.classificacao
+      ),
     [formData?.classificacao_code, formData?.classificacao]
   );
 
+  // Situação
   const situacaoLabel = useMemo(
-    () => resolveLabel(SITUACOES, formData?.situacao_code || formData?.situacao, formData?.situacao),
+    () =>
+      resolveLabel(
+        SITUACOES,
+        formData?.situacao_code || formData?.situacao,
+        formData?.situacao
+      ),
     [formData?.situacao_code, formData?.situacao]
   );
 
+  // Tipo de organização (Item / Lote)
   const organizacaoLabel = useMemo(
-    () => resolveLabel(ORGANIZACOES, formData?.tipo_organizacao_code || formData?.tipo_organizacao, formData?.tipo_organizacao),
+    () =>
+      resolveLabel(
+        ORGANIZACOES,
+        formData?.tipo_organizacao_code || formData?.tipo_organizacao,
+        formData?.tipo_organizacao
+      ),
     [formData?.tipo_organizacao_code, formData?.tipo_organizacao]
   );
 
+  // Modo de disputa (abreto / fechado / aberto_e_fechado)
   const modoDisputaLabel = useMemo(
-    () => resolveLabel(MODO_DISPUTA, formData?.modo_disputa_id || formData?.modo_disputa, formData?.modo_disputa),
+    () =>
+      resolveLabel(
+        MODO_DISPUTA,
+        formData?.modo_disputa_id || formData?.modo_disputa,
+        formData?.modo_disputa
+      ),
     [formData?.modo_disputa_id, formData?.modo_disputa]
   );
 
+  // Critério de julgamento (menor_preco / maior_desconto)
   const criterioJulgamentoLabel = useMemo(
-    () => resolveLabel(CRITERIO_JULGAMENTO, formData?.criterio_julgamento_id || formData?.criterio_julgamento, formData?.criterio_julgamento),
+    () =>
+      resolveLabel(
+        CRITERIO_JULGAMENTO,
+        formData?.criterio_julgamento_id || formData?.criterio_julgamento,
+        formData?.criterio_julgamento
+      ),
     [formData?.criterio_julgamento_id, formData?.criterio_julgamento]
   );
 
+  // Fundamentação (lei_14133 / lei_8666 / lei_10520)
   const fundamentacaoLabel = useMemo(() => {
-    // Pode vir como 'lei_14133' (value) ou label
-    const found = fromCode(FUNDAMENTACOES, formData?.fundamentacao);
-    return found ? found.label : formData?.fundamentacao || "";
+    const value = toCode(FUNDAMENTACOES, formData?.fundamentacao);
+    const found = fromCode(FUNDAMENTACOES, value);
+    return found?.label || formData?.fundamentacao || "";
   }, [formData?.fundamentacao]);
 
+  // Amparo legal – compatível com Excel + backend
   const amparoLegalLabel = useMemo(() => {
-    // Tenta resolver usando a fundamentação + modalidade
-    const fundVal = fromCode(FUNDAMENTACOES, formData?.fundamentacao)?.value || null;
-    const modVal =
-      fromCode(MODALIDADES, formData?.modalidade_code || formData?.modalidade)?.value || null;
+    // 1) normaliza fundamentação e modalidade para o value interno
+    const fundVal = toCode(FUNDAMENTACOES, formData?.fundamentacao);
+    const modVal = toCode(
+      MODALIDADES,
+      formData?.modalidade_code || formData?.modalidade
+    );
 
     if (fundVal && modVal) {
+      // 2) pega as opções de amparo válidas pra (lei + modalidade)
       const opts = getAmparoOptions(fundVal, modVal);
-      const found = fromCode(opts, formData?.amparo_legal || formData?.amparo_legal_id);
-      if (found) return found.label;
+      if (opts && opts.length) {
+        // 3) tenta normalizar o que veio do backend (value, label ou id)
+        const amparoValue = toCode(
+          opts,
+          formData?.amparo_legal || formData?.amparo_legal_id
+        );
+        if (amparoValue) {
+          const found = fromCode(opts, amparoValue);
+          if (found) return found.label;
+        }
+      }
     }
 
-    // Fallback: procurar no AMPARO_LEGAL achatado por code numérico / value
+    // 4) Fallback: procura no AMPARO_LEGAL “achado”
     const flat = flattenAmparo();
+
+    // por id numérico
     const fromId = fromCode(flat, formData?.amparo_legal_id);
     if (fromId) return fromId.label;
+
+    // por value/label texto
     const fromVal = fromCode(flat, formData?.amparo_legal);
     if (fromVal) return fromVal.label;
 
+    // último recurso: o texto bruto
     return formData?.amparo_legal || "";
   }, [
     formData?.fundamentacao,
@@ -227,7 +285,8 @@ export default function ProcessHeader({
     formData?.amparo_legal_id,
   ]);
 
-  const registroPrecos = formData?.registro_precos ?? formData?.registro_preco ?? false;
+  const registroPrecos =
+    formData?.registro_precos ?? formData?.registro_preco ?? false;
 
   const { siglaModalidade, numeroCertame, anoCertame } = useMemo(() => {
     const [num, ano] = formData?.numero_certame?.split("/") || [];
@@ -242,11 +301,12 @@ export default function ProcessHeader({
     () => formatDateExact(formData?.data_processo, { showTime: false }),
     [formData?.data_processo]
   );
+
   const aberturaFormatada = useMemo(
     () => formatDateExact(formData?.data_abertura, { showTime: true }),
     [formData?.data_abertura]
   );
-  
+
   const valorPrevisto = useMemo(
     () => formatCurrency(formData?.valor_referencia),
     [formData?.valor_referencia]

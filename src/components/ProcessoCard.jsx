@@ -32,11 +32,23 @@ const modalidadeMap = {
 };
 
 // --- Funções Utilitárias ---
-const formatDate = (dateValue, options) => {
-  if (!dateValue) return null;
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleString('pt-BR', options);
+
+const formatDateExact = (iso, { showTime = true } = {}) => {
+
+  if (!iso || typeof iso !== "string") return null;
+
+
+  const cleaned = iso.replace(/Z$/i, "").replace(/([+-]\d{2}:?\d{2})$/i, "");
+  const norm = cleaned.replace("T", " ").trim();
+
+
+  const m = norm.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (!m) return null;
+
+  const [, yyyy, mm, dd, HH, MM] = m;
+  const dateBR = `${dd}/${mm}/${yyyy}`;
+  if (!showTime || !HH || !MM) return dateBR;
+  return `${dateBR}, ${HH}:${MM}`;
 };
 
 const formatCurrency = (value) => {
@@ -137,12 +149,12 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
   }, [processo?.numero_certame, processo?.modalidade]);
 
   const aberturaFormatada = useMemo(
-    () => formatDate(processo?.data_abertura, { dateStyle: 'short', timeStyle: 'short' }),
+    () => formatDateExact(processo?.data_abertura, { showTime: true }),
     [processo?.data_abertura]
   );
 
   const cadastroFormatado = useMemo(
-    () => formatDate(processo?.data_processo, { dateStyle: 'short' }),
+    () => formatDateExact(processo?.data_processo, { dateStyle: 'short' }),
     [processo?.data_processo]
   );
 

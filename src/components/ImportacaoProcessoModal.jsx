@@ -28,11 +28,10 @@ const Button = ({ children, className = "", ...props }) => (
 const inputCampo =
   "w-full px-2 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary dark:border-dark-bg-primary";
 
-const REQUIRED_IMPORT_SHEET = "IMPORTACAO";
+const CADASTRO_SHEET = "CADASTRO INICIAL"; 
 const OPTIONAL_FORNEC_SHEET = "FORNECEDORES";
 
-// campos que esperamos na aba IMPORTACAO (processo + item)
-// OBS: Campos opcionais podem vir vazios (ok)
+// campos que esperamos na aba IMPORTACAO (processo + item) – modo legado
 const PROCESSO_COLS = [
   "processo_ref",
   "entidade_id",
@@ -48,7 +47,7 @@ const PROCESSO_COLS = [
   "data_certame",
   "hora_certame",
   "local_sessao",
-  "observacoes_processo",
+  // "observacoes_processo",
 ];
 
 const ITEM_COLS = [
@@ -98,33 +97,38 @@ const joinDateTime = (d, h) => {
   if (!d && !h) return null;
   try {
     const date = d ? new Date(d) : null;
+    console.log("data e hora:");
+    console.log(d, h);
     if (!date || isNaN(date.getTime())) return null;
 
     if (!h) {
-      // só data
       const iso = new Date(
         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
       ).toISOString();
       return iso;
     }
 
-    // hora pode vir como string "HH:MM" ou número excel
     let hh = 0;
     let mm = 0;
     if (typeof h === "string" && h.includes(":")) {
       const [H, M] = h.split(":");
+      console.log(H, M);
       hh = Number(H || 0);
       mm = Number(M || 0);
+      
     } else if (!isNaN(Number(h))) {
-      // excel hour fraction
       const totalMinutes = Math.round(Number(h) * 24 * 60);
       hh = Math.floor(totalMinutes / 60);
       mm = totalMinutes % 60;
+      console.log(hh,mm);
+
     }
 
     const iso = new Date(
       Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), hh, mm, 0)
     ).toISOString();
+    console.log(iso);
+
     return iso;
   } catch {
     return null;
@@ -184,129 +188,345 @@ export default function ImportacaoProcessoModal({
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data, { type: "array" });
 
-      const importSheet =
-        wb.Sheets[REQUIRED_IMPORT_SHEET] ||
-        wb.Sheets[wb.SheetNames.find((n) => n.toLowerCase().includes("import"))];
+      // local helper para ler célula
+      const getCell = (sheet, addr) => {
+        const cell = sheet[addr];
+        if (!cell) return "";
+        if (cell.v === null || cell.v === undefined) {
+          return cell.w ?? "";
+        }
+        return cell.v;
+      };
 
-      if (!importSheet) {
+      const cadastroSheetName =
+        wb.SheetNames.find(
+          (n) => n.toLowerCase() === CADASTRO_SHEET.toLowerCase()
+        ) ||
+        wb.SheetNames.find((n) =>
+          n.toLowerCase().includes("cadastro inicial")
+        ) ||
+        wb.SheetNames.find((n) => n.toLowerCase().includes("cadastro"));
+
+      if (!cadastroSheetName || !wb.Sheets[cadastroSheetName]) {
         showToast(
-          `Aba "${REQUIRED_IMPORT_SHEET}" não encontrada no arquivo.`,
+          `Aba "${CADASTRO_SHEET}" não encontrada no arquivo.`,
           "error"
         );
-        setParsing(false);
         return;
       }
 
-      const rows = XLSX.utils.sheet_to_json(importSheet, { defval: "" });
-      if (!rows.length) {
-        showToast("A aba IMPORTACAO está vazia.", "error");
-        setParsing(false);
-        return;
-      }
+      const sheet = wb.Sheets[cadastroSheetName];
 
-      // warnings
       const warnings = [];
-      const header = Object.keys(rows[0] || {});
-      const missingHeaders = [...PROCESSO_COLS, ...ITEM_COLS].filter(
-        (col) => !header.includes(col)
-      );
-      if (missingHeaders.length) {
-        warnings.push(
-          `Colunas ausentes em IMPORTACAO: ${missingHeaders.join(", ")}.`
+
+        // ============================
+        // VISÃO GERAL / META DO PROCESSO
+        // ============================
+
+        // Linha 4: valores preenchidos
+        const numero_processo = safe(getCell(sheet, "B7"), "");
+        // const ano = safe(getCell(sheet, "B7"), "");
+        const data_processo_raw = getCell(sheet, "C7");
+        const numero_certame = safe(getCell(sheet, "D7"), "");
+        const data_certame_raw = getCell(sheet, "E7");
+
+        // se tiver hora em outra coluna na tua planilha, ajuste aqui;
+        // no modelo padrão estamos usando só a data para a sessão
+        const hora_certame_raw = getCell(sheet, "F7");
+        console.log(hora_certame_raw);
+
+        const entidade_nome = safe(getCell(sheet, "G7"), null);
+        const orgao_nome = safe(getCell(sheet, "H7"), null);
+        const valor_global_estimado = getCell(sheet, "I7") || "";
+
+        // ============================
+        // DADOS TÉCNICOS DO PROCESSO
+        // Linha 9: valores
+        // ============================
+        const modalidade = safe(getCell(sheet, "A11"), "");
+        const modo_disputa = safe(getCell(sheet, "B11"), "");
+        const registro_precos_raw = getCell(sheet, "C11");
+        const tipo_organizacao = safe(getCell(sheet, "D11"), "");
+        const criterio_julgamento = safe(getCell(sheet, "E11"), "");
+        const vigencia_meses = getCell(sheet, "I11") || "";
+        const classificacao = safe(getCell(sheet, "F11"), "");
+
+        const registro_precos = toBool(registro_precos_raw);
+        const data_sessao_iso = joinDateTime(
+          data_certame_raw,
+          hora_certame_raw
         );
-      }
+        console.log(data_sessao_iso);
 
-      // agrupamento por processo_ref
-      const byProcess = new Map();
-      rows.forEach((r, idx) => {
-        const ref = String(r.processo_ref || "").trim() || `ref_${idx + 1}`;
-        if (!byProcess.has(ref)) byProcess.set(ref, []);
-        byProcess.get(ref).push(r);
-      });
+        // ============================
+        // CAMPOS TEXTUAIS LONGOS
+        // ============================
+        // B12: OBJETO
+        // B14: AMPERO LEGAL
+        // B16: FUNDAMENTAÇÃO
+        // B18: OBSERVAÇÕES DO PROCESSO
+        const objeto = safe(getCell(sheet, "A7"), "");
+        const amparo_legal = safe(getCell(sheet, "H11"), "");
+        const fundamentacao = safe(getCell(sheet, "G11"), "");
+        // const observacoes_processo = safe(getCell(sheet, ""), "");
 
-      const processos = [];
-      const preview = [];
+        // ============================
+        // ITENS DO PROCESSO
+        // Cabeçalho na linha 22, itens a partir da 23
+        // ============================
+        const ITEMS_HEADER_ROW = 15;
+        const ITEMS_HEADER_ROW_INDEX0 = ITEMS_HEADER_ROW - 1;
 
-      byProcess.forEach((lines, ref) => {
-        // usa a primeira linha como base do processo
-        const p0 = lines[0] || {};
-        const registro_precos = toBool(p0.registro_precos);
-        const isoSessao = joinDateTime(p0.data_certame, p0.hora_certame);
-
-        const processo = {
-          processo_ref: ref, // para rastreio em logs
-          // processo (campos opcionais podem vir vazios)
-          entidade_id: safe(p0.entidade_id, null),
-          entidade_nome: safe(p0.entidade_nome, null),
-          orgao_codigo_unidade: safe(p0.orgao_codigo_unidade, null),
-          orgao_nome: safe(p0.orgao_nome, null),
-          numero_processo: safe(p0.numero_processo, ""),
-          ano: safe(p0.ano, ""),
-          objeto: safe(p0.objeto, ""),
-          modalidade: safe(p0.modalidade, ""),
-          registro_precos:
-            registro_precos === null ? undefined : Boolean(registro_precos),
-          tipo_disputa: safe(p0.tipo_disputa, ""),
-          data_sessao_iso: isoSessao,
-          local_sessao: safe(p0.local_sessao, ""),
-          observacoes_processo: safe(p0.observacoes_processo, ""),
-
-          // itens
-          itens: lines.map((L) => ({
-            item_ordem: L.item_ordem || "",
-            lote: L.lote || "",
-            item_descricao: L.item_descricao || "",
-            item_especificacao: L.item_especificacao || "",
-            quantidade: L.quantidade || "",
-            unidade: L.unidade || "",
-            valor_unitario_estimado: L.valor_unitario_estimado || "",
-            categoria: L.categoria || "",
-            marca_preferencial: L.marca_preferencial || "",
-          })),
-        };
-
-        processos.push(processo);
-        preview.push({
-          processo_ref: ref,
-          numero_processo: processo.numero_processo,
-          ano: processo.ano,
-          itens: processo.itens.length,
-          entidade: processo.entidade_id || processo.entidade_nome || "—",
-          orgao:
-            processo.orgao_codigo_unidade || processo.orgao_nome || "—",
+        const rawItems = XLSX.utils.sheet_to_json(sheet, {
+          range: ITEMS_HEADER_ROW_INDEX0,
+          defval: "",
         });
-      });
 
-      // FORNECEDORES (opcional)
-      let fornecedores = [];
-      const fornecSheet = wb.Sheets[OPTIONAL_FORNEC_SHEET];
-      if (fornecSheet) {
-        const fr = XLSX.utils.sheet_to_json(fornecSheet, { defval: "" });
-        if (fr.length) {
-          fornecedores = fr.map((f) => {
-            const obj = {};
-            FORNEC_COLS.forEach((c) => (obj[c] = f[c] ?? ""));
-            return obj;
-          });
+        if (!rawItems.length) {
+          showToast(
+            "A área de itens da planilha está vazia. Verifique a seção 'ITENS DO PROCESSO'.",
+            "error"
+          );
+          return;
         }
-      }
 
-      setParsed({ processos, fornecedores, preview, warnings });
-      showToast("Planilha lida com sucesso! Revise a prévia e importe.", "success");
+        const itemHeader = Object.keys(rawItems[0] || {});
+        const requiredItemHeaders = [
+          "LOTE",
+          "N ITEM",
+          "DESCRIÇÃO DO ITEM",
+          "ESPECIFICAÇÃO",
+          "QUANTIDADE",
+          "UNIDADE",
+          "NATUREZA / DESPESA",
+          "VALOR REFERÊNCIA UNITÁRIO",
+          "CNPJ DO FORNECEDOR",
+        ];
+
+        const missingItemHeaders = requiredItemHeaders.filter(
+          (h) => !itemHeader.includes(h)
+        );
+        if (missingItemHeaders.length) {
+          warnings.push(
+            `Colunas ausentes na seção ITENS DO PROCESSO: ${missingItemHeaders.join(
+              ", "
+            )}.`
+          );
+        }
+
+        const itens = rawItems
+          .map((row) => {
+            const lote = String(row["LOTE"] || "").trim();
+            const numItem = row["N ITEM"];
+            const descricao = String(row["DESCRIÇÃO DO ITEM"] || "").trim();
+            const especificacao = String(row["ESPECIFICAÇÃO"] || "").trim();
+            const quantidade = row["QUANTIDADE"];
+            const unidade = row["UNIDADE"];
+            const naturezaDespesa = row["NATUREZA / DESPESA"];
+            const valorRef = row["VALOR REFERÊNCIA UNITÁRIO"];
+            const cnpj = row["CNPJ DO FORNECEDOR"];
+
+            const hasItemData =
+              descricao ||
+              especificacao ||
+              (quantidade !== null &&
+                quantidade !== undefined &&
+                quantidade !== "") ||
+              (valorRef !== null && valorRef !== undefined && valorRef !== "");
+
+            if (!hasItemData) return null;
+
+            return {
+              item_ordem: numItem || "",
+              lote,
+              item_descricao: descricao,
+              item_especificacao: especificacao || "",
+              quantidade: quantidade ?? "",
+              unidade: unidade ?? "",
+              valor_unitario_estimado: valorRef ?? "",
+              categoria: naturezaDespesa ?? "",
+              marca_preferencial: "",
+              cnpj_fornecedor: cnpj || "",
+            };
+          })
+          .filter(Boolean);
+
+        if (!itens.length) {
+          showToast(
+            "Nenhum item válido encontrado na seção ITENS DO PROCESSO.",
+            "error"
+          );
+          return;
+        }
+
+        // Aqui você provavelmente já tem a montagem do objeto "processos"
+        // incluindo esses novos campos. Exemplo (caso ainda não tenha):
+        const processos = [
+          {
+            processo_ref: "CADASTRO_INICIAL",
+            entidade_id: null,
+            entidade_nome,
+            orgao_codigo_unidade: null,
+            orgao_nome,
+            numero_processo,
+            ano: "2025",
+            objeto,
+            modalidade,
+            registro_precos:
+              registro_precos === null ? undefined : registro_precos,
+            tipo_disputa: modo_disputa, // front ainda usa esse nome internamente
+            data_sessao_iso,
+            local_sessao: "",
+            // observacoes_processo,
+            classificacao,
+            criterio_julgamento,
+            tipo_organizacao,
+            vigencia_meses,
+            amparo_legal,
+            fundamentacao,
+            itens,
+          },
+        ];
+
+        const preview = [
+          {
+            processo_ref: "CADASTRO_INICIAL",
+            numero_processo,
+            ano: "2025",
+            entidade: entidade_nome || "—",
+            orgao: orgao_nome || "—",
+            itens: itens.length,
+          },
+        ];
+
+        setParsed({ processos, fornecedores: [], preview, warnings });
+        showToast(
+          "Planilha (CADASTRO INICIAL) lida com sucesso! Revise a prévia e importe.",
+          "success"
+        );
+
+      // // =============================
+      // // MODO LEGADO: IMPORTACAO
+      // // =============================
+      // const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      // if (!rows.length) {
+      //   showToast("A aba IMPORTACAO está vazia.", "error");
+      //   return;
+      // }
+
+      // const warnings = [];
+      // const header = Object.keys(rows[0] || {});
+      // const missingHeaders = [...PROCESSO_COLS, ...ITEM_COLS].filter(
+      //   (col) => !header.includes(col)
+      // );
+      // if (missingHeaders.length) {
+      //   warnings.push(
+      //     `Colunas ausentes em IMPORTACAO: ${missingHeaders.join(", ")}.`
+      //   );
+      // }
+
+      // const byProcess = new Map();
+      // rows.forEach((r, idx) => {
+      //   const ref = String(r.processo_ref || "").trim() || `ref_${idx + 1}`;
+      //   if (!byProcess.has(ref)) byProcess.set(ref, []);
+      //   byProcess.get(ref).push(r);
+      // });
+
+      // const processos = [];
+      // const preview = [];
+
+      // byProcess.forEach((lines, ref) => {
+      //   const p0 = lines[0] || {};
+      //   const registro_precos = toBool(p0.registro_precos);
+      //   const isoSessao = joinDateTime(p0.data_certame, p0.hora_certame);
+
+      //   console.log( `entrou no byprocess ${p0.hora_certame}` )
+
+      //   const processo = {
+      //     processo_ref: ref,
+      //     entidade_id: safe(p0.entidade_id, null),
+      //     entidade_nome: safe(p0.entidade_nome, null),
+      //     orgao_codigo_unidade: safe(p0.orgao_codigo_unidade, null),
+      //     orgao_nome: safe(p0.orgao_nome, null),
+      //     numero_processo: safe(p0.numero_processo, ""),
+      //     ano: safe(p0.ano, ""),
+      //     objeto: safe(p0.objeto, ""),
+      //     modalidade: safe(p0.modalidade, ""),
+      //     amparo_legal: safe(p0.amparo_legal, ""),
+      //     classificacao: safe(p0.classificacao, ""),
+
+      //     registro_precos:
+      //       registro_precos === null ? undefined : Boolean(registro_precos),
+      //     tipo_disputa: safe(p0.tipo_disputa, ""),
+      //     data_sessao_iso: isoSessao,
+      //     local_sessao: safe(p0.local_sessao, ""),
+      //     // observacoes_processo: safe(p0.observacoes_processo, ""),
+      //     itens: lines.map((L) => ({
+      //       item_ordem: L.item_ordem || "",
+      //       lote: L.lote || "",
+      //       item_descricao: L.item_descricao || "",
+      //       item_especificacao: L.item_especificacao || "",
+      //       quantidade: L.quantidade || "",
+      //       unidade: L.unidade || "",
+      //       valor_unitario_estimado: L.valor_unitario_estimado || "",
+      //       categoria: L.categoria || "",
+      //       marca_preferencial: L.marca_preferencial || "",
+      //     })),
+      //   };
+
+      //   processos.push(processo);
+      //   preview.push({
+      //     processo_ref: ref,
+      //     numero_processo: processo.numero_processo,
+      //     ano: processo.ano,
+      //     itens: processo.itens.length,
+      //     entidade: processo.entidade_id || processo.entidade_nome || "—",
+      //     orgao:
+      //       processo.orgao_codigo_unidade || processo.orgao_nome || "—",
+      //   });
+      // });
+
+      // // FORNECEDORES (opcional) – modo legado
+      // let fornecedores = [];
+      // const fornecSheetNameLegacy =
+      //   wb.Sheets[OPTIONAL_FORNEC_SHEET] ||
+      //   wb.Sheets[
+      //     wb.SheetNames.find((n) => n.toLowerCase().includes("fornecedores"))
+      //   ];
+      // if (fornecSheetNameLegacy) {
+      //   const fornecSheet =
+      //     typeof fornecSheetNameLegacy === "string"
+      //       ? wb.Sheets[fornecSheetNameLegacy]
+      //       : fornecSheetNameLegacy;
+
+      //   const fr = XLSX.utils.sheet_to_json(fornecSheet, { defval: "" });
+      //   if (fr.length) {
+      //     fornecedores = fr.map((f) => {
+      //       const obj = {};
+      //       FORNEC_COLS.forEach((c) => (obj[c] = f[c] ?? ""));
+      //       return obj;
+      //     });
+      //   }
+      // }
+
+      // setParsed({ processos, fornecedores, preview, warnings });
+      // showToast(
+      //   "Planilha (IMPORTACAO) lida com sucesso! Revise a prévia e importe.",
+      //   "success"
+      // );
     } catch (err) {
-      console.error(err);
-      showToast("Falha ao ler a planilha. Verifique o arquivo.", "error");
-    } finally {
-      setParsing(false);
-    }
-  };
+    console.error(err);
+    showToast("Falha ao ler a planilha. Verifique o arquivo.", "error");
+  } finally {
+    setParsing(false);
+  }
+};
 
   // opcional: auto-cadastro de fornecedores por CNPJ caso não existam
   const ensureFornecedores = async (list) => {
     if (!list?.length) return;
     addLog(`Verificando ${list.length} fornecedor(es) da aba FORNECEDORES...`);
     try {
-      // dedupe por CNPJ "limpo"
       const uniqByCNPJ = new Map();
       list.forEach((f) => {
         const clean = String(f.cnpj || "").replace(/[^\d]/g, "");
@@ -316,9 +536,10 @@ export default function ImportacaoProcessoModal({
       const fornecedores = Array.from(uniqByCNPJ.values());
       if (!fornecedores.length) return;
 
-      // busca já cadastrados
       const res = await api.get("/fornecedores/", { params: { limit: 1000 } });
-      const existentes = Array.isArray(res.data) ? res.data : res.data?.results || [];
+      const existentes = Array.isArray(res.data)
+        ? res.data
+        : res.data?.results || [];
       const setExist = new Set(
         existentes
           .map((z) => String(z.cnpj || "").replace(/[^\d]/g, ""))
@@ -334,7 +555,6 @@ export default function ImportacaoProcessoModal({
         }
 
         if (autoFornecedor) {
-          // tenta completar via BrasilAPI
           try {
             const b = await axios.get(
               `https://brasilapi.com.br/api/cnpj/v1/${clean}`
@@ -353,7 +573,7 @@ export default function ImportacaoProcessoModal({
               complemento: f.complemento || d.complemento || "",
               municipio: f.municipio || d.municipio || "",
               uf: f.uf || d.uf || "",
-              observacoes: f.observacoes || "",
+              // observacoes: f.observacoes || "",
             };
             await api.post("/fornecedores/", payload);
             addLog(`Fornecedor ${clean} cadastrado (BrasilAPI + manual).`);
@@ -370,31 +590,37 @@ export default function ImportacaoProcessoModal({
 
   // envio dos dados (sempre via XLSX para casar com o backend /processos/importar-xlsx/)
   const submitImport = async () => {
-  if (!file) {
-    showToast("Escolha um arquivo .xlsx", "error");
-    return;
-  }
-  setSubmitting(true);
-  try {
-    const form = new FormData();
-    form.append("arquivo", file); // <- chave igual à da view
-    await api.post("/processos/importar-xlsx/", form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    showToast("Importação concluída!", "success");
-    onImported?.();
-    closeAll();
-  } catch (err) {
-    console.error(err);
-    showToast("Falha na importação. Verifique o arquivo e as colunas.", "error");
-  } finally {
-    setSubmitting(false);
-  }
-};
+    if (!file) {
+      showToast("Escolha um arquivo .xlsx", "error");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const form = new FormData();
+      form.append("arquivo", file);
+      await api.post("/processos/importar-xlsx/", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      showToast("Importação concluída!", "success");
+      onImported?.();
+      closeAll();
+    } catch (err) {
+      console.error(err);
+      showToast(
+        "Falha na importação. Verifique o arquivo e as colunas.",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const counters = useMemo(() => {
     if (!parsed) return { processos: 0, itens: 0, fornecedores: 0 };
-    const itens = parsed.processos.reduce((acc, p) => acc + (p.itens?.length || 0), 0);
+    const itens = parsed.processos.reduce(
+      (acc, p) => acc + (p.itens?.length || 0),
+      0
+    );
     return {
       processos: parsed.processos.length,
       itens,
@@ -422,7 +648,9 @@ export default function ImportacaoProcessoModal({
           <div className="flex items-center justify-between px-4 py-3 border-b border-light-border dark:border-dark-border">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-5 h-5 text-accent-blue" />
-              <h3 className="text-lg font-semibold">Importar Processos via Planilha</h3>
+              <h3 className="text-lg font-semibold">
+                Importar Processos via Planilha
+              </h3>
             </div>
             <button
               onClick={closeAll}
@@ -447,9 +675,15 @@ export default function ImportacaoProcessoModal({
                 <Button
                   onClick={parseWorkbook}
                   disabled={!file || parsing}
-                  className={`border rounded-md ${parsing ? "opacity-60" : ""}`}
+                  className={`border rounded-md ${
+                    parsing ? "opacity-60" : ""
+                  }`}
                 >
-                  {parsing ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+                  {parsing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <UploadCloud className="w-4 h-4" />
+                  )}
                   Ler arquivo
                 </Button>
               </div>
@@ -475,8 +709,8 @@ export default function ImportacaoProcessoModal({
                   onChange={(e) => setAutoFornecedor(e.target.checked)}
                 />
                 <span>
-                  Completar/cadastrar fornecedores automaticamente pelo CNPJ (BrasilAPI),
-                  se não existirem.
+                  Completar/cadastrar fornecedores automaticamente pelo CNPJ
+                  (BrasilAPI), se não existirem.
                 </span>
               </label>
             </div>
@@ -501,15 +735,23 @@ export default function ImportacaoProcessoModal({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="rounded-md border p-3">
                     <p className="text-sm text-slate-500">Processos</p>
-                    <p className="text-2xl font-semibold">{counters.processos}</p>
+                    <p className="text-2xl font-semibold">
+                      {counters.processos}
+                    </p>
                   </div>
                   <div className="rounded-md border p-3">
                     <p className="text-sm text-slate-500">Itens</p>
-                    <p className="text-2xl font-semibold">{counters.itens}</p>
+                    <p className="text-2xl font-semibold">
+                      {counters.itens}
+                    </p>
                   </div>
                   <div className="rounded-md border p-3">
-                    <p className="text-sm text-slate-500">Fornecedores (aba opcional)</p>
-                    <p className="text-2xl font-semibold">{counters.fornecedores}</p>
+                    <p className="text-sm text-slate-500">
+                      Fornecedores (via CNPJ)
+                    </p>
+                    <p className="text-2xl font-semibold">
+                      {counters.fornecedores}
+                    </p>
                   </div>
                 </div>
 
@@ -547,7 +789,8 @@ export default function ImportacaoProcessoModal({
               </div>
             ) : (
               <div className="rounded-md border border-dashed p-6 text-sm text-slate-500">
-                Selecione o arquivo e clique em <b>Ler arquivo</b> para ver a prévia.
+                Selecione o arquivo e clique em <b>Ler arquivo</b> para ver a
+                prévia.
               </div>
             )}
 
@@ -576,7 +819,9 @@ export default function ImportacaoProcessoModal({
                 onClick={submitImport}
                 disabled={!parsed || submitting}
                 className={`rounded-md text-white ${
-                  parsed ? "bg-accent-blue hover:bg-accent-blue/90" : "bg-slate-400"
+                  parsed
+                    ? "bg-accent-blue hover:bg-accent-blue/90"
+                    : "bg-slate-400"
                 }`}
               >
                 {submitting ? (

@@ -132,12 +132,15 @@ export default function DadosGeraisForm({
 
   const amparoLegalVal = (() => {
     const v = normalizeSelectValue(formData?.amparo_legal, amparoOptions);
+        console.log( `entrou no amparo legal val ${v}` )
     if (v) return v;
     const id = formData?.amparo_legal_id;
     if (id != null) {
       const found = (amparoOptions || []).find((a) => String(a.code) === String(id));
+          console.log( `valor de found ${found}` )
       return found ? found.value : "";
     }
+    console.log( `valor de const v ${v}` )
     return "";
   })();
 
