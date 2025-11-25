@@ -121,7 +121,7 @@ const ItemModal = ({ isOpen, onClose, onSave, itemSelecionado }) => {
   );
 };
 
-const FornecedorModal = ({
+export const FornecedorModal = ({
   isOpen,
   onClose,
   onLink,

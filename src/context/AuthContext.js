@@ -8,7 +8,8 @@ import React, {
   useEffect,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosPublic from '../api/axiosPublic';
+
+import { axiosPublic, axiosInstance } from '../api/config';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);

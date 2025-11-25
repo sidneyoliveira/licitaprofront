@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import AuthContext from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import axiosInstance from "../api/AxiosInstance";
+import { axiosInstance } from "../api/config";
 import { useNavigate } from "react-router-dom";
 
 const CompleteProfile = () => {

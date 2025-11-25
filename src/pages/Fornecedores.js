@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate } from "react-router-dom";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
@@ -10,12 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Filter,
-  X,
   Plus,
   Trash,
-  RefreshCw,
   ArrowUpDown,
 } from "lucide-react";
+
+import {FornecedorModal} from "./NewProcess";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* UI helpers                                                                */
@@ -47,14 +46,14 @@ const maskCNPJ = (v) => {
   );
 };
 
-const safe = (v, fallback = "—") => (v === null || v === undefined || v === "" ? fallback : v);
+const safe = (v, fallback = "—") =>
+  v === null || v === undefined || v === "" ? fallback : v;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Página: Fornecedores                                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 export default function Fornecedores() {
   const api = useAxios();
-  const navigate = useNavigate();
   const { showToast } = useToast();
 
   // Dados
@@ -65,6 +64,10 @@ export default function Fornecedores() {
   const [showFilters, setShowFilters] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  // Modal de fornecedor
+  const [isFornecedorModalOpen, setIsFornecedorModalOpen] = useState(false);
+  const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
+
   // Filtros/ordenação/paginação (client-side)
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("razao_social"); // 'razao_social' | 'cnpj' | 'municipio' | 'uf' | 'email'
@@ -72,11 +75,13 @@ export default function Fornecedores() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const hasActiveFilters = useMemo(() => !!search || sortBy !== "razao_social" || sortOrder !== "asc", [
-    search,
-    sortBy,
-    sortOrder,
-  ]);
+  const hasActiveFilters = useMemo(
+    () =>
+      !!search ||
+      sortBy !== "razao_social" ||
+      sortOrder !== "asc",
+    [search, sortBy, sortOrder]
+  );
 
   /* ──────────────────────────────────────────────────────────────────────── */
   /* Busca                                                                    */
@@ -181,6 +186,68 @@ export default function Fornecedores() {
     setShowFilters(false);
   };
 
+  // === Callbacks para o FornecedorModal ===
+  const handleOpenNovoFornecedor = () => {
+    setFornecedorSelecionado(null); // garante que é novo
+    setIsFornecedorModalOpen(true);
+  };
+
+  const handleCloseFornecedorModal = () => {
+    setIsFornecedorModalOpen(false);
+  };
+
+  const handleLinkFornecedor = async (id) => {
+    // Nesta página (lista de fornecedores) não há processo pra vincular.
+    // Podemos apenas fechar o modal ou mostrar um aviso.
+    showToast("Esta tela é apenas para cadastro/gestão de fornecedores.", "info");
+    setIsFornecedorModalOpen(false);
+  };
+
+  const handleSaveNewFornecedor = async (data) => {
+    const payload = {
+      cnpj: data.cnpj,
+      razao_social: data.razao_social,
+      nome_fantasia: data.nome_fantasia,
+      porte: data.porte,
+      telefone: data.telefone,
+      email: data.email,
+      cep: data.cep,
+      logradouro: data.logradouro,
+      numero: data.numero,
+      bairro: data.bairro,
+      complemento: data.complemento,
+      uf: data.uf,
+      municipio: data.municipio,
+    };
+    const res = await api.post("/fornecedores/", payload);
+    showToast("Fornecedor cadastrado com sucesso!", "success");
+    // Atualiza lista local sem precisar refetch imediato
+    setFornecedores((prev) => [...prev, res.data]);
+  };
+
+  const handleSaveEditFornecedor = async (data) => {
+    const payload = {
+      cnpj: data.cnpj,
+      razao_social: data.razao_social,
+      nome_fantasia: data.nome_fantasia,
+      porte: data.porte,
+      telefone: data.telefone,
+      email: data.email,
+      cep: data.cep,
+      logradouro: data.logradouro,
+      numero: data.numero,
+      bairro: data.bairro,
+      complemento: data.complemento,
+      uf: data.uf,
+      municipio: data.municipio,
+    };
+    const res = await api.put(`/fornecedores/${data.id}/`, payload);
+    showToast("Fornecedor atualizado com sucesso!", "success");
+    setFornecedores((prev) =>
+      prev.map((f) => (f.id === data.id ? res.data : f))
+    );
+  };
+
   /* ──────────────────────────────────────────────────────────────────────── */
   /* Render                                                                    */
   /* ──────────────────────────────────────────────────────────────────────── */
@@ -190,7 +257,23 @@ export default function Fornecedores() {
         <title>Fornecedores</title>
       </Helmet>
 
-      {deletingId && <ConfirmDeleteModal onConfirm={confirmDelete} onCancel={cancelDelete} />}
+      {deletingId && (
+        <ConfirmDeleteModal
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      )}
+
+      {/* Modal de Fornecedor */}
+      <FornecedorModal
+        isOpen={isFornecedorModalOpen}
+        onClose={handleCloseFornecedorModal}
+        onLink={handleLinkFornecedor}
+        onSaveNew={handleSaveNewFornecedor}
+        onSaveEdit={handleSaveEditFornecedor}
+        catalogo={fornecedores}
+        fornecedorSelecionado={fornecedorSelecionado}
+      />
 
       {/* Cabeçalho */}
       <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-md p-4">
@@ -200,12 +283,16 @@ export default function Fornecedores() {
               Fornecedores
             </h1>
             <p className="mt-1 text-md text-light-text-secondary dark:text-dark-text-secondary">
-              {isLoading ? "Carregando..." : `Listando ${total} ${total === 1 ? "fornecedor" : "fornecedores"}`}
+              {isLoading
+                ? "Carregando..."
+                : `Listando ${total} ${
+                    total === 1 ? "fornecedor" : "fornecedores"
+                  }`}
             </p>
           </div>
           <div>
             <Button
-              onClick={() => navigate("/fornecedores/novo")}
+              onClick={handleOpenNovoFornecedor}
               className={`${inputStyle} h-8 gap-1 inline-flex items-center text-sm bg-accent-blue text-white hover:bg-accent-blue/90`}
             >
               <Plus className="w-3 h-3" />
@@ -280,18 +367,16 @@ export default function Fornecedores() {
                     Município
                     <ArrowUpDown className="w-4 h-4 opacity-70" />
                   </button>
-                  {/* <div className="flex items-center text-sm text-slate-600 dark:text-slate-300 px-2">
-                    <span>
-                      Ordem:{" "}
-                      <strong className="uppercase">{sortOrder === "asc" ? "ASC" : "DESC"}</strong>
-                    </span>
-                  </div> */}
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-600 dark:text-slate-300">Exibir</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                      Exibir
+                    </span>
                     <select
                       value={itemsPerPage}
-                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                      onChange={(e) =>
+                        setItemsPerPage(Number(e.target.value))
+                      }
                       className={`${inputCampo} w-auto`}
                     >
                       <option value={5}>5</option>
@@ -299,7 +384,9 @@ export default function Fornecedores() {
                       <option value={20}>20</option>
                       <option value={50}>50</option>
                     </select>
-                    <span className="text-sm text-slate-600 dark:text-slate-300">por página</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                      por página
+                    </span>
                   </div>
                 </div>
               </motion.div>
@@ -317,7 +404,9 @@ export default function Fornecedores() {
         ) : total === 0 ? (
           <div className="text-center py-12">
             <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Nenhum fornecedor encontrado</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              Nenhum fornecedor encontrado
+            </h3>
             <p className="text-light-text-secondary dark:text-dark-text-secondary mb-6">
               {hasActiveFilters
                 ? "Tente ajustar os filtros ou limpar a busca."
@@ -364,7 +453,10 @@ export default function Fornecedores() {
                 </thead>
                 <tbody>
                   {current.map((f) => (
-                    <tr key={f.id} className="border-b border-light-border/60 dark:border-dark-border/60 text-sm">
+                    <tr
+                      key={f.id}
+                      className="border-b border-light-border/60 dark:border-dark-border/60 text-sm"
+                    >
                       <td className="p-3">
                         <div className="font-semibold text-slate-800 dark:text-dark-text-primary">
                           {safe(f?.razao_social)}
@@ -381,7 +473,7 @@ export default function Fornecedores() {
                       <td className="p-3">{safe(f?.uf)}</td>
                       <td className="p-3">
                         <div className="flex items-center justify-center gap-2">
-                          {/* Você pode adicionar botão de editar quando tiver a rota/modal */}
+                          {/* Futuro: botão de editar poderia abrir o FornecedorModal com fornecedorSelecionado */}
                           <button
                             onClick={() => askDelete(f.id)}
                             className="p-2 rounded-md hover:bg-red-500/10 text-red-500"
@@ -410,17 +502,22 @@ export default function Fornecedores() {
               <div className="flex items-center gap-2">
                 <Button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.max(1, p - 1))
+                  }
                   className="px-1 py-1 rounded-md border border-light-border dark:border-dark-border disabled:opacity-50"
                 >
                   Ant.
                 </Button>
                 <span className="text-sm">
-                  Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
+                  Página <strong>{currentPage}</strong> de{" "}
+                  <strong>{totalPages}</strong>
                 </span>
                 <Button
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   className="px-1 py-1 rounded-md border border-light-border dark:border-dark-border disabled:opacity-50"
                 >
                   Próx.

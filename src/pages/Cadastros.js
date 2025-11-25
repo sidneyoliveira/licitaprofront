@@ -1,6 +1,6 @@
 // frontend/src/pages/Cadastros.js
 import React, { useEffect, useMemo, useState } from "react";
-import useAxios from "../api/AxiosInstance";
+import useAxios from "../api/config";
 import { MagnifyingGlassIcon, PlusIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
 
 /* 
