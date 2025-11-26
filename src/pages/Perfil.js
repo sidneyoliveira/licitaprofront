@@ -313,7 +313,7 @@ const Perfil = () => {
         {/* Botão Editar */}
         <button 
           onClick={() => setEditModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-dark-bg-primary border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg-primary/80 transition-colors shadow-sm"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white dark:bg-dark-bg-primary border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg-primary/80 transition-colors shadow-sm"
         >
           <Edit className="w-4 h-4" />
           Editar Perfil
@@ -366,13 +366,13 @@ const Perfil = () => {
               <Label>Telefone / Celular</Label>
               <ReadOnlyInput icon={Phone} value={user.phone} />
             </div>
-            <div>
+            {/* <div>
               <Label>Último Login</Label>
               <ReadOnlyInput 
                 icon={Clock} 
                 value={user.last_login ? new Date(user.last_login).toLocaleString() : "Nunca"} 
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

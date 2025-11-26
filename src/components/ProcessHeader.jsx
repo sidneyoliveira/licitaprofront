@@ -3,16 +3,17 @@ import React, { useMemo } from "react";
 import { Pencil, Download } from "lucide-react";
 import {
   MODALIDADES,
+  FUNDAMENTACOES,
   CLASSIFICACOES,
   SITUACOES,
+  ORGANIZACOES,
   MODO_DISPUTA,
   CRITERIO_JULGAMENTO,
-  ORGANIZACOES,
-  FUNDAMENTACOES,
   AMPARO_LEGAL,
   getAmparoOptions,
   fromCode,
-  toCode
+  toCode,
+  
 } from "../utils/constantes";
 
 /* ────────────────────────────────────────────────────────────────────────── */

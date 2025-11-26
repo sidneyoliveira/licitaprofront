@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UploadCloud, Globe, FileText, X, Loader2, Send } from 'lucide-react'; // Ícones importados
 
 import axios from 'axios';
 
@@ -9,6 +10,9 @@ import ItemsSection from '../components/ItemsSection';
 import FornecedoresSection from '../components/FornecedoresSection';
 import LotesSection from '../components/LotesSection';
 import DadosGeraisForm from '../components/DadosGeraisForm';
+
+// Componentes
+import ImportacaoProcessoModal from '../components/ImportacaoProcessoModal';
 
 // Infra
 import useAxios from '../hooks/useAxios';
@@ -24,15 +28,90 @@ const inputStyle =
 const labelStyle =
   'text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase';
 
-const toDatetimeLocalExact = (iso) => {
-  if (!iso) return '';
-  const cleaned = String(iso).replace(/Z$/i, '').replace(' ', 'T');
-  const m = cleaned.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})/);
-  return m ? `${m[1]}T${m[2]}:${m[3]}` : '';
+/* =============================================================
+ * Modal de Publicação PNCP
+ * ============================================================= */
+const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
+    const api = useAxios();
+    const { showToast } = useToast();
+    const [file, setFile] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        if (!file) return showToast("Selecione um arquivo PDF.", "error");
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('arquivo', file);
+        formData.append('titulo_documento', `Edital - ${processo.numero_processo}`);
+
+        try {
+            await api.post(`/processos/${processo.id}/publicar-pncp/`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            showToast("Processo enviado ao PNCP com sucesso!", "success");
+            onSuccess();
+            onClose();
+        } catch (error) {
+            console.error(error);
+            const msg = error.response?.data?.detail || "Erro ao enviar para o PNCP.";
+            showToast(msg, "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-dark-border">
+                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <UploadCloud className="w-5 h-5 text-blue-600" /> Publicar no PNCP
+                    </h3>
+                    <button onClick={onClose} className="text-gray-500 hover:bg-gray-100 rounded-full p-1"><X className="w-5 h-5" /></button>
+                </div>
+                
+                <form onSubmit={handleUpload} className="p-6 space-y-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-sm text-blue-800 dark:text-blue-200">
+                        Você está publicando o processo <strong>{processo.numero_processo}</strong> no ambiente de Treinamento do PNCP.
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Anexar Edital/Aviso (PDF)</label>
+                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-dark-bg-primary transition-colors cursor-pointer relative">
+                            <input 
+                                type="file" 
+                                accept=".pdf" 
+                                onChange={(e) => setFile(e.target.files[0])} 
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                            <FileText className="w-8 h-8 text-gray-400 mb-2" />
+                            <span className="text-sm text-gray-500">
+                                {file ? file.name : "Clique para selecionar o arquivo"}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                        <button 
+                            type="submit" 
+                            disabled={loading || !file}
+                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                            Enviar para PNCP
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 };
 
 /* =============================================================
- * Modais
+ * Modais Internos (Item/Fornecedor) - Mantidos
  * ============================================================= */
 const ItemModal = ({ isOpen, onClose, onSave, itemSelecionado }) => {
   const [formData, setFormData] = useState({ descricao: '', unidade: '', quantidade: '', valor_estimado: '' });
@@ -205,7 +284,6 @@ const FornecedorModal = ({
       }));
       showToast('Dados carregados com sucesso!', 'success');
     } catch (e) {
-
       showToast('Erro ao buscar CNPJ. Verifique o número e tente novamente.', 'error');
     }
   };
@@ -388,6 +466,10 @@ export default function PageProcess() {
   const [activeTab, setActiveTab] = useState('itens');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(isNewProcess);
+
+  // Estado do Modal de Importação e PNCP
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [pncpModalData, setPncpModalData] = useState(null); // Estado para controlar o modal do PNCP
 
   const [formData, setFormData] = useState({
     objeto: '',
@@ -755,6 +837,34 @@ return (
       itemSelecionado={itemSelecionado}
     />
 
+    <ImportacaoProcessoModal
+      open={isImportModalOpen}
+      onClose={() => setIsImportModalOpen(false)}
+      onImported={(newProcess) => {
+        showToast("Importação concluída com sucesso!", "success");
+        if (newProcess?.id && newProcess.id !== processoId) {
+             navigate(`/processos/editar/${newProcess.id}`);
+        } else {
+             if (processoId) {
+                 fetchItens(processoId);
+                 fetchDadosDoProcesso(processoId);
+             }
+        }
+      }}
+      templateUrl={"/Modelo_Simples_Importacao.xlsx"}
+    />
+
+    {/* Modal PNCP */}
+    {pncpModalData && (
+        <ModalEnvioPNCP
+            processo={pncpModalData}
+            onClose={() => setPncpModalData(null)}
+            onSuccess={() => {
+                fetchDadosDoProcesso(processoId);
+            }}
+        />
+    )}
+
     {isFornecedorModalOpen && (
       <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40">
         <FornecedorModal
@@ -786,21 +896,41 @@ return (
 
     {/* Cabeçalho (card) */}
     {!isEditing && (
-      <ProcessHeader
-        formData={formData}
-        entidadeNome={entidadeNome}
-        orgaoNome={orgaoNome}
-        onEdit={() => setIsEditing(true)}
-        extraFields={[
-          { label: "Fundamentação", value: formData.fundamentacao },
-          { label: "Amparo Legal", value: formData.amparo_legal },
-          { label: "Classificação", value: formData.classificacao },
-          { label: "Modo de Disputa", value: formData.modo_disputa },
-          { label: "Critério de Julgamento", value: formData.criterio_julgamento },
-          { label: "Organização", value: formData.tipo_organizacao },
-          { label: "Vigência (meses)", value: formData.vigencia_meses },
-        ]}
-      />
+      <>
+        <div className="flex justify-end mb-2 px-4 md:px-0 space-x-2">
+            {/* Botão PNCP */}
+            <button
+                onClick={() => setPncpModalData({ ...formData, id: processoId })}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-bg-secondary border border-blue-200 text-blue-700 dark:text-blue-200 rounded-md text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors shadow-sm"
+            >
+                <Globe className="w-4 h-4" />
+                Publicar no PNCP
+            </button>
+
+            <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-bg-secondary border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary transition-colors shadow-sm"
+            >
+                <UploadCloud className="w-4 h-4" />
+                Importar
+            </button>
+        </div>
+        <ProcessHeader
+            formData={formData}
+            entidadeNome={entidadeNome}
+            orgaoNome={orgaoNome}
+            onEdit={() => setIsEditing(true)}
+            extraFields={[
+            { label: "Fundamentação", value: formData.fundamentacao },
+            { label: "Amparo Legal", value: formData.amparo_legal },
+            { label: "Classificação", value: formData.classificacao },
+            { label: "Modo de Disputa", value: formData.modo_disputa },
+            { label: "Critério de Julgamento", value: formData.criterio_julgamento },
+            { label: "Organização", value: formData.tipo_organizacao },
+            { label: "Vigência (meses)", value: formData.vigencia_meses },
+            ]}
+        />
+      </>
     )}
 
     {/* Formulário de edição */}

@@ -302,18 +302,11 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                   <input ref={fileRef} type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                   
                   <div className="mt-3">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{form.first_name || "Novo Usuário"}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{(((form.first_name || "") + " " + (form.last_name || "")).trim() || "Novo Usuário")}</h3>
                     <p className="text-xs text-gray-500">{form.email || "sem email"}</p>
                   </div>
                   
-                  {preview && (
-                    <button 
-                      onClick={() => { setPreview(null); setSelectedFile(null); }}
-                      className="mt-2 text-xs text-red-500 hover:text-red-600 flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" /> Remover foto
-                    </button>
-                  )}
+                 
                 </div>
 
                 <hr className="border-gray-200 dark:border-dark-border" />
@@ -392,7 +385,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                         <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-100 dark:border-dark-border">
                           <Lock className="w-5 h-5 text-accent-blue" />
-                          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Segurança</h3>
+                          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Segurança e Login</h3>
                         </div>
                         <div>
                           <Label required>Nome de Usuário</Label>
