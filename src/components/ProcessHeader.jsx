@@ -3,22 +3,36 @@ import React, { useMemo } from "react";
 import { Pencil, Download } from "lucide-react";
 import {
   MODALIDADES,
-  FUNDAMENTACOES,
   CLASSIFICACOES,
   SITUACOES,
   ORGANIZACOES,
   MODO_DISPUTA,
   CRITERIO_JULGAMENTO,
   AMPARO_LEGAL,
-  getAmparoOptions,
   fromCode,
   toCode,
-  
 } from "../utils/constantes";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Utils                                                                     */
 /* ────────────────────────────────────────────────────────────────────────── */
+
+// Mapeamento de Siglas (usando os 'value' do constantes.jsx)
+const modalidadeSiglaMap = {
+  pregao_eletronico: "PE",
+  pregao_presencial: "PP",
+  concorrencia_eletronica: "CE",
+  concorrencia_presencial: "CP",
+  dispensa_eletronica: "DE",     // ou dispensa_licitacao
+  dispensa_licitacao: "DL",
+  inexigibilidade: "IN",
+  adesao_registro_precos: "ARP",
+  credenciamento: "CR",
+  leilao_eletronico: "LE",
+  leilao_presencial: "LP",
+  dialogo_competitivo: "DC",
+};
+
 const Ellipsize = ({ lines = 1, title, as: Tag = "span", className = "", children }) => {
   const style =
     lines === 1
@@ -35,28 +49,12 @@ const Ellipsize = ({ lines = 1, title, as: Tag = "span", className = "", childre
   );
 };
 
-const modalidadeMap = {
-  "Pregão Eletrônico": { sigla: "PE" },
-  "Concorrência Eletrônica": { sigla: "CE" },
-  "Dispensa Eletrônica": { sigla: "DE" },
-  "Adesão a Registro de Preços": { sigla: "ARP" },
-  "Credenciamento": { sigla: "CR" },
-  "Inexigibilidade Eletrônica": { sigla: "IE" },
-};
-
-
 const formatDateExact = (iso, { showTime = true } = {}) => {
-
   if (!iso || typeof iso !== "string") return null;
-
-
   const cleaned = iso.replace(/Z$/i, "").replace(/([+-]\d{2}:?\d{2})$/i, "");
   const norm = cleaned.replace("T", " ").trim();
-
-
   const m = norm.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
   if (!m) return null;
-
   const [, yyyy, mm, dd, HH, MM] = m;
   const dateBR = `${dd}/${mm}/${yyyy}`;
   if (!showTime || !HH || !MM) return dateBR;
@@ -72,55 +70,37 @@ const formatCurrency = (value) => {
 
 const getSituacaoStyle = (situacao) => {
   const base = "px-3 py-1 rounded-md text-xs font-medium uppercase tracking-wider";
-  switch (situacao) {
-    case "Aberto":
-    case "Publicado":
-      return `${base} bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20`;
-    case "Em Pesquisa":
-    case "Aguardando Publicação":
-    case "Em Contratação":
-      return `${base} bg-accent-yellow/10 text-accent-yellow dark:bg-accent-yellow/20`;
-    case "Adjudicado/Homologado":
-      return `${base} bg-accent-green/10 text-accent-green dark:bg-accent-green/20`;
-    case "Revogado/Cancelado":
-      return `${base} bg-accent-red/10 text-accent-red dark:bg-accent-red/20`;
-    default:
-      return `${base} bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-secondary`;
-  }
+  const normalized = String(situacao).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+  if (normalized.includes('aberto') || normalized.includes('publicado'))
+    return `${base} bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20`;
+  if (normalized.includes('pesquisa') || normalized.includes('aguardando') || normalized.includes('contratacao'))
+    return `${base} bg-accent-yellow/10 text-accent-yellow dark:bg-accent-yellow/20`;
+  if (normalized.includes('homologado') || normalized.includes('adjudicado'))
+    return `${base} bg-accent-green/10 text-accent-green dark:bg-accent-green/20`;
+  if (normalized.includes('cancelado') || normalized.includes('revogado') || normalized.includes('fracassado') || normalized.includes('deserto'))
+    return `${base} bg-accent-red/10 text-accent-red dark:bg-accent-red/20`;
+    
+  return `${base} bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-secondary`;
 };
 
-// Resolve label a partir de value/label/code vindos do backend
+// Resolve label a partir de value/label/code
 const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
-  // Tenta por 'label' que já veio:
-  const byLabel = fromCode(options, fallbackLabel);
-  if (byLabel) return byLabel.label;
+  // Tenta encontrar pelo code ou value
+  const found = fromCode(options, codeOrLabel);
+  if (found) return found.label;
 
-  // Tenta pelo code/value:
-  const byCode = fromCode(options, codeOrLabel);
-  if (byCode) return byCode.label;
-
-  // Fallback: o que veio do backend (ex.: já em português)
+  // Fallback para string
+  if (fallbackLabel && typeof fallbackLabel === 'string' && fallbackLabel.length > 2) {
+      return fallbackLabel;
+  }
   return fallbackLabel || "";
 };
 
-// Achata o AMPARO_LEGAL para procurar por code numérico (ex.: 301)
-const flattenAmparo = () => {
-  const flat = [];
-  Object.values(AMPARO_LEGAL).forEach((val) => {
-    if (Array.isArray(val)) {
-      flat.push(...val);
-    } else if (val && typeof val === "object") {
-      Object.values(val).forEach((arr) => {
-        if (Array.isArray(arr)) flat.push(...arr);
-      });
-    }
-  });
-  return flat;
-};
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Componente Principal                                                      */
+/* ────────────────────────────────────────────────────────────────────────── */
 
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Subcomponentes                                                            */
-/* ────────────────────────────────────────────────────────────────────────── */
 const InfoPill = React.memo(({ label, value }) => (
   <div className="flex flex-col" style={{ minWidth: 0 }}>
     <span className="text-xs font-medium text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
@@ -148,7 +128,9 @@ const SituacaoBadge = React.memo(({ situacao }) => {
       </Ellipsize>
     </div>
   );
-});export default function ProcessHeader({
+});
+
+export default function ProcessHeader({
   formData = {},
   entidadeNome,
   orgaoNome,
@@ -167,136 +149,59 @@ const SituacaoBadge = React.memo(({ situacao }) => {
     formData?.orgao_obj?.nome ||
     "";
 
-  // Modalidade (usa code ou texto e resolve label oficial)
+  // Labels Resolvidos
   const modalidadeLabel = useMemo(
-    () =>
-      resolveLabel(
-        MODALIDADES,
-        formData?.modalidade_code || formData?.modalidade,
-        formData?.modalidade
-      ),
-    [formData?.modalidade_code, formData?.modalidade]
+    () => resolveLabel(MODALIDADES, formData?.modalidade),
+    [formData?.modalidade]
   );
 
-  // Classificação
   const classificacaoLabel = useMemo(
-    () =>
-      resolveLabel(
-        CLASSIFICACOES,
-        formData?.classificacao_code || formData?.classificacao,
-        formData?.classificacao
-      ),
-    [formData?.classificacao_code, formData?.classificacao]
+    () => resolveLabel(CLASSIFICACOES, formData?.classificacao),
+    [formData?.classificacao]
   );
 
-  // Situação
   const situacaoLabel = useMemo(
-    () =>
-      resolveLabel(
-        SITUACOES,
-        formData?.situacao_code || formData?.situacao,
-        formData?.situacao
-      ),
-    [formData?.situacao_code, formData?.situacao]
+    () => resolveLabel(SITUACOES, formData?.situacao),
+    [formData?.situacao]
   );
 
-  // Tipo de organização (Item / Lote)
   const organizacaoLabel = useMemo(
-    () =>
-      resolveLabel(
-        ORGANIZACOES,
-        formData?.tipo_organizacao_code || formData?.tipo_organizacao,
-        formData?.tipo_organizacao
-      ),
-    [formData?.tipo_organizacao_code, formData?.tipo_organizacao]
+    () => resolveLabel(ORGANIZACOES, formData?.tipo_organizacao),
+    [formData?.tipo_organizacao]
   );
 
-  // Modo de disputa (abreto / fechado / aberto_e_fechado)
   const modoDisputaLabel = useMemo(
-    () =>
-      resolveLabel(
-        MODO_DISPUTA,
-        formData?.modo_disputa_id || formData?.modo_disputa,
-        formData?.modo_disputa
-      ),
-    [formData?.modo_disputa_id, formData?.modo_disputa]
+    () => resolveLabel(MODO_DISPUTA, formData?.modo_disputa),
+    [formData?.modo_disputa]
   );
 
-  // Critério de julgamento (menor_preco / maior_desconto)
   const criterioJulgamentoLabel = useMemo(
-    () =>
-      resolveLabel(
-        CRITERIO_JULGAMENTO,
-        formData?.criterio_julgamento_id || formData?.criterio_julgamento,
-        formData?.criterio_julgamento
-      ),
-    [formData?.criterio_julgamento_id, formData?.criterio_julgamento]
+    () => resolveLabel(CRITERIO_JULGAMENTO, formData?.criterio_julgamento),
+    [formData?.criterio_julgamento]
   );
 
-  // Fundamentação (lei_14133 / lei_8666 / lei_10520)
-  const fundamentacaoLabel = useMemo(() => {
-    const value = toCode(FUNDAMENTACOES, formData?.fundamentacao);
-    const found = fromCode(FUNDAMENTACOES, value);
-    return found?.label || formData?.fundamentacao || "";
-  }, [formData?.fundamentacao]);
+  // Amparo Legal - Busca direta na lista plana
+  const amparoLegalLabel = useMemo(
+    () => resolveLabel(AMPARO_LEGAL, formData?.amparo_legal),
+    [formData?.amparo_legal]
+  );
 
-  // Amparo legal – compatível com Excel + backend
-  const amparoLegalLabel = useMemo(() => {
-    // 1) normaliza fundamentação e modalidade para o value interno
-    const fundVal = toCode(FUNDAMENTACOES, formData?.fundamentacao);
-    const modVal = toCode(
-      MODALIDADES,
-      formData?.modalidade_code || formData?.modalidade
-    );
-
-    if (fundVal && modVal) {
-      // 2) pega as opções de amparo válidas pra (lei + modalidade)
-      const opts = getAmparoOptions(fundVal, modVal);
-      if (opts && opts.length) {
-        // 3) tenta normalizar o que veio do backend (value, label ou id)
-        const amparoValue = toCode(
-          opts,
-          formData?.amparo_legal || formData?.amparo_legal_id
-        );
-        if (amparoValue) {
-          const found = fromCode(opts, amparoValue);
-          if (found) return found.label;
-        }
-      }
-    }
-
-    // 4) Fallback: procura no AMPARO_LEGAL “achado”
-    const flat = flattenAmparo();
-
-    // por id numérico
-    const fromId = fromCode(flat, formData?.amparo_legal_id);
-    if (fromId) return fromId.label;
-
-    // por value/label texto
-    const fromVal = fromCode(flat, formData?.amparo_legal);
-    if (fromVal) return fromVal.label;
-
-    // último recurso: o texto bruto
-    return formData?.amparo_legal || "";
-  }, [
-    formData?.fundamentacao,
-    formData?.modalidade_code,
-    formData?.modalidade,
-    formData?.amparo_legal,
-    formData?.amparo_legal_id,
-  ]);
-
-  const registroPrecos =
-    formData?.registro_precos ?? formData?.registro_preco ?? false;
-
+  // Lógica de Sigla e Certame
   const { siglaModalidade, numeroCertame, anoCertame } = useMemo(() => {
-    const [num, ano] = formData?.numero_certame?.split("/") || [];
+    // Pega o 'value' (ex: pregao_eletronico) a partir do code (6)
+    const modalidadeValue = toCode(MODALIDADES, formData?.modalidade);
+    const sigla = modalidadeSiglaMap[modalidadeValue] || "";
+
+    const [num, ano] = formData?.numero_certame ? String(formData.numero_certame).split("/") : [];
+    
     return {
       numeroCertame: num,
       anoCertame: ano || new Date().getFullYear(),
-      siglaModalidade: modalidadeMap[modalidadeLabel]?.sigla || "",
+      siglaModalidade: sigla,
     };
-  }, [formData?.numero_certame, modalidadeLabel]);
+  }, [formData?.numero_certame, formData?.modalidade]);
+
+  const registroPrecos = formData?.registro_precos ?? formData?.registro_preco ?? false;
 
   const cadastroFormatado = useMemo(
     () => formatDateExact(formData?.data_processo, { showTime: false }),
@@ -328,7 +233,6 @@ const SituacaoBadge = React.memo(({ situacao }) => {
       tipo_organizacao_label: organizacaoLabel,
       modo_disputa_label: modoDisputaLabel,
       criterio_julgamento_label: criterioJulgamentoLabel,
-      fundamentacao_label: fundamentacaoLabel,
       amparo_legal_label: amparoLegalLabel,
     });
   };
@@ -415,7 +319,6 @@ const SituacaoBadge = React.memo(({ situacao }) => {
 
         {/* Dados Gerais */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-2 pt-4 border-t border-slate-200 dark:border-dark-border">
-          <InfoPill label="Fundamentação" value={fundamentacaoLabel} />
           <InfoPill label="Amparo Legal" value={amparoLegalLabel} />
           <InfoPill label="Classificação" value={classificacaoLabel} />
           <InfoPill label="Modo de Disputa" value={modoDisputaLabel} />

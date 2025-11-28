@@ -1,59 +1,14 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
-import {
-  MODALIDADES,
-  CLASSIFICACOES,
-  FUNDAMENTACOES,
-  ORGANIZACOES,
-  SITUACOES,
-  MODO_DISPUTA,
-  CRITERIO_JULGAMENTO,
-  AMPARO_LEGAL,
-  getAmparoOptions,
-} from "../utils/constantes";
 
+// Estilos
 const INPUT_STYLE =
-  "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]";
+  "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] disabled:bg-gray-100 disabled:text-gray-400";
 const LABEL_STYLE =
   "text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase";
 
 const asStr = (v) => (v == null ? "" : String(v));
-
-const normalizeSelectValue = (incoming, list) => {
-  if (!incoming) return "";
-  const s = String(incoming);
-  if (!Array.isArray(list)) return s;
-  const found =
-    list.find((o) => o.value === s) ||
-    list.find((o) => o.label === s) ||
-    list.find((o) => String(o.code) === s);
-  return found ? found.value : s;
-};
-
-const pickFromId = (formData, name, idField, list) => {
-  const v = formData?.[name];
-  if (v) return normalizeSelectValue(v, list);
-  const id = formData?.[idField];
-  if (id != null) {
-    const found = (list || []).find((opt) => String(opt.code) === String(id));
-    return found ? found.value : "";
-  }
-  return "";
-};
-
-const inferFundamentacaoFromAmparo = (amparoId, AMPARO_LEGAL) => {
-  if (!amparoId) return "";
-  const id = String(amparoId);
-  if ((AMPARO_LEGAL.lei_8666 || []).some((a) => String(a.code) === id))
-    return "lei_8666";
-  if ((AMPARO_LEGAL.lei_10520 || []).some((a) => String(a.code) === id))
-    return "lei_10520";
-  for (const arr of Object.values(AMPARO_LEGAL.lei_14133 || {})) {
-    if ((arr || []).some((a) => String(a.code) === id)) return "lei_14133";
-  }
-  return "";
-};
 
 export default function DadosGeraisForm({
   formData,
@@ -67,11 +22,46 @@ export default function DadosGeraisForm({
   const api = useAxios();
   const { showToast } = useToast();
 
-  const entidadeSel = asStr(formData?.entidade);
-  const orgaoSel = asStr(formData?.orgao);
+  const [sysOptions, setSysOptions] = useState({
+    modalidades: [],
+    modos_disputa: [],
+    instrumentos_convocatorios: [],
+    criterios_julgamento: [],
+    amparos_legais: [],      
+    situacoes_processo: [],
+    tipos_organizacao: [],
+    
+    // Mapa de dependência vindo do Backend
+    mapa_modalidade_amparo: {},
+    
+    classificacoes: [
+        { id: "Compras", label: "Compras" },
+        { id: "Serviços Comuns", label: "Serviços Comuns" },
+        { id: "Obras Comuns", label: "Obras Comuns" },
+        { id: "Serviços de Engenharia", label: "Serviços de Engenharia" }
+    ]
+  });
 
   const [orgaosList, setOrgaosList] = useState([]);
   const [loadingOrgaos, setLoadingOrgaos] = useState(false);
+
+  // Carrega constantes
+  useEffect(() => {
+    const fetchConstantes = async () => {
+      try {
+        const res = await api.get("/constantes/sistema/");
+        setSysOptions(prev => ({ ...prev, ...res.data }));
+      } catch (error) {
+        console.error("Erro ao carregar constantes", error);
+        showToast("Erro ao carregar listas do sistema.", "error");
+      }
+    };
+    fetchConstantes();
+  }, [api, showToast]);
+
+  // Carrega Órgãos
+  const entidadeSel = asStr(formData?.entidade);
+  const orgaoSel = asStr(formData?.orgao);
 
   const fetchOrgaos = useCallback(
     async (entidadeId) => {
@@ -87,7 +77,7 @@ export default function DadosGeraisForm({
         setOrgaosList(Array.isArray(res.data) ? res.data : []);
       } catch {
         setOrgaosList([]);
-        showToast("Erro ao carregar órgãos da entidade selecionada.", "error");
+        showToast("Erro ao carregar órgãos.", "error");
       } finally {
         setLoadingOrgaos(false);
       }
@@ -100,8 +90,32 @@ export default function DadosGeraisForm({
     else setOrgaosList([]);
   }, [entidadeSel, fetchOrgaos]);
 
+  // =========================================================
+  // LÓGICA DE FILTRAGEM (MODALIDADE -> AMPARO)
+  // =========================================================
+
+  const amparosFiltrados = useMemo(() => {
+    const modalidadeId = formData?.modalidade;
+    const mapa = sysOptions.mapa_modalidade_amparo;
+
+    if (!modalidadeId || !mapa) return [];
+
+    const amparosPermitidos = mapa[modalidadeId] || [];
+
+    return sysOptions.amparos_legais.filter(amp => 
+      amparosPermitidos.includes(amp.id)
+    );
+  }, [formData?.modalidade, sysOptions]);
+
+
+  // =========================================================
+  // HANDLERS
+  // =========================================================
+
   const handleChangeLocal = (e) => {
     const { name, value } = e.target;
+    
+    // Entidade -> Limpa Órgão
     if (name === "entidade") {
       const newEnt = asStr(value);
       if (newEnt !== entidadeSel) {
@@ -112,42 +126,22 @@ export default function DadosGeraisForm({
       }
       return;
     }
+
+    // Modalidade -> Limpa Amparo
+    if (name === "modalidade") {
+        onChange(e); 
+        onChange({ target: { name: "amparo_legal", value: "" } }); 
+        return;
+    }
+
+    // Converter Select de SRP em booleano
+    if (name === "registro_preco") {
+        onChange({ target: { name, value: value === 'true' } });
+        return;
+    }
+
     onChange(e);
   };
-
-  const modalidadeVal = pickFromId(formData, "modalidade", "modalidade_id", MODALIDADES);
-  const classificacaoVal = normalizeSelectValue(formData?.classificacao, CLASSIFICACOES);
-
-  let fundamentacaoVal = normalizeSelectValue(formData?.fundamentacao, FUNDAMENTACOES);
-  if (!fundamentacaoVal) {
-    fundamentacaoVal =
-      pickFromId(formData, "fundamentacao", "fundamentacao_id", FUNDAMENTACOES) ||
-      inferFundamentacaoFromAmparo(formData?.amparo_legal_id, AMPARO_LEGAL);
-  }
-
-  const amparoOptions = useMemo(
-    () => getAmparoOptions(fundamentacaoVal, modalidadeVal),
-    [fundamentacaoVal, modalidadeVal]
-  );
-
-  const amparoLegalVal = (() => {
-    const v = normalizeSelectValue(formData?.amparo_legal, amparoOptions);
-        console.log( `entrou no amparo legal val ${v}` )
-    if (v) return v;
-    const id = formData?.amparo_legal_id;
-    if (id != null) {
-      const found = (amparoOptions || []).find((a) => String(a.code) === String(id));
-          console.log( `valor de found ${found}` )
-      return found ? found.value : "";
-    }
-    console.log( `valor de const v ${v}` )
-    return "";
-  })();
-
-  const modoDisputaVal = pickFromId(formData, "modo_disputa", "modo_disputa_id", MODO_DISPUTA);
-  const criterioJulgVal = pickFromId(formData, "criterio_julgamento", "criterio_julgamento_id", CRITERIO_JULGAMENTO);
-  const organizacaoVal = normalizeSelectValue(formData?.tipo_organizacao, ORGANIZACOES);
-  const situacaoVal = normalizeSelectValue(formData?.situacao, SITUACOES);
 
   const orgaosDaEntidade = useMemo(() => {
     if (!entidadeSel) return [];
@@ -156,7 +150,8 @@ export default function DadosGeraisForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      {/* LINHA 1 */}
+      
+      {/* LINHA 1: Objeto e Dados Cadastrais Básicos */}
       <div className="grid lg:grid-cols-2 gap-4">
         <div>
           <label className={LABEL_STYLE}>Objeto *</label>
@@ -204,7 +199,7 @@ export default function DadosGeraisForm({
             <input
               name="data_abertura"
               type="datetime-local"
-              value={formData?.data_abertura ? formData.data_abertura.substring(0, 16) : ""}
+              value={formData?.data_abertura ? String(formData.data_abertura).substring(0, 16) : ""}
               onChange={handleChangeLocal}
               className={INPUT_STYLE}
             />
@@ -212,146 +207,155 @@ export default function DadosGeraisForm({
         </div>
       </div>
 
-      {/* LINHA 2 */}
+      {/* LINHA 2: Modalidade, Amparo, Classificação, SRP */}
       <div className="grid md:grid-cols-4 gap-4">
+        {/* Modalidade */}
         <div>
-          <label className={LABEL_STYLE}>Modalidade *</label>
+          <label className={LABEL_STYLE}>Modalidade (PNCP) *</label>
           <select
             name="modalidade"
-            value={modalidadeVal}
+            value={formData?.modalidade || ""}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
           >
             <option value="">Selecione...</option>
-            {MODALIDADES.map((m) => (
-              <option key={m.code} value={m.value}>{m.label}</option>
+            {sysOptions.modalidades.map((m) => (
+              <option key={m.id} value={m.id}>{m.label}</option>
             ))}
           </select>
         </div>
+
+        {/* Amparo Legal */}
+        <div>
+          <label className={LABEL_STYLE}>Amparo Legal (Artigo) *</label>
+          <select
+            name="amparo_legal"
+            value={formData?.amparo_legal || ""}
+            onChange={handleChangeLocal}
+            className={INPUT_STYLE}
+            required
+            disabled={!formData?.modalidade}
+          >
+            <option value="">
+                {!formData?.modalidade 
+                    ? "Selecione a Modalidade" 
+                    : amparosFiltrados.length === 0 
+                        ? "Nenhum artigo disp." 
+                        : "Selecione..."}
+            </option>
+            {amparosFiltrados.map((a) => (
+              <option key={a.id} value={a.id}>{a.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Classificação */}
         <div>
           <label className={LABEL_STYLE}>Classificação *</label>
           <select
             name="classificacao"
-            value={classificacaoVal}
+            value={formData?.classificacao || ""}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
           >
             <option value="">Selecione...</option>
-            {CLASSIFICACOES.map((c) => (
-              <option key={c.code} value={c.value}>{c.label}</option>
+            {sysOptions.classificacoes.map((c) => (
+              <option key={c.id} value={c.id}>{c.label}</option>
             ))}
           </select>
         </div>
+
+        {/* Registro de Preço (Select) */}
         <div>
-          <label className={LABEL_STYLE}>Fundamentação *</label>
+          <label className={LABEL_STYLE}>É Registro de Preço (SRP)?</label>
           <select
-            name="fundamentacao"
-            value={fundamentacaoVal}
+            name="registro_preco"
+            value={formData?.registro_preco ? "true" : "false"}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
-            required
           >
-            <option value="">Selecione...</option>
-            {FUNDAMENTACOES.map((f) => (
-              <option key={f.code} value={f.value}>{f.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className={LABEL_STYLE}>Amparo Legal *</label>
-          <select
-            name="amparo_legal"
-            value={amparoLegalVal}
-            onChange={handleChangeLocal}
-            className={INPUT_STYLE}
-            required
-            disabled={!fundamentacaoVal}
-          >
-            <option value="">Selecione...</option>
-            {amparoOptions.map((a) => (
-              <option key={a.code} value={a.value}>{a.label}</option>
-            ))}
+            <option value="false">Não</option>
+            <option value="true">Sim</option>
           </select>
         </div>
       </div>
 
-      {/* LINHA 3 */}
-      <div className="grid md:grid-cols-5 gap-4">
+      {/* LINHA 3: Organização, Disputa, Critério, Instrumento */}
+      <div className="grid md:grid-cols-4 gap-4">
+        {/* Organização */}
+        <div>
+            <label className={LABEL_STYLE}>Organização *</label>
+            <select
+            name="tipo_organizacao"
+            value={formData?.tipo_organizacao || ""}
+            onChange={handleChangeLocal}
+            className={INPUT_STYLE}
+            required
+            >
+            <option value="">Selecione...</option>
+            {sysOptions.tipos_organizacao.map((o) => (
+                <option key={o.id} value={o.id}>{o.label}</option>
+            ))}
+            </select>
+        </div>
+
+        {/* Modo de Disputa */}
         <div>
           <label className={LABEL_STYLE}>Modo de Disputa *</label>
           <select
             name="modo_disputa"
-            value={modoDisputaVal}
+            value={formData?.modo_disputa || ""}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
           >
             <option value="">Selecione...</option>
-            {MODO_DISPUTA.map((m) => (
-              <option key={m.code} value={m.value}>{m.label}</option>
+            {sysOptions.modos_disputa.map((m) => (
+              <option key={m.id} value={m.id}>{m.label}</option>
             ))}
           </select>
         </div>
+        
+        {/* Critério de Julgamento */}
         <div>
           <label className={LABEL_STYLE}>Critério de Julgamento *</label>
           <select
             name="criterio_julgamento"
-            value={criterioJulgVal}
+            value={formData?.criterio_julgamento || ""}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
           >
             <option value="">Selecione...</option>
-            {CRITERIO_JULGAMENTO.map((c) => (
-              <option key={c.code} value={c.value}>{c.label}</option>
+            {sysOptions.criterios_julgamento.map((c) => (
+              <option key={c.id} value={c.id}>{c.label}</option>
             ))}
           </select>
         </div>
+
+        {/* Instrumento Convocatório */}
         <div>
-          <label className={LABEL_STYLE}>Organização *</label>
-          <select
-            name="tipo_organizacao"
-            value={organizacaoVal}
+            <label className={LABEL_STYLE}>Instrumento Convocatório *</label>
+            <select
+            name="instrumento_convocatorio"
+            value={formData?.instrumento_convocatorio || ""}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
-          >
+            >
             <option value="">Selecione...</option>
-            {ORGANIZACOES.map((o) => (
-              <option key={o.code} value={o.value}>{o.label}</option>
+            {sysOptions.instrumentos_convocatorios.map((f) => (
+                <option key={f.id} value={f.id}>{f.label}</option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className={LABEL_STYLE}>Valor de Referência (R$)</label>
-          <input
-            name="valor_referencia"
-            type="number"
-            step="0.01"
-            value={formData?.valor_referencia ?? ""}
-            onChange={handleChangeLocal}
-            placeholder="0,00"
-            className={`${INPUT_STYLE} text-right`}
-          />
-        </div>
-        <div>
-          <label className={LABEL_STYLE}>Vigência (Meses) *</label>
-          <input
-            name="vigencia_meses"
-            type="number"
-            min="1"
-            value={formData?.vigencia_meses ?? ""}
-            onChange={handleChangeLocal}
-            placeholder="12"
-            className={`${INPUT_STYLE} text-center`}
-          />
+            </select>
         </div>
       </div>
 
-      {/* LINHA 4 */}
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* LINHA 4: Entidade, Órgão, Valor, Vigência, Situação */}
+      <div className="grid md:grid-cols-5 gap-4">
+        {/* Entidade */}
         <div>
           <label className={LABEL_STYLE}>Entidade *</label>
           <select
@@ -367,6 +371,8 @@ export default function DadosGeraisForm({
             ))}
           </select>
         </div>
+        
+        {/* Órgão */}
         <div>
           <label className={LABEL_STYLE}>Órgão *</label>
           <select
@@ -389,17 +395,47 @@ export default function DadosGeraisForm({
             ))}
           </select>
         </div>
+
+        {/* Valor de Referência */}
+        <div>
+          <label className={LABEL_STYLE}>Valor de Referência (R$)</label>
+          <input
+            name="valor_referencia"
+            type="number"
+            step="0.01"
+            value={formData?.valor_referencia ?? ""}
+            onChange={handleChangeLocal}
+            placeholder="0,00"
+            className={`${INPUT_STYLE} text-right`}
+          />
+        </div>
+        
+        {/* Vigência */}
+        <div>
+          <label className={LABEL_STYLE}>Vigência (Meses) *</label>
+          <input
+            name="vigencia_meses"
+            type="number"
+            min="1"
+            value={formData?.vigencia_meses ?? ""}
+            onChange={handleChangeLocal}
+            placeholder="12"
+            className={`${INPUT_STYLE} text-center`}
+          />
+        </div>
+
+        {/* Situação */}
         <div>
           <label className={LABEL_STYLE}>Situação *</label>
           <select
             name="situacao"
-            value={situacaoVal}
+            value={formData?.situacao || ""}
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
           >
-            {SITUACOES.map((s) => (
-              <option key={s.code} value={s.value}>{s.label}</option>
+             {sysOptions.situacoes_processo.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
             ))}
           </select>
         </div>

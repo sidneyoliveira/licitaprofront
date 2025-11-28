@@ -1,10 +1,33 @@
-// frontend/src/components/ProcessoCard.jsx
+// src/components/ProcessoCard.jsx
 
 import React, { useMemo, useCallback } from 'react';
 import { Download, Eye, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  MODALIDADES,
+  SITUACOES,
+  fromCode,
+  toCode
+} from "../utils/constantes";
 
-// --- Utilitário de truncamento (CSS puro) ---
+// --- Utils ---
+
+// Mapa de Siglas padronizado com o Backend
+const modalidadeSiglaMap = {
+  pregao_eletronico: "PE",
+  pregao_presencial: "PP",
+  concorrencia_eletronica: "CE",
+  concorrencia_presencial: "CP",
+  dispensa_eletronica: "DE",
+  dispensa_licitacao: "DL",
+  inexigibilidade: "IN",
+  adesao_registro_precos: "ARP",
+  credenciamento: "CR",
+  leilao_eletronico: "LE",
+  leilao_presencial: "LP",
+  dialogo_competitivo: "DC",
+};
+
 const Ellipsize = ({ lines = 1, title, as: Tag = 'span', className = '', children }) => {
   const style =
     lines === 1
@@ -21,30 +44,12 @@ const Ellipsize = ({ lines = 1, title, as: Tag = 'span', className = '', childre
   );
 };
 
-// --- Constantes ---
-const modalidadeMap = {
-  'Pregão Eletrônico': { sigla: 'PE' },
-  'Concorrência Eletrônica': { sigla: 'CE' },
-  'Dispensa Eletrônica': { sigla: 'DE' },
-  'Adesão a Registro de Preços': { sigla: 'ARP' },
-  'Credenciamento': { sigla: 'CR' },
-  'Inexigibilidade Eletrônica': { sigla: 'IE' },
-};
-
-// --- Funções Utilitárias ---
-
 const formatDateExact = (iso, { showTime = true } = {}) => {
-
   if (!iso || typeof iso !== "string") return null;
-
-
   const cleaned = iso.replace(/Z$/i, "").replace(/([+-]\d{2}:?\d{2})$/i, "");
   const norm = cleaned.replace("T", " ").trim();
-
-
   const m = norm.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
   if (!m) return null;
-
   const [, yyyy, mm, dd, HH, MM] = m;
   const dateBR = `${dd}/${mm}/${yyyy}`;
   if (!showTime || !HH || !MM) return dateBR;
@@ -59,23 +64,32 @@ const formatCurrency = (value) => {
 };
 
 const getSituacaoStyle = (situacao) => {
-  const baseStyle = 'px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider';
-  switch (situacao) {
-    case 'Aberto':
-    case 'Publicado':
-      return `${baseStyle} bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-accent-blue`;
-    case 'Em Pesquisa':
-    case 'Aguardando Publicação':
-    case 'Em Contratação':
-      return `${baseStyle} bg-accent-yellow/10 text-accent-yellow dark:bg-accent-yellow/20 dark:text-accent-yellow`;
-    case 'Adjudicado/Homologado':
-      return `${baseStyle} bg-accent-green/10 text-accent-green dark:bg-accent-green/20 dark:text-accent-green`;
-    case 'Revogado/Cancelado':
-      return `${baseStyle} bg-accent-red/10 text-accent-red dark:bg-accent-red/20 dark:text-accent-red`;
-    default:
-      return `${baseStyle} bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-secondary`;
-  }
+  const base = "px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider";
+  const normalized = String(situacao || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+  if (normalized.includes('aberto') || normalized.includes('publicado'))
+    return `${base} bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-accent-blue`;
+  if (normalized.includes('pesquisa') || normalized.includes('aguardando') || normalized.includes('contratacao'))
+    return `${base} bg-accent-yellow/10 text-accent-yellow dark:bg-accent-yellow/20 dark:text-accent-yellow`;
+  if (normalized.includes('homologado') || normalized.includes('adjudicado'))
+    return `${base} bg-accent-green/10 text-accent-green dark:bg-accent-green/20 dark:text-accent-green`;
+  if (normalized.includes('cancelado') || normalized.includes('revogado') || normalized.includes('fracassado') || normalized.includes('deserto'))
+    return `${base} bg-accent-red/10 text-accent-red dark:bg-accent-red/20 dark:text-accent-red`;
+    
+  return `${base} bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-secondary`;
 };
+
+// Resolve label a partir de value/label/code
+const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
+  const found = fromCode(options, codeOrLabel);
+  if (found) return found.label;
+  if (fallbackLabel && typeof fallbackLabel === 'string' && fallbackLabel.length > 2) {
+      return fallbackLabel;
+  }
+  return fallbackLabel || "";
+};
+
+// --- Subcomponentes ---
 
 const InfoPill = React.memo(({ label, value }) => (
   <div className="flex flex-col" style={{ minWidth: 0 }}>
@@ -121,7 +135,6 @@ const IconButton = React.memo(({ icon: Icon, label, onClick, variant = 'default'
         onClick?.(e);
       }}
       onAuxClick={(e) => {
-        // bloqueia clique do meio (abre nova aba)
         e.preventDefault();
         e.stopPropagation();
       }}
@@ -138,16 +151,30 @@ const IconButton = React.memo(({ icon: Icon, label, onClick, variant = 'default'
 const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => {
   const navigate = useNavigate();
 
-  // 1. Memoização de Valores Derivados
+  // 1. Resolve Labels e Siglas
+  const modalidadeLabel = useMemo(
+    () => resolveLabel(MODALIDADES, processo?.modalidade),
+    [processo?.modalidade]
+  );
+
+  const situacaoLabel = useMemo(
+    () => resolveLabel(SITUACOES, processo?.situacao),
+    [processo?.situacao]
+  );
+
   const { anoCertame, numeroCertame, siglaModalidade } = useMemo(() => {
-    const [num, ano] = processo?.numero_certame?.split('/') || [];
+    const modalidadeValue = toCode(MODALIDADES, processo?.modalidade);
+    const sigla = modalidadeSiglaMap[modalidadeValue] || "";
+    
+    const [num, ano] = String(processo?.numero_certame || "").split('/');
     return {
       anoCertame: ano || new Date().getFullYear(),
       numeroCertame: num,
-      siglaModalidade: modalidadeMap[processo?.modalidade]?.sigla || '',
+      siglaModalidade: sigla,
     };
   }, [processo?.numero_certame, processo?.modalidade]);
 
+  // 2. Formatação de Dados
   const aberturaFormatada = useMemo(
     () => formatDateExact(processo?.data_abertura, { showTime: true }),
     [processo?.data_abertura]
@@ -163,11 +190,10 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
     [processo?.valor_referencia]
   );
 
-  // 2. Handlers
+  // 3. Handlers
   const handleView = useCallback((e) => {
     e?.preventDefault();
     e?.stopPropagation();
-    // Se o pai passar onView que faz window.open, NÃO chamamos aqui
     navigate(`/processos/${processo?.id ?? ''}`, {
       state: { processo, processoId: processo?.id ?? null },
       replace: false,
@@ -191,7 +217,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
     const values = [
       processo?.numero_processo || '',
       processo?.numero_certame || '',
-      processo?.modalidade || '',
+      modalidadeLabel || '',
       processo?.classificacao || '',
       `"${(processo?.objeto || '').replace(/"/g, '""')}"`,
       processo?.secretaria || '',
@@ -201,7 +227,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
       aberturaFormatada || '',
       processo?.registro_precos ? 'Sim' : 'Não',
       valorPrevisto || '',
-      processo?.situacao || ''
+      situacaoLabel || ''
     ];
 
     const csvContent = '\uFEFF' + [headers.join(';'), values.join(';')].join('\n');
@@ -213,9 +239,9 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
     link.click();
     document.body.removeChild(link);
     onExport?.(processo);
-  }, [processo, cadastroFormatado, aberturaFormatada, valorPrevisto, onExport]);
+  }, [processo, modalidadeLabel, situacaoLabel, cadastroFormatado, aberturaFormatada, valorPrevisto, onExport]);
 
-  // 3. Renderização
+  // 4. Renderização
   return (
     <div className="flex flex-col bg-white dark:bg-dark-bg-primary rounded-lg shadow-sm overflow-hidden">
       {/* Cabeçalho */}
@@ -269,9 +295,9 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
             lines={1}
             as="h3"
             className="text-xl font-bold text-slate-900 dark:text-dark-text-primary"
-            title={processo?.modalidade}
+            title={modalidadeLabel}
           >
-            {processo?.modalidade || 'Modalidade não informada'}
+            {modalidadeLabel || 'Modalidade não informada'}
           </Ellipsize>
 
           {numeroCertame && (
@@ -296,7 +322,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
           <InfoPill label="Data do Certame" value={aberturaFormatada} />
           <InfoPill label="Registro de Preços" value={processo?.registro_precos ? 'Sim' : 'Não'} />
           <InfoPill label="Valor de Referência" value={valorPrevisto || 'Não informado'} />
-          <SituacaoBadge situacao={processo?.situacao} />
+          <SituacaoBadge situacao={situacaoLabel} />
         </div>
       </div>
     </div>
