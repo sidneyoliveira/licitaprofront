@@ -41,54 +41,71 @@ const Login = () => {
 
   // ======= INICIALIZA O GOOGLE SIGN-IN =======
   useEffect(() => {
-    if (!googleClientId) return;
+    let intervalId;
 
-    const initializeGoogle = () => {
+    const checkGoogleLibrary = () => {
+      // 1. Verifica se a biblioteca já carregou
       if (window.google?.accounts?.id) {
-
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleGoogleCallback,
-          ux_mode: "popup",
-          auto_select: false,
-          use_fedcm_for_prompt: false,
-        });
+        
+        clearInterval(intervalId); // Para o loop imediatamente
 
         const buttonDiv = document.getElementById("googleSignInDiv");
+        
         if (buttonDiv) {
+          try {
+            // LIMPEZA: Remove qualquer botão antigo antes de criar um novo
+            buttonDiv.innerHTML = ''; 
 
-          buttonDiv.style.display = "flex";
-          buttonDiv.style.justifyContent = "center";
+            // Inicializa com as configurações
+            window.google.accounts.id.initialize({
+              client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID, 
+              callback: handleGoogleCallback,
+              ux_mode: "popup",
+              auto_select: false,
+              use_fedcm_for_prompt: false,
+            });
 
-          window.google.accounts.id.renderButton(buttonDiv, {
-            theme: "outline",
-            size: "large",
-            shape: "pill",
-            width: 400,
-          });
+            // Ajusta o estilo e Renderiza
+            buttonDiv.style.display = "flex";
+            buttonDiv.style.justifyContent = "center";
+            
+            window.google.accounts.id.renderButton(buttonDiv, {
+              theme: "outline",
+              size: "large",
+              shape: "pill",
+              width: 400,
+            });
 
-          // Corrige visualmente o tamanho total via CSS (força 100%)
-          const googleButton = buttonDiv.querySelector("div[role='button']");
-          if (googleButton) {
-            googleButton.style.justifyContent = "center";
+          } catch (error) {
+            console.error("Erro ao renderizar botão Google:", error);
           }
         }
+        return true; 
       }
+      return false;
     };
 
-    // Garante que o script esteja carregado
-    if (!window.google) {
+    // 2. Injeta o script apenas se não existir
+    const scriptUrl = "https://accounts.google.com/gsi/client";
+    if (!document.querySelector(`script[src="${scriptUrl}"]`)) {
       const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
+      script.src = scriptUrl;
       script.async = true;
       script.defer = true;
-      script.onload = initializeGoogle;
       document.body.appendChild(script);
-    } else {
-      initializeGoogle();
     }
-  }, []);
 
+    // 3. Tenta rodar a primeira vez; se falhar, inicia o loop
+    if (!checkGoogleLibrary()) {
+      intervalId = setInterval(checkGoogleLibrary, 100);
+    }
+
+    // 4. Cleanup: Garante que o intervalo pare se sair da tela
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [handleGoogleCallback]);
+  
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       {/* ==== COLUNA ESQUERDA ==== */}
