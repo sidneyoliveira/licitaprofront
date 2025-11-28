@@ -39,6 +39,7 @@ export const AuthProvider = ({ children }) => {
   );
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [googleClientId, setGoogleClientId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -181,6 +182,21 @@ export const AuthProvider = ({ children }) => {
     };
   }, [authTokens, fetchUserData, refreshAccessToken, clearSession, navigate]);
 
+  // Adicione este useEffect para buscar a config ao carregar a página
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        // Usa a axiosPublic que já está configurada com a Base URL
+        const response = await axiosPublic.get('/system/config/');
+        setGoogleClientId(response.data.google_client_id);
+        console.log("Configuração carregada:", response.data);
+      } catch (error) {
+        console.error("Erro ao carregar configurações do servidor:", error);
+      }
+    };
+    fetchConfig();
+  }, []);
+
   const contextData = useMemo(
     () => ({
       initializing,
@@ -195,6 +211,7 @@ export const AuthProvider = ({ children }) => {
       ensureAccess,
       authorizedHeaders,
       refreshAccessToken,
+      googleClientId,
     }),
     [
       initializing,
@@ -207,6 +224,7 @@ export const AuthProvider = ({ children }) => {
       ensureAccess,
       authorizedHeaders,
       refreshAccessToken,
+      googleClientId
     ]
   );
 

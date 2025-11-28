@@ -10,7 +10,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { loginUser, loginWithGoogle } = useContext(AuthContext);
+  const { loginUser, loginWithGoogle, googleClientId } = useContext(AuthContext);
   const { showToast } = useToast();
 
   // ======= LOGIN NORMAL =======
@@ -41,11 +41,13 @@ const Login = () => {
 
   // ======= INICIALIZA O GOOGLE SIGN-IN =======
   useEffect(() => {
+    if (!googleClientId) return;
+
     const initializeGoogle = () => {
       if (window.google?.accounts?.id) {
 
         window.google.accounts.id.initialize({
-          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+          client_id: googleClientId,
           callback: handleGoogleCallback,
           ux_mode: "popup",
           auto_select: false,
