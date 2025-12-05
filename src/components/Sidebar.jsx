@@ -18,7 +18,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
 
       {/* Sidebar principal */}
       <aside
-        className={`fixed z-50 top-0 left-0 h-full bg-white dark:bg-dark-bg-secondary transform transition-transform duration-300 ease-in-out
+        className={`fixed z-30 top-0 left-0 h-full bg-white dark:bg-dark-bg-secondary transform transition-transform duration-300 ease-in-out
           ${isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
           ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"} flex flex-col`}
       >

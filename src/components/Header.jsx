@@ -1,11 +1,18 @@
 // frontend/src/components/Header.jsx
-import React, { useState, useContext, useRef, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import AuthContext from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import React, {
+  useState,
+  useContext,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+
+import AuthContext from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import Breadcrumb from "./Breadcrumb";
-import useAxios from '../hooks/useAxios';
+import useAxios from "../hooks/useAxios";
 
 import {
   Bell,
@@ -13,9 +20,7 @@ import {
   Menu,
   Sun,
   Moon,
-  Archive as ArchiveIcon,
   LogOut as LogOutIcon,
-  CheckCircle2,
   RefreshCw,
   AlertTriangle,
   Info,
@@ -23,26 +28,34 @@ import {
   UserPlus,
   Building2,
   Home,
-  CalendarClock,
   EyeOff,
-} from 'lucide-react';
+  CheckCircle2,
+} from "lucide-react";
 
-/* click outside util */
+/* =========================================================================
+ * Hook util: clique fora
+ * ========================================================================= */
 const useClickOutside = (ref, handler) => {
   useEffect(() => {
     const listener = (event) => {
       if (!ref.current || ref.current.contains(event.target)) return;
       handler(event);
     };
-    document.addEventListener('mousedown', listener);
-    return () => document.removeEventListener('mousedown', listener);
+
+    document.addEventListener("mousedown", listener);
+    return () => document.removeEventListener("mousedown", listener);
   }, [ref, handler]);
 };
 
-/* date/utils — mesmos padrões da página de Notificações */
+/* =========================================================================
+ * Utils de data (mesmos padrões da página de Notificações)
+ * ========================================================================= */
 const parseDate = (raw) => {
   if (!raw) return null;
+
+  // "YYYY-MM-DD"
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return new Date(`${raw}T00:00:00`);
+
   const d = new Date(raw);
   return Number.isNaN(d.getTime()) ? null : d;
 };
@@ -50,6 +63,7 @@ const parseDate = (raw) => {
 const formatDateTime = (iso) => {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   if (!d || Number.isNaN(d.getTime())) return "—";
+
   return d.toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -69,7 +83,9 @@ const daysDiffFromNow = (date) => {
 const relativeStr = (date) => {
   const d = parseDate(date);
   if (!d) return "—";
+
   const diff = daysDiffFromNow(d);
+
   if (diff === 0) return "hoje";
   if (diff === 1) return "amanhã";
   if (diff > 1) return `em ${diff} dias`;
@@ -88,15 +104,19 @@ const pickProcessDate = (p) => {
     "updated_at",
     "created_at",
   ];
+
   for (const k of keys) {
     if (p?.[k]) return p[k];
   }
   return null;
 };
 
+/* =========================================================================
+ * Metadados de tipos e tons de badge
+ * ========================================================================= */
 const typeMeta = {
-  processo: { icon: FilePlus2, color: "text-accent-blue", label: "Processo" },
-  usuario: { icon: UserPlus, color: "text-green-600", label: "Usuário" },
+  processo: { icon: FilePlus2, color: "text-blue-600", label: "Processo" },
+  usuario: { icon: UserPlus, color: "text-emerald-600", label: "Usuário" },
   entidade: { icon: Building2, color: "text-indigo-600", label: "Entidade" },
   orgao: { icon: Home, color: "text-amber-600", label: "Órgão" },
   alerta: { icon: AlertTriangle, color: "text-red-600", label: "Alerta" },
@@ -110,22 +130,33 @@ const badgeTone = {
   error: "bg-red-50 text-red-700 border-red-200",
 };
 
+/* =========================================================================
+ * Componente Header
+ * ========================================================================= */
 const Header = ({ toggleSidebar }) => {
   const { user, logoutUser } = useContext(AuthContext);
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const api = useAxios();
 
-  /* menus */
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  /* -----------------------------------------------------------------------
+   * Refs de menus
+   * --------------------------------------------------------------------- */
   const userMenuRef = useRef(null);
-  useClickOutside(userMenuRef, () => setUserMenuOpen(false));
-
-  const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
+
+  /* -----------------------------------------------------------------------
+   * Estado de menus
+   * --------------------------------------------------------------------- */
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  useClickOutside(userMenuRef, () => setUserMenuOpen(false));
   useClickOutside(notifRef, () => setNotifOpen(false));
 
-  /* notifs state */
+  /* -----------------------------------------------------------------------
+   * Estado de dados (notificações)
+   * --------------------------------------------------------------------- */
   const [processos, setProcessos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [entidades, setEntidades] = useState([]);
@@ -133,7 +164,9 @@ const Header = ({ toggleSidebar }) => {
   const [notifs, setNotifs] = useState([]);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
 
-  /* read map in localStorage */
+  /* -----------------------------------------------------------------------
+   * Mapa de lidas (localStorage)
+   * --------------------------------------------------------------------- */
   const [readMap, setReadMap] = useState(() => {
     try {
       const raw = localStorage.getItem("notifications_read_map");
@@ -142,11 +175,14 @@ const Header = ({ toggleSidebar }) => {
       return {};
     }
   });
+
   useEffect(() => {
     localStorage.setItem("notifications_read_map", JSON.stringify(readMap));
   }, [readMap]);
 
-  /* fetch helpers */
+  /* -----------------------------------------------------------------------
+   * Helpers de fetch
+   * --------------------------------------------------------------------- */
   const fetchArray = async (path, params = {}) => {
     try {
       const r = await api.get(path, { params });
@@ -176,21 +212,32 @@ const Header = ({ toggleSidebar }) => {
     }
   }, [api]);
 
-  /* aggregate like Notificacoes.jsx */
+  /* -----------------------------------------------------------------------
+   * Agregação de notificações (como em Notificacoes.jsx)
+   * --------------------------------------------------------------------- */
   useEffect(() => {
     const list = [];
 
     // Processos
     processos.forEach((p) => {
       const id = `proc-create-${p.id}`;
-      const when = p.updated_at || p.created_at || pickProcessDate(p) || new Date().toISOString();
+      const when =
+        p.updated_at ||
+        p.created_at ||
+        pickProcessDate(p) ||
+        new Date().toISOString();
+
       list.push({
         id,
         tipo: "processo",
-        titulo: p.objeto || p.descricao || p.numero || (p.id ? `Processo #${p.id}` : "Processo"),
-        mensagem: `Processo ${p.numero ? `#${p.numero}` : p.id ? `#${p.id}` : ""} ${
-          p.created_at ? "criado" : "atualizado"
-        }`,
+        titulo:
+          p.objeto ||
+          p.descricao ||
+          p.numero ||
+          (p.id ? `Processo #${p.id}` : "Processo"),
+        mensagem: `Processo ${
+          p.numero ? `#${p.numero}` : p.id ? `#${p.id}` : ""
+        } ${p.created_at ? "criado" : "atualizado"}`,
         data: when,
         severity: "info",
         href: p?.id ? `/processos/visualizar/${p.id}` : null,
@@ -199,6 +246,7 @@ const Header = ({ toggleSidebar }) => {
       // Alertas de certame (próximo/atrasado)
       const certame = pickProcessDate(p);
       const d = parseDate(certame);
+
       if (d) {
         const diff = daysDiffFromNow(d);
         if (diff !== null) {
@@ -206,8 +254,12 @@ const Header = ({ toggleSidebar }) => {
             list.push({
               id: `proc-alerta-${p.id}`,
               tipo: "alerta",
-              titulo: `Certame próximo ${p.numero ? `(#${p.numero})` : p.id ? `(#${p.id})` : ""}`,
-              mensagem: `Faltam ${diff === 0 ? "0" : diff} ${Math.abs(diff) === 1 ? "dia" : "dias"} para o certame (${formatDateTime(d)})`,
+              titulo: `Certame próximo ${
+                p.numero ? `(#${p.numero})` : p.id ? `(#${p.id})` : ""
+              }`,
+              mensagem: `Faltam ${diff === 0 ? "0" : diff} ${
+                Math.abs(diff) === 1 ? "dia" : "dias"
+              } para o certame (${formatDateTime(d)})`,
               data: new Date().toISOString(),
               severity: diff <= 3 ? "error" : "warning",
               href: p?.id ? `/processos/visualizar/${p.id}` : null,
@@ -216,8 +268,12 @@ const Header = ({ toggleSidebar }) => {
             list.push({
               id: `proc-atraso-${p.id}`,
               tipo: "alerta",
-              titulo: `Certame em atraso ${p.numero ? `(#${p.numero})` : p.id ? `(#${p.id})` : ""}`,
-              mensagem: `O certame passou ${Math.abs(diff)} ${Math.abs(diff) === 1 ? "dia" : "dias"} (${formatDateTime(d)})`,
+              titulo: `Certame em atraso ${
+                p.numero ? `(#${p.numero})` : p.id ? `(#${p.id})` : ""
+              }`,
+              mensagem: `O certame passou ${Math.abs(diff)} ${
+                Math.abs(diff) === 1 ? "dia" : "dias"
+              } (${formatDateTime(d)})`,
               data: new Date().toISOString(),
               severity: "error",
               href: p?.id ? `/processos/visualizar/${p.id}` : null,
@@ -234,7 +290,11 @@ const Header = ({ toggleSidebar }) => {
         id,
         tipo: "usuario",
         titulo: u.first_name || u.username || u.email || "Novo usuário",
-        mensagem: `Usuário cadastrado: ${[u.first_name, u.last_name].filter(Boolean).join(" ") || u.username || u.email}`,
+        mensagem: `Usuário cadastrado: ${
+          [u.first_name, u.last_name].filter(Boolean).join(" ") ||
+          u.username ||
+          u.email
+        }`,
         data: u.date_joined || u.created_at || new Date().toISOString(),
         severity: "success",
         href: "/usuarios",
@@ -248,7 +308,9 @@ const Header = ({ toggleSidebar }) => {
         id,
         tipo: "entidade",
         titulo: e.nome || "Nova entidade",
-        mensagem: `Entidade cadastrada${e.ano ? ` (Ano: ${e.ano})` : ""}${e.cnpj ? ` • CNPJ: ${e.cnpj}` : ""}`,
+        mensagem: `Entidade cadastrada${
+          e.ano ? ` (Ano: ${e.ano})` : ""
+        }${e.cnpj ? ` • CNPJ: ${e.cnpj}` : ""}`,
         data: e.created_at || new Date().toISOString(),
         severity: "success",
         href: "/entidades",
@@ -262,7 +324,9 @@ const Header = ({ toggleSidebar }) => {
         id,
         tipo: "orgao",
         titulo: o.nome || "Novo órgão",
-        mensagem: `Órgão cadastrado${o.codigo_unidade ? ` • Unidade: ${o.codigo_unidade}` : ""}`,
+        mensagem: `Órgão cadastrado${
+          o.codigo_unidade ? ` • Unidade: ${o.codigo_unidade}` : ""
+        }`,
         data: o.created_at || new Date().toISOString(),
         severity: "success",
         href: "/entidades",
@@ -279,14 +343,18 @@ const Header = ({ toggleSidebar }) => {
     setNotifs(sorted);
   }, [processos, usuarios, entidades, orgaos]);
 
-  /* unread only for header preview */
+  /* -----------------------------------------------------------------------
+   * Derivados: não lidas
+   * --------------------------------------------------------------------- */
   const unread = notifs.filter((n) => !readMap[n.id]);
   const unreadCount = unread.length;
 
-  /* actions */
+  /* -----------------------------------------------------------------------
+   * Ações
+   * --------------------------------------------------------------------- */
   const openNotifMenu = async () => {
-    // Sempre que abrir, dá um refresh leve (rápido)
     if (!notifOpen) {
+      // refresh leve ao abrir
       await fetchAll();
     }
     setNotifOpen((v) => !v);
@@ -304,45 +372,75 @@ const Header = ({ toggleSidebar }) => {
     setReadMap((m) => ({ ...m, ...all }));
   };
 
-  const goAll = () => {
-    setNotifOpen(false);
-    navigate("/notificacoes");
-  };
-
-  /* first load */
+  /* -----------------------------------------------------------------------
+   * Efeito inicial: carregar + auto-refresh
+   * --------------------------------------------------------------------- */
   useEffect(() => {
-    // carrega ao montar
     fetchAll();
-    // opcional: auto-refresh leve a cada 60s
     const t = setInterval(fetchAll, 60000);
     return () => clearInterval(t);
   }, [fetchAll]);
 
+  /* =========================================================================
+   * JSX
+   * ========================================================================= */
   return (
-    <motion.header
-      className="sticky top-0 z-40 mt-4 mx-3 px-2 rounded-lg bg-light-bg-secondary dark:bg-dark-bg-secondary border-b border-light-border dark:border-dark-border"
+    <header
+      className="
+        sticky top-0 z-40 mt-4 mx-3
+        rounded-2xl
+        bg-white/95 dark:bg-dark-bg-secondary
+        backdrop-blur
+      "
     >
-      <div className="flex items-center justify-between p-4 h-12">
-        <button
-          onClick={toggleSidebar}
-          className="p-2 rounded-md text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-        >
-          <Menu className="w-5 h-5 text-light-text-primary dark:text-dark-text-primary" />
-        </button>
+      <div className="flex items-center justify-between px-3 py-3 h-16">
 
-        <div className='itens-left flex-1 mx-4'>
-          <Breadcrumb />
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          <button
+            onClick={toggleSidebar}
+            className="
+              inline-flex items-center justify-center
+              w-9 h-9
+              rounded-full
+              bg-slate-100 hover:bg-slate-200
+              text-slate-700
+              dark:bg-slate-800 dark:hover:bg-slate-700
+              dark:text-slate-100
+              transition-colors
+              focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+            "
+            aria-label="Alternar menu lateral"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="hidden md:block text-slate-700 dark:text-slate-100 text-sm truncate">
+            <Breadcrumb />
+          </div>
         </div>
 
-        <div className="flex items-center">
+        {/* DIREITA: ações + usuário */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Alternar Tema */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            className="
+              inline-flex items-center justify-center
+              w-9 h-9
+              rounded-full
+              bg-slate-100 hover:bg-slate-200
+              text-slate-700
+              dark:bg-slate-800 dark:hover:bg-slate-700
+              dark:text-slate-100
+              transition-colors
+              focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+            "
+            title={isDark ? "Mudar para modo claro" : "Mudar para modo escuro"}
           >
             {isDark ? (
-              <Sun className="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" />
+              <Sun className="w-5 h-5" />
             ) : (
-              <Moon className="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" />
+              <Moon className="w-5 h-5" />
             )}
           </button>
 
@@ -350,194 +448,337 @@ const Header = ({ toggleSidebar }) => {
           <div className="relative" ref={notifRef}>
             <button
               onClick={openNotifMenu}
-              className="p-2 rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10 transition-colors relative"
+              className="
+                relative
+                inline-flex items-center justify-center
+                w-9 h-9
+                rounded-full
+                bg-slate-100 hover:bg-slate-200
+                text-slate-700
+                dark:bg-slate-800 dark:hover:bg-slate-700
+                dark:text-slate-100
+                transition-colors
+                focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+              "
               title="Notificações"
             >
-              <Bell className="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" />
-              {unreadCount > 0 ? (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-[4px] flex items-center justify-center text-[11px] bg-red-500 text-white rounded-full border-2 border-light-bg-secondary dark:border-dark-bg-secondary">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              ) : null}
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span
+                  className="
+                    absolute -top-0.5 -right-0.5
+                    w-2.5 h-2.5
+                    bg-red-500
+                    rounded-full
+                    border-2 border-white dark:border-slate-900
+                  "
+                />
+              )}
             </button>
 
-            {/* Dropdown de Notificações */}
-            {notifOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute right-0 mt-2 w-[380px] bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-lg shadow-xl z-50 overflow-hidden"
-              >
-                <div className="flex items-center justify-between px-3 py-2 border-b border-light-border dark:border-dark-border">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-accent-blue" />
-                    <span className="font-semibold">Notificações</span>
-                    {unreadCount > 0 && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                        {unreadCount} não lida{unreadCount > 1 ? "s" : ""}
+            {/* Dropdown Notificações */}
+            <AnimatePresence>
+              {notifOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.1 }}
+                  className="
+                    absolute right-0 mt-3 w-80 md:w-96
+                    bg-white dark:bg-slate-900
+                    border border-slate-200 dark:border-slate-700
+                    rounded-2xl
+                    z-50 overflow-hidden
+                    text-slate-800 dark:text-slate-50
+                  "
+                >
+                  {/* Cabeçalho notificações */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-slate-700 dark:text-slate-100">
+                        Notificações
                       </span>
+                      {unreadCount > 0 && (
+                        <span
+                          className="
+                            text-[10px] px-1.5 py-0.5 rounded-md
+                            bg-red-100 text-red-700 border border-red-200
+                            dark:bg-red-900/30 dark:text-red-300 dark:border-red-800
+                            font-semibold
+                          "
+                        >
+                          {unreadCount} nova{unreadCount > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={fetchAll}
+                        className="
+                          p-1.5 rounded
+                          text-slate-400 hover:text-blue-600
+                          hover:bg-blue-50 dark:hover:bg-blue-900/20
+                          transition-colors
+                        "
+                        title="Atualizar"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                      <button
+                        onClick={markAllRead}
+                        className="
+                          p-1.5 rounded
+                          text-slate-400 hover:text-emerald-600
+                          hover:bg-emerald-50 dark:hover:bg-emerald-900/20
+                          transition-colors
+                        "
+                        title="Marcar todas como lidas"
+                      >
+                        <CheckCircle2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Lista notificações */}
+                  <div className="max-h-[320px] overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
+                    {loadingNotifs ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                        <RefreshCw className="w-6 h-6 animate-spin mb-2" />
+                        <span className="text-xs">Carregando...</span>
+                      </div>
+                    ) : unread.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-full mb-3">
+                          <EyeOff className="w-6 h-6 opacity-60" />
+                        </div>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                          Tudo limpo por aqui!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {unread.slice(0, 6).map((n) => {
+                          const meta = typeMeta[n.tipo] || typeMeta.sistema;
+                          const Icon = meta.icon;
+
+                          return (
+                            <div
+                              key={n.id}
+                              className="
+                                group p-4 relative
+                                hover:bg-slate-50 dark:hover:bg-slate-800
+                                transition-colors
+                              "
+                            >
+                              <div className="flex gap-3">
+                                <div
+                                  className="
+                                    mt-1 p-2 rounded-lg
+                                    bg-slate-100 dark:bg-slate-800
+                                    flex items-center justify-center
+                                  "
+                                >
+                                  <Icon
+                                    size={16}
+                                    className={`${meta.color} dark:text-current`}
+                                  />
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-start mb-1 gap-2">
+                                    <h5 className="text-sm font-semibold truncate pr-4 text-slate-800 dark:text-slate-50">
+                                      {n.titulo}
+                                    </h5>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
+                                      {relativeStr(n.data)}
+                                    </span>
+                                  </div>
+
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                    {n.mensagem}
+                                  </p>
+
+                                  <div className="flex gap-3 mt-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                    {n.href && (
+                                      <Link
+                                        to={n.href}
+                                        onClick={() => {
+                                          markRead(n.id);
+                                          setNotifOpen(false);
+                                        }}
+                                        className="
+                                          text-[11px] font-semibold
+                                          text-blue-600 dark:text-blue-400
+                                          hover:underline
+                                        "
+                                      >
+                                        Ver detalhes
+                                      </Link>
+                                    )}
+                                    <button
+                                      onClick={() => markRead(n.id)}
+                                      className="
+                                        text-[11px] font-medium
+                                        text-slate-400 hover:text-slate-600
+                                        dark:text-slate-500 dark:hover:text-slate-300
+                                      "
+                                    >
+                                      Marcar como lida
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={fetchAll}
-                      className="p-1.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
-                      title="Atualizar"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={markAllRead}
-                      className="px-2 py-1 rounded-md text-xs bg-emerald-600 text-white hover:bg-emerald-700"
-                      title="Marcar todas como lidas"
-                    >
-                      <CheckCircle2 className="w-3 h-3 inline-block mr-1" />
-                      Marcar todas
-                    </button>
-                  </div>
-                </div>
 
-                <div className="max-h-[380px] overflow-auto">
-                  {loadingNotifs ? (
-                    <div className="flex items-center justify-center py-10">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-blue"></div>
-                    </div>
-                  ) : unread.length === 0 ? (
-                    <div className="text-center py-10 px-4">
-                      <EyeOff className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm text-slate-500">
-                        Nenhuma nova notificação.
-                      </p>
-                    </div>
-                  ) : (
-                    <ul className="divide-y divide-light-border dark:divide-dark-border">
-                      {unread.slice(0, 6).map((n) => {
-                        const meta = typeMeta[n.tipo] || typeMeta.sistema;
-                        const Icon = meta.icon;
-                        const tone = badgeTone[n.severity] || badgeTone.info;
-                        return (
-                          <li key={n.id} className="p-3 hover:bg-black/5 dark:hover:bg-white/5 transition">
-                            <div className="flex gap-3">
-                              <div className="mt-0.5">
-                                <Icon className={`w-5 h-5 ${meta.color}`} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <h4 className="font-semibold truncate">{n.titulo}</h4>
-                                  <span className={`px-2 py-0.5 text-[10px] rounded border ${tone}`}>
-                                    {n.severity === "error"
-                                      ? "Crítico"
-                                      : n.severity === "warning"
-                                      ? "Atenção"
-                                      : n.severity === "success"
-                                      ? "Sucesso"
-                                      : "Info"}
-                                  </span>
-                                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                                    • {formatDateTime(n.data)} ({relativeStr(n.data)})
-                                  </span>
-                                </div>
-                                <p className="text-sm text-slate-700 dark:text-slate-200 line-clamp-2">
-                                  {n.mensagem}
-                                </p>
-                                <div className="mt-2 flex items-center gap-2">
-                                  {n.href ? (
-                                    <Link
-                                      to={n.href}
-                                      onClick={() => {
-                                        markRead(n.id, true);
-                                        setNotifOpen(false);
-                                      }}
-                                      className="px-2 py-1 rounded-md border border-light-border dark:border-dark-border text-xs hover:bg-black/5 dark:hover:bg-white/5"
-                                    >
-                                      Abrir
-                                    </Link>
-                                  ) : null}
-                                  <button
-                                    onClick={() => markRead(n.id, true)}
-                                    className="px-2 py-1 rounded-md bg-accent-blue text-white text-xs hover:bg-accent-blue/90"
-                                  >
-                                    Marcar como lida
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between px-3 py-2 border-t border-light-border dark:border-dark-border bg-light-bg-primary dark:bg-dark-bg-primary">
                   <Link
                     to="/notificacoes"
                     onClick={() => setNotifOpen(false)}
-                    className="text-sm text-accent-blue hover:underline"
+                    className="
+                      block w-full py-3 text-center text-xs font-semibold
+                      text-blue-600 dark:text-blue-400
+                      bg-slate-50 dark:bg-slate-900
+                      border-t border-slate-100 dark:border-slate-800
+                      hover:bg-blue-50/60 dark:hover:bg-slate-800
+                      transition-colors
+                    "
                   >
-                    Ver todas
+                    Ver todas as notificações
                   </Link>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                    <CalendarClock className="w-3 h-3" />
-                    atualizado {formatDateTime(new Date())}
-                  </span>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Menu do usuário */}
-          <div className="relative ml-1" ref={userMenuRef}>
+          {/* Divisor vertical*/}
+          <div className="hidden md:block h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+          {/* Menu do Usuário */}
+          <div className="relative" ref={userMenuRef}>
             <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              onClick={() => setUserMenuOpen((v) => !v)}
+              className="
+                flex items-center gap-3
+                px-4 py-1
+                rounded-xl
+                bg-slate-100 hover:bg-slate-200
+                dark:bg-slate-800 dark:hover:bg-slate-700
+                text-slate-800 dark:text-slate-50
+                transition-all
+                focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+              "
             >
-              <User className="w-6 h-6" />
-              <span className="font-medium text-md text-light-text-primary dark:text-dark-text-primary">
-                Olá, {(user?.first_name || user?.username || 'Usuario')}
-              </span>
-            </button>
-            {userMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute right-0 mt-2 w-56 bg-light-bg-secondary dark:bg-dark-bg-secondary border border-light-border dark:border-dark-border rounded-md z-50 py-1"
+              <div
+                className="
+                  w-9 h-9
+                  rounded-full
+                  bg-slate-200
+                  dark:bg-slate-700
+                  flex items-center justify-center
+                  text-slate-700 dark:text-slate-100
+                  overflow-hidden
+                  shadow-sm
+                  ring-2 ring-white/60 dark:ring-slate-800
+                "
               >
-                <div className="px-4 py-2 border-b dark:border-dark-border">
-                  <p className="text-sm font-semibold">{(user?.first_name || user?.username)}</p>
-                  <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary truncate">
-                    {user?.email}
-                  </p>
-                </div>
-                <Link
-                  to="/perfil"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm w-full hover:bg-light-border dark:hover:bg-dark-border"
+                {user?.profile_image ? (
+                  <img
+                    src={user.profile_image}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </div>
+
+              <div className="hidden md:block text-left">
+                <p className="text-md font-semibold text-slate-800 dark:text-slate-50 leading-none max-w-[140px] truncate">
+                  {user?.first_name || user?.username || "Usuário"}
+                </p>
+              </div>
+            </button>
+
+            {/* Dropdown Usuário */}
+            <AnimatePresence>
+              {userMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.1 }}
+                  className="
+                    absolute right-0 mt-3 w-60
+                    bg-white dark:bg-slate-900
+                    border border-slate-200 dark:border-slate-700
+                    rounded-xl shadow-xl
+                    z-50 overflow-hidden
+                    text-slate-800 dark:text-slate-50
+                  "
                 >
-                  <User className="w-4 h-4" /> Minha Conta
-                </Link>
-                <Link
-                  to="/arquivos"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm w-full hover:bg-light-border dark:hover:bg-dark-border"
-                >
-                  <ArchiveIcon className="w-4 h-4" /> Meus Arquivos
-                </Link>
-                <div className="border-t border-light-border dark:border-dark-border my-1"></div>
-                <button
-                  onClick={() => { logoutUser(); setUserMenuOpen(false); }}
-                  className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50"
-                >
-                  <LogOutIcon className="w-4 h-4" /> Sair
-                </button>
-              </motion.div>
-            )}
+                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/70">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-50 truncate">
+                      {user?.first_name} {user?.last_name}
+                    </p>
+                    <p
+                      className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5"
+                      title={user?.email}
+                    >
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <div className="py-1">
+                    <Link
+                      to="/perfil"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="
+                        flex items-center gap-3 px-5 py-2.5
+                        text-sm
+                        text-slate-600 dark:text-slate-300
+                        hover:bg-slate-50 dark:hover:bg-slate-800
+                        hover:text-blue-600 dark:hover:text-blue-400
+                        transition-colors
+                      "
+                    >
+                      <User size={18} className="opacity-70" />
+                      Minha conta
+                    </Link>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-slate-700 py-1">
+                    <button
+                      onClick={() => {
+                        logoutUser();
+                        setUserMenuOpen(false);
+                      }}
+                      className="
+                        w-full text-left
+                        flex items-center gap-3 px-5 py-2.5
+                        text-sm font-medium
+                        text-red-600 dark:text-red-400
+                        hover:bg-red-50 dark:hover:bg-red-900/20
+                        transition-colors
+                      "
+                    >
+                      <LogOutIcon size={18} />
+                      Sair do sistema
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 };
 

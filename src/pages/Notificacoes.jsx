@@ -192,9 +192,10 @@ export default function Notificacoes() {
   }, [api, showToast]);
 
   useEffect(() => {
+    fetchAll(); 
     const t = setTimeout(() => {
       fetchAll();
-    }, 200);
+    }, 1800000);  
     return () => clearTimeout(t);
   }, [fetchAll]);
 

@@ -1,8 +1,5 @@
 // src/utils/constantes.jsx
 
-// ============================================================================
-// MODALIDADES (IDs alinhados com o PNCP/Backend)
-// ============================================================================
 export const MODALIDADES = [
   { code: 6,  value: 'pregao_eletronico',          label: 'Pregão - Eletrônico' },
   { code: 7,  value: 'pregao_presencial',          label: 'Pregão - Presencial' },

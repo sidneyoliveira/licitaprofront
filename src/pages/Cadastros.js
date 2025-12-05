@@ -3,13 +3,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import useAxios from "../api/config";
 import { MagnifyingGlassIcon, PlusIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
 
-/* 
-  Observações:
-  - Esta tela mantém sua estrutura, apenas acrescentando o campo genérico `codigo_unidade` no cadastro de Órgãos.
-  - Endpoints usados: /entidades/, /orgaos/
-  - Usa o hook useAxios (autenticado) que você já tem no projeto.
-*/
-
 // ==============================
 // Helpers genéricos de UI
 // ==============================

@@ -1,6 +1,20 @@
-// src/components/ProcessHeader.jsx
-import React, { useMemo } from "react";
-import { Pencil, Download } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
+  Pencil,
+  Download,
+  FileText,
+  Calendar,
+  Wallet,
+  Scale,
+  Gavel,
+  Tag,
+  Clock,
+  ClipboardList,
+  Layers,
+  AlertCircle,
+  Globe,
+  UploadCloud
+} from "lucide-react";
 import {
   MODALIDADES,
   CLASSIFICACOES,
@@ -13,17 +27,19 @@ import {
   toCode,
 } from "../utils/constantes";
 
+// Importa o Modal PNCP (Certifique-se de que o caminho está correto)
+import ModalEnvioPNCP from './ModalEnvioPNCP'; 
+
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Utils                                                                     */
+/* 1. UTILS & HELPERS                                                        */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-// Mapeamento de Siglas (usando os 'value' do constantes.jsx)
 const modalidadeSiglaMap = {
   pregao_eletronico: "PE",
   pregao_presencial: "PP",
   concorrencia_eletronica: "CE",
   concorrencia_presencial: "CP",
-  dispensa_eletronica: "DE",     // ou dispensa_licitacao
+  dispensa_eletronica: "DE",
   dispensa_licitacao: "DL",
   inexigibilidade: "IN",
   adesao_registro_precos: "ARP",
@@ -33,11 +49,15 @@ const modalidadeSiglaMap = {
   dialogo_competitivo: "DC",
 };
 
+/**
+ * Trunca texto longo para caber em 1 ou mais linhas com '...'
+ */
 const Ellipsize = ({ lines = 1, title, as: Tag = "span", className = "", children }) => {
   const style =
     lines === 1
       ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }
       : { display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: String(lines), overflow: "hidden" };
+  
   return (
     <Tag
       className={className}
@@ -51,12 +71,17 @@ const Ellipsize = ({ lines = 1, title, as: Tag = "span", className = "", childre
 
 const formatDateExact = (iso, { showTime = true } = {}) => {
   if (!iso || typeof iso !== "string") return null;
+  
+  // Limpeza robusta da string ISO
   const cleaned = iso.replace(/Z$/i, "").replace(/([+-]\d{2}:?\d{2})$/i, "");
   const norm = cleaned.replace("T", " ").trim();
+  
   const m = norm.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
   if (!m) return null;
+  
   const [, yyyy, mm, dd, HH, MM] = m;
   const dateBR = `${dd}/${mm}/${yyyy}`;
+  
   if (!showTime || !HH || !MM) return dateBR;
   return `${dateBR}, ${HH}:${MM}`;
 };
@@ -68,130 +93,116 @@ const formatCurrency = (value) => {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 };
 
+/**
+ * Define a cor do badge de situação baseada no texto
+ */
 const getSituacaoStyle = (situacao) => {
-  const base = "px-3 py-1 rounded-md text-xs font-medium uppercase tracking-wider";
-  const normalized = String(situacao).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const base = "px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border transition-colors";
+  const s = String(situacao).toLowerCase();
   
-  if (normalized.includes('aberto') || normalized.includes('publicado'))
-    return `${base} bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20`;
-  if (normalized.includes('pesquisa') || normalized.includes('aguardando') || normalized.includes('contratacao'))
-    return `${base} bg-accent-yellow/10 text-accent-yellow dark:bg-accent-yellow/20`;
-  if (normalized.includes('homologado') || normalized.includes('adjudicado'))
-    return `${base} bg-accent-green/10 text-accent-green dark:bg-accent-green/20`;
-  if (normalized.includes('cancelado') || normalized.includes('revogado') || normalized.includes('fracassado') || normalized.includes('deserto'))
-    return `${base} bg-accent-red/10 text-accent-red dark:bg-accent-red/20`;
+  if (s.includes('publicado') || s.includes('aberto')) 
+      return `${base} bg-emerald-50 text-emerald-700 border-emerald-200`;
+  
+  if (s.includes('pesquisa') || s.includes('aguardando') || s.includes('contratacao') || s.includes('andamento')) 
+      return `${base} bg-blue-50 text-blue-700 border-blue-200`;
+  
+  if (s.includes('homologado') || s.includes('adjudicado'))
+      return `${base} bg-indigo-50 text-indigo-700 border-indigo-200`;
+
+  if (s.includes('cancelado') || s.includes('revogado') || s.includes('fracassado') || s.includes('deserto')) 
+      return `${base} bg-rose-50 text-rose-700 border-rose-200`;
     
-  return `${base} bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-secondary`;
+  return `${base} bg-slate-100 text-slate-600 border-slate-200`;
 };
 
-// Resolve label a partir de value/label/code
+/**
+ * Busca o Label humanizado a partir de um ID ou Código
+ */
 const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
-  // Tenta encontrar pelo code ou value
   const found = fromCode(options, codeOrLabel);
   if (found) return found.label;
-
-  // Fallback para string
+  
+  // Se já for uma string legível, retorna ela mesma
   if (fallbackLabel && typeof fallbackLabel === 'string' && fallbackLabel.length > 2) {
       return fallbackLabel;
   }
-  return fallbackLabel || "";
+  return fallbackLabel || codeOrLabel || "Não informado";
 };
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Componente Principal                                                      */
+/* 2. SUBCOMPONENTES VISUAIS                                                 */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const InfoPill = React.memo(({ label, value }) => (
-  <div className="flex flex-col" style={{ minWidth: 0 }}>
-    <span className="text-xs font-medium text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
+const InfoItem = ({ icon: Icon, label, value, className = "" }) => (
+  <div className={`flex flex-col ${className}`}>
+    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
+      {Icon && <Icon size={14} className="text-slate-400" />}
       {label}
     </span>
-    <Ellipsize
-      lines={1}
-      className="text-[13px] font-medium text-slate-800 dark:text-dark-text-primary"
-      title={value}
-    >
-      {value || "–"}
-    </Ellipsize>
+    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-snug break-words">
+      {value || <span className="text-slate-400 font-normal italic">Não informado</span>}
+    </div>
   </div>
-));
+);
 
 const SituacaoBadge = React.memo(({ situacao }) => {
   if (!situacao) return null;
   return (
-    <div className="flex flex-col" style={{ minWidth: 0 }}>
-      <span className="text-[13px] font-medium text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
-        Situação
-      </span>
-      <Ellipsize lines={1} className={`${getSituacaoStyle(situacao)} mt-1`} title={situacao}>
+    <div className="flex items-center">
+      <span className={getSituacaoStyle(situacao)}>
         {situacao}
-      </Ellipsize>
+      </span>
     </div>
   );
 });
 
+/* ────────────────────────────────────────────────────────────────────────── */
+/* 3. COMPONENTE PRINCIPAL                                                   */
+/* ────────────────────────────────────────────────────────────────────────── */
+
 export default function ProcessHeader({
   formData = {},
+  processoId, // Recebe o ID do processo
   entidadeNome,
   orgaoNome,
   onEdit,
   onExportCSV,
+  onImport,
+  onSuccess // Callback opcional para recarregar dados após sucesso no PNCP
 }) {
-  const entidadeNomeFinal =
-    entidadeNome ||
-    formData?.entidade_nome ||
-    formData?.entidade_obj?.nome ||
-    "";
+  // Estado local para controlar o Modal PNCP
+  const [isPncpModalOpen, setIsPncpModalOpen] = useState(false);
 
-  const orgaoNomeFinal =
-    orgaoNome ||
-    formData?.orgao_nome ||
-    formData?.orgao_obj?.nome ||
-    "";
+  // --- PREPARAÇÃO DE DADOS ---
+  
+  const entidadeNomeFinal = entidadeNome || formData?.entidade_nome || formData?.entidade_obj?.nome || "";
+  const orgaoNomeFinal = orgaoNome || formData?.orgao_nome || formData?.orgao_obj?.nome || "";
 
-  // Labels Resolvidos
-  const modalidadeLabel = useMemo(
-    () => resolveLabel(MODALIDADES, formData?.modalidade),
-    [formData?.modalidade]
-  );
+  // Resolução de Labels (Backend ID -> Texto Legível)
+  const labels = useMemo(() => ({
+    id: formData?.id,
+    modalidade: resolveLabel(MODALIDADES, formData?.modalidade),
+    classificacao: resolveLabel(CLASSIFICACOES, formData?.classificacao),
+    situacao: resolveLabel(SITUACOES, formData?.situacao),
+    organizacao: resolveLabel(ORGANIZACOES, formData?.tipo_organizacao),
+    modoDisputa: resolveLabel(MODO_DISPUTA, formData?.modo_disputa),
+    criterio: resolveLabel(CRITERIO_JULGAMENTO, formData?.criterio_julgamento),
+    amparo: resolveLabel(AMPARO_LEGAL, formData?.amparo_legal),
+  }), [formData]);
 
-  const classificacaoLabel = useMemo(
-    () => resolveLabel(CLASSIFICACOES, formData?.classificacao),
-    [formData?.classificacao]
-  );
+  // Formatação de Datas e Valores
+  const formatted = useMemo(() => ({
+    cadastro: formatDateExact(formData?.data_processo, { showTime: false }),
+    abertura: formatDateExact(formData?.data_abertura, { showTime: true }),
+    valor: formatCurrency(formData?.valor_referencia),
+    srp: (formData?.registro_precos ?? formData?.registro_preco) ? "Sim" : "Não",
+    vigencia: formData?.vigencia_meses ? `${formData.vigencia_meses} meses` : null
+  }), [formData]);
 
-  const situacaoLabel = useMemo(
-    () => resolveLabel(SITUACOES, formData?.situacao),
-    [formData?.situacao]
-  );
-
-  const organizacaoLabel = useMemo(
-    () => resolveLabel(ORGANIZACOES, formData?.tipo_organizacao),
-    [formData?.tipo_organizacao]
-  );
-
-  const modoDisputaLabel = useMemo(
-    () => resolveLabel(MODO_DISPUTA, formData?.modo_disputa),
-    [formData?.modo_disputa]
-  );
-
-  const criterioJulgamentoLabel = useMemo(
-    () => resolveLabel(CRITERIO_JULGAMENTO, formData?.criterio_julgamento),
-    [formData?.criterio_julgamento]
-  );
-
-  // Amparo Legal - Busca direta na lista plana
-  const amparoLegalLabel = useMemo(
-    () => resolveLabel(AMPARO_LEGAL, formData?.amparo_legal),
-    [formData?.amparo_legal]
-  );
-
-  // Lógica de Sigla e Certame
-  const { siglaModalidade, numeroCertame, anoCertame } = useMemo(() => {
-    // Pega o 'value' (ex: pregao_eletronico) a partir do code (6)
+  // Construção do Título (Certame vs Processo)
+  const { numeroCertame, anoCertame, siglaModalidade } = useMemo(() => {
     const modalidadeValue = toCode(MODALIDADES, formData?.modalidade);
     const sigla = modalidadeSiglaMap[modalidadeValue] || "";
-
     const [num, ano] = formData?.numero_certame ? String(formData.numero_certame).split("/") : [];
     
     return {
@@ -201,137 +212,162 @@ export default function ProcessHeader({
     };
   }, [formData?.numero_certame, formData?.modalidade]);
 
-  const registroPrecos = formData?.registro_precos ?? formData?.registro_preco ?? false;
-
-  const cadastroFormatado = useMemo(
-    () => formatDateExact(formData?.data_processo, { showTime: false }),
-    [formData?.data_processo]
-  );
-
-  const aberturaFormatada = useMemo(
-    () => formatDateExact(formData?.data_abertura, { showTime: true }),
-    [formData?.data_abertura]
-  );
-
-  const valorPrevisto = useMemo(
-    () => formatCurrency(formData?.valor_referencia),
-    [formData?.valor_referencia]
-  );
-
+  // Handler de Exportação
   const handleExport = () => {
     if (!onExportCSV) return;
     onExportCSV({
       ...formData,
       entidade_nome: entidadeNomeFinal,
       orgao_nome: orgaoNomeFinal,
-      cadastroFormatado,
-      aberturaFormatada,
-      valorPrevisto,
-      modalidade_label: modalidadeLabel,
-      classificacao_label: classificacaoLabel,
-      situacao_label: situacaoLabel,
-      tipo_organizacao_label: organizacaoLabel,
-      modo_disputa_label: modoDisputaLabel,
-      criterio_julgamento_label: criterioJulgamentoLabel,
-      amparo_legal_label: amparoLegalLabel,
+      cadastroFormatado: formatted.cadastro,
+      aberturaFormatada: formatted.abertura,
+      valorPrevisto: formatted.valor,
+      modalidade_label: labels.modalidade,
+      classificacao_label: labels.classificacao,
+      situacao_label: labels.situacao,
+      tipo_organizacao_label: labels.organizacao,
+      modo_disputa_label: labels.modoDisputa,
+      criterio_julgamento_label: labels.criterio,
+      amparo_legal_label: labels.amparo,
     });
   };
 
   return (
-    <div className="flex flex-col bg-white dark:bg-dark-bg-primary rounded-md border border-slate-200 dark:border-dark-border shadow-sm overflow-hidden">
-      {/* Barra superior */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-3 border-b border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg-secondary">
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:flex-1" style={{ minWidth: 0 }}>
-          {entidadeNomeFinal && (
-            <Ellipsize
-              lines={1}
-              as="span"
-              className="block px-3 py-1 text-sm font-semibold bg-accent-blue text-white rounded-md"
-              title={entidadeNomeFinal}
-            >
-              {entidadeNomeFinal}
-            </Ellipsize>
-          )}
-          {orgaoNomeFinal && (
-            <Ellipsize
-              lines={1}
-              as="span"
-              className="block px-3 py-1 text-sm font-medium bg-slate-200 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-primary rounded-md"
-              title={orgaoNomeFinal}
-            >
-              {orgaoNomeFinal}
-            </Ellipsize>
-          )}
-        </div>
-        <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 transition-colors"
-            title="Editar"
-          >
-            <Pencil className="w-4 h-4" />
-            <span>Editar</span>
-          </button>
-          {onExportCSV && (
+    <>
+        {/* Renderização do Modal PNCP Interno */}
+        {isPncpModalOpen && (
+            <ModalEnvioPNCP
+                processo={{ ...formData, id: processoId || formData.id }}
+                onClose={() => setIsPncpModalOpen(false)}
+                onSuccess={() => {
+                    if (onSuccess) onSuccess();
+                }}
+            />
+        )}
+
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6 overflow-hidden transition-all hover:shadow-md">
+        
+        {/* --- CABEÇALHO (TOPO) --- */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/80 dark:bg-slate-800/40">
+            
+            {/* Identificação da Entidade */}
+            <div className="flex flex-col md:flex-row md:items-center gap-3 md:flex-1 min-w-0">
+            {entidadeNomeFinal && (
+                <Ellipsize
+                as="span"
+                className="inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider bg-[#004aad] text-white rounded-md shadow-sm"
+                title={entidadeNomeFinal}
+                >
+                {entidadeNomeFinal}
+                </Ellipsize>
+            )}
+            {orgaoNomeFinal && (
+                <Ellipsize
+                as="span"
+                className="inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white border border-slate-300 text-slate-600 rounded-md"
+                title={orgaoNomeFinal}
+                >
+                {orgaoNomeFinal}
+                </Ellipsize>
+            )}
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex items-center gap-2">
+            {/* Botão Importar (Opcional) */}
+            {onImport && (
+                <button
+                    onClick={onImport}
+                    className="p-2 text-slate-500 hover:text-[#004aad] hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                    title="Importar Planilha"
+                >
+                    <UploadCloud size={18} />
+                </button>
+            )}
+            
+            {/* Botão PNCP (Interno) */}
             <button
-              type="button"
-              onClick={handleExport}
-              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-dark-text-secondary dark:hover:bg-dark-bg-secondary dark:hover:text-dark-text-primary transition-colors"
-              title="Exportar cabeçalho (CSV)"
+                onClick={() => setIsPncpModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#004aad] text-white rounded-lg text-sm font-bold hover:bg-[#003d91] transition-all shadow-sm shadow-blue-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Publicar no PNCP"
             >
-              <Download className="w-5 h-5" />
-              <span className="sr-only">Exportar CSV</span>
+                <Globe size={16} />
+                <span>PNCP</span>
             </button>
-          )}
-        </div>
-      </div>
 
-      {/* Corpo */}
-      <div className="px-6 py-3 space-y-4">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2" style={{ minWidth: 0 }}>
-          <Ellipsize
-            lines={1}
-            as="h3"
-            className="text-xl font-bold text-slate-900 dark:text-dark-text-primary"
-            title={modalidadeLabel}
-          >
-            {modalidadeLabel || "Modalidade não informada"}
-          </Ellipsize>
-
-          {(numeroCertame || formData?.numero_processo) && (
-            <span className="text-sm font-bold px-3 py-1.5 rounded-md bg-slate-100 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-primary">
-              {numeroCertame
-                ? `${numeroCertame}/${anoCertame}${siglaModalidade ? `-${siglaModalidade}` : ""}`
-                : formData?.numero_processo}
-            </span>
-          )}
+            
+            {/* Editar */}
+            <button
+                type="button"
+                onClick={onEdit}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+            >
+                <Pencil size={16} />
+                <span>Editar</span>
+            </button>
+            </div>
         </div>
 
-        <Ellipsize
-          lines={2}
-          as="p"
-          className="text-[15px] leading-relaxed text-slate-600 dark:text-dark-text-secondary"
-          title={formData?.objeto}
-        >
-          {formData?.objeto || "Nenhum objeto informado para este processo."}
-        </Ellipsize>
+        {/* --- CORPO (DETALHES) --- */}
+        <div className="px-6 py-5 space-y-6">
+            
+            {/* Título Principal e Objeto */}
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-3">
+                <SituacaoBadge situacao={labels.situacao} />
+                
+                <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white flex flex-wrap items-center gap-2">
+                    {labels.modalidade}
+                    {(numeroCertame || formData?.numero_processo) && (
+                    <span className="text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-600 ml-1">
+                        {numeroCertame
+                        ? `Nº ${numeroCertame}/${anoCertame}${siglaModalidade ? `-${siglaModalidade}` : ""}`
+                        : `Proc. ${formData?.numero_processo}`}
+                    </span>
+                    )}
+                </h1>
+                </div>
 
-        {/* Dados Gerais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-x-2 gap-y-2 pt-4 border-t border-slate-200 dark:border-dark-border">
-          <InfoPill label="Amparo Legal" value={amparoLegalLabel} />
-          <InfoPill label="Classificação" value={classificacaoLabel} />
-          <InfoPill label="Modo de Disputa" value={modoDisputaLabel} />
-          <InfoPill label="Julgamento" value={criterioJulgamentoLabel} />
-          <InfoPill label="Organização" value={organizacaoLabel} />
-          <InfoPill label="Cadastro" value={cadastroFormatado} />
-          <InfoPill label="Certame" value={aberturaFormatada} />
-          <InfoPill label="Reg. de Preços" value={registroPrecos ? "Sim" : "Não"} />
-          <InfoPill label="Estimado" value={valorPrevisto || "Não informado"} />
-          <InfoPill label="Vigência" value={formData?.vigencia_meses ? `${formData.vigencia_meses} meses` : ""} />
-          <SituacaoBadge situacao={situacaoLabel} />
+                {/* Objeto */}
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
+                        <FileText size={14} /> Objeto do Processo
+                    </h4>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                        {formData?.objeto || "Objeto não informado."}
+                    </p>
+                </div>
+            </div>
+
+            {/* LINHA 1: Dados Legais e Administrativos */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-2 border-b border-slate-100 dark:border-slate-700/50 pb-5">
+            <InfoItem icon={Scale} label="Amparo Legal" value={labels.amparo} className="col-span-2 lg:col-span-1" />
+            <InfoItem icon={Tag} label="Classificação" value={labels.classificacao} />
+            <InfoItem icon={Layers} label="Organização" value={labels.organizacao} />
+            <InfoItem icon={Clock} label="Vigência" value={formatted.vigencia} />
+            <InfoItem icon={ClipboardList} label="Data Cadastro" value={formatted.cadastro} />
+            </div>
+
+            {/* LINHA 2: Dados do Certame (Valores e Disputa) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 pt-2">
+            <InfoItem icon={Gavel} label="Modo de Disputa" value={labels.modoDisputa} />
+            <InfoItem icon={Scale} label="Julgamento" value={labels.criterio} />
+            <InfoItem icon={Calendar} label="Abertura da Sessão" value={formatted.abertura} />
+            
+            <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 flex items-center gap-1.5">
+                <Wallet size={14} /> Valor Estimado
+                </span>
+                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                {formatted.valor || "R$ 0,00"}
+                </span>
+            </div>
+
+            <InfoItem icon={AlertCircle} label="Registro de Preço" value={formatted.srp} />
+            </div>
+
         </div>
-      </div>
-    </div>
+        </div>
+    </>
   );
 }

@@ -15,7 +15,6 @@ import {
   Plus,
   Search,
   Filter,
-  X,
   ArrowUpDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,22 +32,26 @@ const Button = ({ children, className = "", ...props }) => (
 );
 
 const inputCampo =
-  "w-full px-1 py-1 text-sm text-medium rounded-md focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-lg dark:border-dark-bg-primary";
+  "w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
 const inputStyle =
-  "w-full px-4 py-1 text-sm font-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
+  "w-full px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Subcomponentes                                                            */
 /* ────────────────────────────────────────────────────────────────────────── */
 const OrgaoItem = React.memo(({ orgao, onEdit, onDelete }) => (
-  <div className="flex justify-between items-center ml-4 pl-4 py-2 pr-3 border-l-2 border-light-border dark:border-dark-border/50 bg-light-bg-primary dark:bg-dark-bg-primary/50 rounded-r-lg">
+  <div className="flex justify-between items-center pl-4 py-2 pr-3 bg-light-bg-primary/50 dark:bg-dark-bg-primary/50 rounded-lg">
     <div className="flex items-center gap-3">
       <Home className="w-5 h-5 text-light-text-secondary dark:text-dark-text-secondary" />
       <div>
-        <span className="font-medium text-sm">{orgao.nome}</span>
+        <span className="font-medium text-sm text-light-text-primary dark:text-dark-text-primary">
+          {orgao.nome}
+        </span>
         <div className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
           <span className="inline-block mr-2">Secretaria</span>
-          <span className="inline-block">• Código da Unidade: {orgao.codigo_unidade || "—"}</span>
+          <span className="inline-block">
+            • Código da Unidade: {orgao.codigo_unidade || "—"}
+          </span>
         </div>
       </div>
     </div>
@@ -74,19 +77,22 @@ const OrgaoItem = React.memo(({ orgao, onEdit, onDelete }) => (
 const EntidadeAcordeon = React.memo(
   ({ entidade, orgaos, isOpen, onToggle, onEdit, onDelete, onAddOrgao }) => {
     return (
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-md overflow-hidden">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl overflow-hidden">
         <div
-          className="flex justify-between items-center p-3 cursor-pointer"
+          className="flex justify-between items-center px-4 py-3 cursor-pointer"
           onClick={onToggle}
         >
           <div className="flex items-center gap-4">
-            <Building className="w-6 h-6 text-accent-blue" />
+            <div className="h-10 w-10 rounded-xl bg-accent-blue/10 flex items-center justify-center">
+              <Building className="w-5 h-5 text-accent-blue" />
+            </div>
             <div>
-              <h3 className="font-bold text-light-text-primary dark:text-dark-text-primary">
+              <h3 className="font-semibold text-sm md:text-base text-light-text-primary dark:text-dark-text-primary">
                 {entidade.nome}
               </h3>
               <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                CNPJ: {entidade.cnpj || "—"} • Ano: {entidade.ano || "—"}
+                CNPJ: {entidade.cnpj || "—"} • Ano: {entidade.ano || "—"} •{" "}
+                {orgaos.length} {orgaos.length === 1 ? "órgão" : "órgãos"}
               </p>
             </div>
           </div>
@@ -123,7 +129,9 @@ const EntidadeAcordeon = React.memo(
             </button>
 
             <ChevronDown
-              className={`w-5 h-5 text-light-text-secondary dark:text-dark-text-secondary transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-light-text-secondary dark:text-dark-text-secondary transition-transform ${
+                isOpen ? "rotate-180" : ""
+              }`}
             />
           </div>
         </div>
@@ -134,9 +142,9 @@ const EntidadeAcordeon = React.memo(
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
+              className="overflow-hidden border-t border-light-border dark:border-dark-border"
             >
-              <div className="px-4 pb-4 pt-2 space-y-2">
+              <div className="px-4 pb-4 pt-2 space-y-2 bg-light-bg-secondary/60 dark:bg-dark-bg-secondary/60">
                 {orgaos.length > 0 ? (
                   orgaos.map((orgao) => (
                     <OrgaoItem
@@ -193,7 +201,10 @@ export default function Entidades() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [entRes, orgRes] = await Promise.all([api.get("/entidades/"), api.get("/orgaos/")]);
+      const [entRes, orgRes] = await Promise.all([
+        api.get("/entidades/"),
+        api.get("/orgaos/"),
+      ]);
       setEntidades(Array.isArray(entRes.data) ? entRes.data : []);
       setOrgaos(Array.isArray(orgRes.data) ? orgRes.data : []);
     } catch {
@@ -266,12 +277,14 @@ export default function Entidades() {
     [hierarchicalData]
   );
 
-  const hasActiveFilters = useMemo(() => !!search || !!anoFiltro || sortBy !== "nome" || sortOrder !== "asc", [
-    search,
-    anoFiltro,
-    sortBy,
-    sortOrder,
-  ]);
+  const hasActiveFilters = useMemo(
+    () =>
+      !!search ||
+      !!anoFiltro ||
+      sortBy !== "nome" ||
+      sortOrder !== "asc",
+    [search, anoFiltro, sortBy, sortOrder]
+  );
 
   /* ──────────────────────────────────────────────────────────────────────── */
   /* Ações                                                                    */
@@ -293,7 +306,7 @@ export default function Entidades() {
 
   const askDelete = (item, type) => {
     if (!item) return;
-    const id = type === "entidade" ? item.id : item.id;
+    const id = item.id;
     setDeletingItem({ type, id });
   };
 
@@ -350,185 +363,207 @@ export default function Entidades() {
   /* Render                                                                    */
   /* ──────────────────────────────────────────────────────────────────────── */
   return (
-    <div className="space-y-3">
+    <div className="min-h-screen pb-12 flex justify-center items-start">
       <Helmet>
         <title>Entidades e Órgãos</title>
       </Helmet>
 
-      {isModalOpen && (
-        <EntidadeOrgaoModal
-          item={editingItem}
-          entidades={entidades}
-          onClose={handleCloseModal}
-          onSave={handleSave}
-        />
-      )}
-      {deletingItem && (
-        <ConfirmDeleteModal
-          onConfirm={handleDelete}
-          onCancel={() => setDeletingItem(null)}
-        />
-      )}
+      {/* Container central */}
+      <div className="w-full max-w-7xl px-2 md:px-4 lg:px-0 py-2 space-y-4">
+        {/* Modais */}
+        {isModalOpen && (
+          <EntidadeOrgaoModal
+            item={editingItem}
+            entidades={entidades}
+            onClose={handleCloseModal}
+            onSave={handleSave}
+          />
+        )}
+        {deletingItem && (
+          <ConfirmDeleteModal
+            onConfirm={handleDelete}
+            onCancel={() => setDeletingItem(null)}
+          />
+        )}
 
-      {/* Cabeçalho */}
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-md p-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary">
-              Entidades e Unidades
-            </h1>
-            <p className="mt-1 text-md text-light-text-secondary dark:text-dark-text-secondary">
-              Gerencie {hierarchicalData.length} {hierarchicalData.length === 1 ? "entidade" : "entidades"} e{" "}
-              {totalOrgaos} {totalOrgaos === 1 ? "órgão" : "órgãos"}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-2 justify-items-start">
-            <Button
-              onClick={() => handleOpenModal(null, "entidade")}
-              className={`${inputStyle} max-w-35 h-8 gap-1 inline-flex items-center text-sm bg-accent-blue text-white hover:bg-accent-blue/90`}
-            >
-              Nova Entidade
-            </Button>
-          </div>
-        </div>
-
-        {/* Busca + Ações */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Buscar por nome, CNPJ, órgão ou código da unidade..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className={`${inputCampo} w-full pl-10 pr-4`}
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
+        {/* Cabeçalho / Filtros */}
+        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl p-4 md:p-6 space-y-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary">
+                Entidades e Unidades
+              </h1>
+              <p className="mt-1 text-sm md:text-base text-light-text-secondary dark:text-dark-text-secondary">
+                Gerencie {hierarchicalData.length}{" "}
+                {hierarchicalData.length === 1 ? "entidade" : "entidades"} e{" "}
+                {totalOrgaos} {totalOrgaos === 1 ? "órgão" : "órgãos"} cadastrados.
+              </p>
             </div>
-            <div className="grid gap-2">
-              <Button
-                className={`${inputCampo} w-4 h-8`}
-                onClick={() => setShowFilters((s) => !s)}
-              >
-                <Filter className="w-4 h-7" /> Filtros
-                
-              </Button>
-              
-            </div>
-          </div>
-
-          {/* Filtros colapsáveis */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-2">
-                  <select
-                    className={`${inputCampo}`}
-                    value={anoFiltro}
-                    onChange={(e) => setAnoFiltro(e.target.value)}
-                  >
-                    <option value="">Todos os anos</option>
-                    {anosDisponiveis.map((ano) => (
-                      <option key={ano} value={ano}>
-                        {ano}
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleSort("nome")}
-                    className={`${inputCampo} flex items-center justify-between`}
-                    title="Ordenar por nome"
-                  >
-                    Ordenar por Nome
-                    <ArrowUpDown className="w-4 h-4 opacity-70" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleSort("ano")}
-                    className={`${inputCampo} flex items-center justify-between`}
-                    title="Ordenar por ano"
-                  >
-                    Ordenar por Ano
-                    <ArrowUpDown className="w-4 h-4 opacity-70" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleSort("orgaos")}
-                    className={`${inputCampo} flex items-center justify-between`}
-                    title="Ordenar por quantidade de órgãos"
-                  >
-                    Ordenar por Órgãos
-                    <ArrowUpDown className="w-4 h-4 opacity-70" />
-                  </button>
-
-                  {/* <div className="flex items-center text-sm text-slate-600 dark:text-slate-300 px-2">
-                    <span>
-                      Ordem:{" "}
-                      <strong className="uppercase">
-                        {sortOrder === "asc" ? "ASC" : "DESC"}
-                      </strong>
-                    </span>
-                  </div> */}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Lista */}
-      <div className="space-y-3">
-        {isLoading ? (
-          <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mx-auto"></div>
-          </div>
-        ) : hierarchicalData.length > 0 ? (
-          hierarchicalData.map((ent) => (
-            <EntidadeAcordeon
-              key={ent.id}
-              entidade={ent}
-              orgaos={ent.orgaos}
-              isOpen={openSet.has(ent.id)}
-              onToggle={() => toggleOpen(ent.id)}
-              onEdit={(orgao = null, type = "entidade") => {
-                if (type === "orgao") handleOpenModal(orgao, "orgao", ent.id);
-                else handleOpenModal(ent, "entidade");
-              }}
-              onDelete={(item = null, type = "entidade") => {
-                if (type === "orgao") askDelete(item, "orgao");
-                else askDelete(ent, "entidade");
-              }}
-              onAddOrgao={() => handleOpenModal(null, "orgao", ent.id)}
-            />
-          ))
-        ) : (
-          <div className="text-center py-12 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg">
-            <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Nenhuma entidade encontrada</h3>
-            <p className="text-light-text-secondary dark:text-dark-text-secondary mb-6">
-              {hasActiveFilters
-                ? "Tente ajustar os filtros ou limpar a busca."
-                : "Comece cadastrando uma nova entidade."}
-            </p>
-            {hasActiveFilters ? (
+            <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => handleOpenModal(null, "entidade")}
-                className="gap-2 bg-accent-blue text-white hover:bg-accent-blue/90"
+                className="inline-flex items-center gap-2 text-sm bg-accent-blue text-white hover:bg-accent-blue/90 rounded-lg shadow-sm"
               >
+                <Plus className="w-4 h-4" />
                 Nova Entidade
               </Button>
-            ) : null}
+            </div>
           </div>
-        )}
+
+          {/* Busca + Botão de Filtro */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-[6fr_minmax(0,1fr)] gap-3 items-center">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar por nome, CNPJ, órgão ou código da unidade..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className={`${inputCampo} pl-10`}
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
+              </div>
+              <div className="flex gap-2 justify-start md:justify-end">
+                <Button
+                  className={`${inputCampo} !px-3 !py-2 flex items-center justify-center gap-2 bg-light-bg-primary dark:bg-dark-bg-primary`}
+                  onClick={() => setShowFilters((s) => !s)}
+                >
+                  <Filter className="w-4 h-4" />
+                  <span className="text-sm font-medium">Filtros</span>
+                  {hasActiveFilters && (
+                    <span className="ml-1 inline-block w-2 h-2 rounded-full bg-accent-blue" />
+                  )}
+                </Button>
+                {hasActiveFilters && (
+                  <Button
+                    type="button"
+                    onClick={clearFilters}
+                    className="px-3 py-2 text-xs rounded-lg border border-light-border dark:border-dark-border text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    Limpar
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Filtros colapsáveis */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-2">
+                    <select
+                      className={inputCampo}
+                      value={anoFiltro}
+                      onChange={(e) => setAnoFiltro(e.target.value)}
+                    >
+                      <option value="">Todos os anos</option>
+                      {anosDisponiveis.map((ano) => (
+                        <option key={ano} value={ano}>
+                          {ano}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("nome")}
+                      className={`${inputCampo} flex items-center justify-between`}
+                      title="Ordenar por nome"
+                    >
+                      <span>Ordenar por Nome</span>
+                      <ArrowUpDown className="w-4 h-4 opacity-70" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("ano")}
+                      className={`${inputCampo} flex items-center justify-between`}
+                      title="Ordenar por ano"
+                    >
+                      <span>Ordenar por Ano</span>
+                      <ArrowUpDown className="w-4 h-4 opacity-70" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("orgaos")}
+                      className={`${inputCampo} flex items-center justify-between`}
+                      title="Ordenar por quantidade de órgãos"
+                    >
+                      <span>Ordenar por Órgãos</span>
+                      <ArrowUpDown className="w-4 h-4 opacity-70" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Lista de Entidades */}
+        <div className="space-y-3">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mb-3" />
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                Carregando entidades...
+              </p>
+            </div>
+          ) : hierarchicalData.length > 0 ? (
+            hierarchicalData.map((ent) => (
+              <EntidadeAcordeon
+                key={ent.id}
+                entidade={ent}
+                orgaos={ent.orgaos}
+                isOpen={openSet.has(ent.id)}
+                onToggle={() => toggleOpen(ent.id)}
+                onEdit={(orgao = null, type = "entidade") => {
+                  if (type === "orgao") handleOpenModal(orgao, "orgao", ent.id);
+                  else handleOpenModal(ent, "entidade");
+                }}
+                onDelete={(item = null, type = "entidade") => {
+                  if (type === "orgao") askDelete(item, "orgao");
+                  else askDelete(ent, "entidade");
+                }}
+                onAddOrgao={() => handleOpenModal(null, "orgao", ent.id)}
+              />
+            ))
+          ) : (
+            <div className="text-center py-12 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl border border-light-border dark:border-dark-border">
+              <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-light-text-primary dark:text-dark-text-primary">
+                Nenhuma entidade encontrada
+              </h3>
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6">
+                {hasActiveFilters
+                  ? "Tente ajustar os filtros ou limpar a busca."
+                  : "Comece cadastrando uma nova entidade."}
+              </p>
+              <div className="flex justify-center gap-2">
+                {hasActiveFilters && (
+                  <Button
+                    onClick={clearFilters}
+                    className="px-4 py-2 text-xs rounded-lg border border-light-border dark:border-dark-border text-light-text-secondary dark:text-dark-text-secondary hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    Limpar filtros
+                  </Button>
+                )}
+                <Button
+                  onClick={() => handleOpenModal(null, "entidade")}
+                  className="gap-2 bg-accent-blue text-white hover:bg-accent-blue/90 rounded-lg text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nova Entidade
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
