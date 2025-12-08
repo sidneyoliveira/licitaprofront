@@ -246,15 +246,7 @@ const Perfil = () => {
   const [notes, setNotes] = useState([]); 
   const [newNote, setNewNote] = useState("");
 
-  const [documents, setDocuments] = useState([
-    {
-      id: 1,
-      name: "Termo de Responsabilidade.pdf",
-      description: "Assinado digitalmente",
-      date: "2023-10-15",
-      size: "1.2 MB"
-    },
-  ]);
+  const [documents, setDocuments] = useState([]);
 
   const fetchUser = async () => {
     try {
@@ -332,13 +324,16 @@ const Perfil = () => {
   const handleUploadDocument = async ({ file, description }) => {
     // Mock upload
     const newDoc = {
-      id: Date.now(),
-      name: file.name,
-      description: description || "Sem descrição",
-      date: new Date().toISOString().split("T")[0],
-      size: `${(file.size / 1024).toFixed(1)} KB`
+      usuario: user.id,
+      arquivo: file.name,
+      descricao: description || "Sem descrição",
+      enviado_em: new Date().toISOString().split("T")[0],
+      // size: `${(file.size / 1024).toFixed(1)} KB`
     };
-    setDocuments([newDoc, ...documents]);
+    const response = await api.post("/arquivos-user/", {
+      arquivo: newDoc,
+    });
+    setDocuments([response.data, ...documents]);
     showToast("Arquivo anexado com sucesso!", "success");
   };
 
