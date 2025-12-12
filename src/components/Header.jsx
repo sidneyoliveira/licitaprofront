@@ -377,8 +377,6 @@ const Header = ({ toggleSidebar }) => {
    * --------------------------------------------------------------------- */
   useEffect(() => {
     fetchAll();
-    const t = setInterval(fetchAll, 60000);
-    return () => clearInterval(t);
   }, [fetchAll]);
 
   /* =========================================================================
