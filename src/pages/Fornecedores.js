@@ -252,7 +252,7 @@ export default function Fornecedores() {
         <title>Fornecedores</title>
       </Helmet>
 
-      <div className="w-full max-w-7xl px-2 md:px-4 lg:px-0 py-4 space-y-4">
+      <div className="w-full max-w-7xl px-2 md:px-4 lg:px-0 py-2 space-y-4">
         {deletingId && (
           <ConfirmDeleteModal
             onConfirm={confirmDelete}

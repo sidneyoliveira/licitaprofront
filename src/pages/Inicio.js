@@ -242,7 +242,7 @@ const Inicio = () => {
         <title>Dashboard | Licitapro</title>
       </Helmet>
 
-      <div className="max-w-7xl w-full py-2 space-y-6 px-3 md:px-0">
+      <div className="max-w-7xl w-full py-2 space-y-4 px-3 md:px-0">
         {/* CABEÇALHO / HERO */}
         <header className="flex flex-col md:flex-row md:items-center justify-between bg-white dark:bg-dark-bg-secondary rounded-2xl px-6 py-6 gap-4">
           <div className="flex items-center gap-5">
@@ -287,7 +287,7 @@ const Inicio = () => {
         </section>
 
         {/* CONTEÚDO DUPLO (Atalhos + Feed) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
           {/* COLUNA ESQUERDA: ATALHOS */}
           <section className="lg:col-span-1 flex flex-col gap-6">  
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">

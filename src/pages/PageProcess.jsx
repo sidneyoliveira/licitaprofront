@@ -45,7 +45,7 @@ const DOCUMENT_TYPES = [
   { id: 5, nome: 'Anteprojeto' },
   { id: 6, nome: 'Projeto Básico' },
   { id: 7, nome: 'Estudo Técnico Preliminar' },
-  { id: 8, nome: 'Projeto Executivo' },
+  // { id: 8, nome: 'Projeto Executivo' },
   { id: 9, nome: 'Mapa de Riscos' },
   { id: 10, nome: 'DFD' },
   { id: 19, nome: 'Minuta de Ata de Registro de Preços' },
