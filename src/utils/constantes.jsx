@@ -2,16 +2,16 @@
 
 export const MODALIDADES = [
   { code: 6,  value: 'pregao_eletronico',          label: 'Pregão - Eletrônico' },
-  { code: 7,  value: 'pregao_presencial',          label: 'Pregão - Presencial' },
+  // { code: 7,  value: 'pregao_presencial',          label: 'Pregão - Presencial' },
   { code: 4,  value: 'concorrencia_eletronica',    label: 'Concorrência - Eletrônica' },
-  { code: 5,  value: 'concorrencia_presencial',    label: 'Concorrência - Presencial' },
+  // { code: 5,  value: 'concorrencia_presencial',    label: 'Concorrência - Presencial' },
   { code: 8,  value: 'dispensa_licitacao',         label: 'Dispensa de Licitação' },
   { code: 9,  value: 'inexigibilidade',            label: 'Inexigibilidade' },
   { code: 11, value: 'pre_qualificacao',           label: 'Pré-Qualificação' },
   { code: 12, value: 'credenciamento',             label: 'Credenciamento' },
-  { code: 13, value: 'leilao_eletronico',          label: 'Leilão - Eletrônico' },
-  { code: 14, value: 'leilao_presencial',          label: 'Leilão - Presencial' },
-  { code: 15, value: 'dialogo_competitivo',        label: 'Diálogo Competitivo' },
+  // { code: 13, value: 'leilao_eletronico',          label: 'Leilão - Eletrônico' },
+  // { code: 14, value: 'leilao_presencial',          label: 'Leilão - Presencial' },
+  // { code: 15, value: 'dialogo_competitivo',        label: 'Diálogo Competitivo' },
 ];
 
 // ============================================================================
@@ -22,12 +22,12 @@ export const AMPARO_LEGAL = [
     { code: 1, value: "lei14133_art28_i", label: "Lei 14.133/21, Art. 28, I (Pregão)" },
     { code: 2, value: "lei14133_art28_ii", label: "Lei 14.133/21, Art. 28, II (Concorrência)" },
     { code: 3, value: "lei14133_art28_iii", label: "Lei 14.133/21, Art. 28, III (Concurso)" },
-    { code: 4, value: "lei14133_art28_iv", label: "Lei 14.133/21, Art. 28, IV (Leilão)" },
-    { code: 5, value: "lei14133_art28_v", label: "Lei 14.133/21, Art. 28, V (Diálogo Competitivo)" },
+    // { code: 4, value: "lei14133_art28_iv", label: "Lei 14.133/21, Art. 28, IV (Leilão)" },
+    // { code: 5, value: "lei14133_art28_v", label: "Lei 14.133/21, Art. 28, V (Diálogo Competitivo)" },
 
     // --- Lei 14.133 (Art 75 - Dispensa) ---
-    { code: 18, value: "lei14133_art75_i", label: "Lei 14.133/21, Art. 75, I (Obras/Eng < 100k)" },
-    { code: 19, value: "lei14133_art75_ii", label: "Lei 14.133/21, Art. 75, II (Serviços < 50k)" },
+    { code: 18, value: "lei14133_art75_i", label: "Lei 14.133/21, Art. 75, I" },
+    { code: 19, value: "lei14133_art75_ii", label: "Lei 14.133/21, Art. 75, II" },
     { code: 20, value: "lei14133_art75_iii_a", label: "Lei 14.133/21, Art. 75, III, a (Deserta/Fracassada)" },
     { code: 21, value: "lei14133_art75_iii_b", label: "Lei 14.133/21, Art. 75, III, b (Preços Superiores)" },
     // ... adicione os outros incisos do Art 75 se necessário (22 a 46, 60, 77) ...
