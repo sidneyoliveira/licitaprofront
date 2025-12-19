@@ -13,7 +13,12 @@ import {
   Layers,
   UploadCloud,
   CheckCircle,
-  Trash2
+  Trash2,
+  MoreVertical,
+  Eye,
+  Download,
+  Edit,
+  AlertCircle
 } from 'lucide-react';
 
 // --- COMPONENTES & SEÇÕES ---
@@ -45,7 +50,6 @@ const DOCUMENT_TYPES = [
   { id: 5, nome: 'Anteprojeto' },
   { id: 6, nome: 'Projeto Básico' },
   { id: 7, nome: 'Estudo Técnico Preliminar' },
-  // { id: 8, nome: 'Projeto Executivo' },
   { id: 9, nome: 'Mapa de Riscos' },
   { id: 10, nome: 'DFD' },
   { id: 19, nome: 'Minuta de Ata de Registro de Preços' },
@@ -95,7 +99,6 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
         exit={{ opacity: 0, scale: 0.95 }}
         className="w-full max-w-md bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
       >
-        {/* Header */}
         <div className="flex justify-between items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
           <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
             <Globe className="w-5 h-5 text-[#004aad]" />
@@ -109,7 +112,6 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
           </button>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleUpload} className="p-5 space-y-5">
           <div className="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/20 text-xs text-blue-800 dark:text-blue-200 px-3 py-3">
             Você está publicando o processo{' '}
@@ -147,7 +149,6 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
@@ -198,24 +199,35 @@ const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
     )}
   </button>
 );
-/* ────────────────────────────────────────────────────────────────────────── */
-/* SUBCOMPONENTE: Aba de Arquivos / PNCP                                    */
-/* ────────────────────────────────────────────────────────────────────────── */
 
+/* ────────────────────────────────────────────────────────────────────────── */
+/* SUBCOMPONENTE: Aba de Arquivos / PNCP (FLUXO CORRIGIDO)                   */
+/* - Coluna Local lê localDocs                                               */
+/* - Coluna PNCP lê pncpRemoteDocs                                           */
+/* - Botão "Publicar PNCP" (texto)                                           */
+/* - Após publicado -> "Remover PNCP"                                        */
+/* - Remove "Visualizar" do menu ⋮                                           */
+/* ────────────────────────────────────────────────────────────────────────── */
 const ArquivosSection = ({
   documentTypes,
-  uploads,
-  pncpDocs,
-  onFileChange,
-  onPublish,
-  onDelete, 
-  sendingDocId,
+  localDocs,
+  pncpRemoteDocs,
+  onFileUpsert,
+  onPublishPncp,
+  onRemovePncp,
+  onDeleteLocal,
+  onView,
+  onDownload,
+  sendingKey,
 }) => {
-  const getDocInfo = (tipoId) =>
-    (pncpDocs || []).find(
-      (d) =>
-        Number(d.tipoDocumentoId ?? d.tipo_documento_id) === Number(tipoId)
-    );
+  const [activeMenu, setActiveMenu] = useState(null);
+
+  const findByTipo = (list, tipoId) =>
+    (list || []).find((d) => Number(d.tipo_documento_id ?? d.tipoDocumentoId) === Number(tipoId));
+
+  const getFileUrl = (doc) => doc?.arquivo_url || doc?.arquivo || null;
+  const getFileName = (doc) =>
+    doc?.arquivo_nome || doc?.arquivo_nome_original || doc?.titulo || 'arquivo';
 
   return (
     <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-5">
@@ -226,7 +238,7 @@ const ArquivosSection = ({
             Documentos da Contratação
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Anexe os arquivos do processo e publique no PNCP.
+            A coluna “Arquivo Local” reflete o que está salvo no seu servidor. A coluna “Status PNCP” reflete a situação no PNCP.
           </p>
         </div>
       </div>
@@ -237,104 +249,220 @@ const ArquivosSection = ({
             <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] md:text-xs uppercase text-slate-500 dark:text-slate-400">
               <th className="p-2 md:p-3 w-14">Ordem</th>
               <th className="p-2 md:p-3">Tipo de Documento</th>
-              <th className="p-2 md:p-3">Arquivo</th>
-              <th className="p-2 md:p-3 hidden md:table-cell">Situação</th>
+              <th className="p-2 md:p-3">Arquivo Local</th>
+              <th className="p-2 md:p-3 hidden md:table-cell">Status PNCP</th>
               <th className="p-2 md:p-3 text-right">Ações</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {documentTypes.map((dt) => {
-              const row = uploads[dt.id] || {};
-              const info = getDocInfo(dt.id);
-              const publicado = !!info;
-              
+              const local = findByTipo(localDocs, dt.id);
+              const pncp = findByTipo(pncpRemoteDocs, dt.id);
+
+              const hasLocal = !!local;
+              const fileUrl = getFileUrl(local);
+              const fileName = getFileName(local);
+
+              const isPublished =
+                local?.status === 'enviado' ||
+                !!local?.pncp_sequencial_documento ||
+                !!pncp?.pncp_sequencial_documento ||
+                !!pncp?.sequencial_documento;
+
+              const pncpSeq =
+                local?.pncp_sequencial_documento ||
+                pncp?.pncp_sequencial_documento ||
+                pncp?.sequencial_documento ||
+                null;
+
+              const pncpDate =
+                local?.pncp_publicado_em ||
+                pncp?.pncp_publicado_em ||
+                pncp?.publicado_em ||
+                null;
+
+              const rowSending = sendingKey === `tipo:${dt.id}`;
+
               return (
-                <tr key={dt.id} className="text-xs md:text-sm">
+                <tr
+                  key={dt.id}
+                  className="text-xs md:text-sm group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
+                >
                   <td className="p-2 md:p-3 text-slate-500 dark:text-slate-400 align-middle">
                     {dt.id}
                   </td>
+
                   <td className="p-2 md:p-3 align-middle">
                     <div className="font-medium text-slate-800 dark:text-slate-100">
                       {dt.nome}
                     </div>
-                    {publicado && (
+
+                    {/* Badges mobile */}
+                    {isPublished ? (
                       <div className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 md:hidden">
                         <CheckCircle className="w-3 h-3" />
-                        Publicado
+                        Publicado no PNCP
+                      </div>
+                    ) : hasLocal ? (
+                      <div className="mt-1 text-[11px] text-blue-600 dark:text-blue-300 flex items-center gap-1 md:hidden">
+                        <CheckCircle className="w-3 h-3" />
+                        Rascunho Local
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 md:hidden">
+                        <AlertCircle className="w-3 h-3" />
+                        Sem arquivo
                       </div>
                     )}
                   </td>
+
+                  {/* Arquivo Local */}
                   <td className="p-2 md:p-3 align-middle">
-                    {/* Se já publicado, mostra apenas o nome do arquivo remoto (ou fixo) para não confundir, ou permite re-upload se a lógica de negócio permitir sobrescrever */}
-                    <div className="space-y-1">
-                      <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed ${publicado ? 'border-emerald-200 bg-emerald-50 cursor-default' : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/40 cursor-pointer hover:border-[#004aad] hover:bg-slate-100'} transition-colors w-full md:w-auto`}>
-                        <UploadCloud className={`w-3.5 h-3.5 ${publicado ? 'text-emerald-500' : 'text-slate-500'}`} />
-                        <span className="truncate max-w-[150px] md:max-w-[200px] text-[11px] text-slate-600 dark:text-slate-300">
-                            {publicado 
-                              ? "Arquivo já enviado" 
-                              : (row.file ? row.file.name : "Selecionar arquivo")
-                            }
+                    {hasLocal ? (
+                      <button
+                        type="button"
+                        onClick={() => onView(fileUrl)}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 w-full md:w-auto hover:border-[#004aad] transition-colors"
+                        title="Visualizar"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-blue-500" />
+                        <span className="truncate max-w-[180px] md:max-w-[260px] text-[11px] text-slate-600 dark:text-slate-300 font-medium">
+                          {fileName}
                         </span>
-                        {!publicado && (
-                          <input
-                            type="file"
-                            accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
-                            className="hidden"
-                            onChange={(e) =>
-                              onFileChange(dt.id, e.target.files?.[0] || null)
-                            }
-                          />
-                        )}
+                        <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#004aad]" />
+                      </button>
+                    ) : (
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg-secondary cursor-pointer hover:border-[#004aad] hover:bg-slate-50 transition-colors w-full md:w-auto">
+                        <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
+                        <span className="text-[11px] text-slate-600 dark:text-slate-300">
+                          Selecionar arquivo
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
+                          className="hidden"
+                          disabled={rowSending}
+                          onChange={(e) => onFileUpsert(dt.id, e.target.files?.[0] || null)}
+                        />
                       </label>
-                    </div>
+                    )}
                   </td>
+
+                  {/* Status PNCP */}
                   <td className="p-2 md:p-3 align-middle hidden md:table-cell">
-                    {publicado ? (
+                    {isPublished ? (
                       <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
                         <CheckCircle className="w-3 h-3" />
-                        Publicado{' '}
-                        {info.dataPublicacaoPncp
-                          ? `em ${new Date(info.dataPublicacaoPncp).toLocaleDateString('pt-BR')}`
-                          : ''}
+                        Publicado{pncpDate ? ` em ${new Date(pncpDate).toLocaleDateString('pt-BR')}` : ''}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-[11px] bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700">
+                        <AlertCircle className="w-3 h-3" />
                         Não publicado
                       </span>
-                      
                     )}
                   </td>
-                  <td className="p-2 md:p-3 align-middle text-right">
-                    {publicado ? (
-                      <button
-                        type="button"
-                        onClick={() => onDelete(dt.id, info.sequencialDocumento)}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 shadow-sm"
-                        title="Remover do PNCP"
-                      >
-                         {sendingDocId === dt.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
+
+                  {/* Ações */}
+                  <td className="p-2 md:p-3 align-middle text-right relative">
+                    <div className="flex justify-end items-center gap-2">
+                      {/* Visualizar (rápido) */}
+                      {hasLocal && (
+                        <button
+                          type="button"
+                          onClick={() => onView(fileUrl)}
+                          className="p-1.5 text-slate-500 hover:text-blue-600 bg-slate-100 dark:bg-slate-800 rounded transition-colors"
+                          title="Visualizar"
+                        >
+                          <Eye size={14} />
+                        </button>
+                      )}
+
+                      {/* Publicar PNCP / Remover PNCP (com texto) */}
+                      {hasLocal && !isPublished && (
+                        <button
+                          type="button"
+                          onClick={() => onPublishPncp(local.id, dt.id)}
+                          disabled={rowSending}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#004aad] text-white hover:bg-[#003d91] disabled:opacity-50 transition-colors shadow-sm shadow-blue-900/20"
+                          title="Publicar no PNCP"
+                        >
+                          {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                          Publicar PNCP
+                        </button>
+                      )}
+
+                      {hasLocal && isPublished && (
+                        <button
+                          type="button"
+                          onClick={() => onRemovePncp(dt.id, pncpSeq)}
+                          disabled={rowSending || !pncpSeq}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors shadow-sm"
+                          title="Remover do PNCP"
+                        >
+                          {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          Remover PNCP
+                        </button>
+                      )}
+
+                      {/* Menu ⋮ (sem Visualizar) */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setActiveMenu(activeMenu === dt.id ? null : dt.id)}
+                          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          title="Mais ações"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+
+                        {activeMenu === dt.id && (
+                          <>
+                            <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
+                            <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-20 overflow-hidden text-left">
+                              {hasLocal && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onDownload(fileUrl, fileName);
+                                    setActiveMenu(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-[11px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                  <Download size={12} /> Baixar arquivo
+                                </button>
+                              )}
+
+                              <label className="w-full flex items-center gap-2 px-4 py-2 text-[11px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                                <Edit size={12} /> {hasLocal ? 'Alterar arquivo' : 'Anexar arquivo'}
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    onFileUpsert(dt.id, e.target.files?.[0] || null);
+                                    setActiveMenu(null);
+                                  }}
+                                />
+                              </label>
+
+                              {hasLocal && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onDeleteLocal(local.id);
+                                    setActiveMenu(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-[11px] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                  <Trash2 size={12} /> Deletar arquivo local
+                                </button>
+                              )}
+                            </div>
+                          </>
                         )}
-                        Excluir
-                      </button>
-                    ) : (
-                      // BOTÃO PUBLICAR
-                      <button
-                        type="button"
-                        onClick={() => onPublish(dt.id)}
-                        disabled={sendingDocId === dt.id || !row.file}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#004aad] text-white hover:bg-[#003d91] disabled:opacity-60 disabled:cursor-not-allowed shadow-sm shadow-blue-900/20 transition-all active:scale-95"
-                      >
-                        {sendingDocId === dt.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Send className="w-3.5 h-3.5" />
-                        )}
-                        Publicar
-                      </button>
-                    )}
+                      </div>
+                    </div>
                   </td>
                 </tr>
               );
@@ -344,7 +472,7 @@ const ArquivosSection = ({
       </div>
 
       <p className="mt-4 text-[11px] text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-3">
-        * O envio é realizado integrando diretamente com a API do PNCP.
+        * “Arquivo Local” não depende do PNCP. “Status PNCP” é carregado separadamente e não será sobrescrito ao importar arquivos.
       </p>
     </div>
   );
@@ -398,10 +526,12 @@ export default function PageProcess() {
   const [orgaoNome, setOrgaoNome] = useState('');
   const [lotes, setLotes] = useState([]);
 
-  // --- PNCP / ARQUIVOS ---
-  const [pncpDocs, setPncpDocs] = useState([]);
-  const [docUploads, setDocUploads] = useState({});
-  const [sendingDocId, setSendingDocId] = useState(null);
+  // --- ARQUIVOS: separar local x PNCP (CORREÇÃO DO FLUXO) ---
+  const [localDocs, setLocalDocs] = useState([]);
+  const [pncpRemoteDocs, setPncpRemoteDocs] = useState([]);
+
+  // controle spinner por tipo
+  const [sendingKey, setSendingKey] = useState(null);
 
   // --- MODAIS ---
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -526,18 +656,35 @@ export default function PageProcess() {
     [api]
   );
 
-  // Consulta wrapper para 6.3.5 + 6.3.8 (Contratação + Documentos)
+  // PNCP (consulta)
   const fetchPncpDocs = useCallback(
     async (pid) => {
       if (!pid) return;
       try {
         const { data } = await api.get(`/processos/${pid}/pncp/arquivos/`);
-        // Espera-se que o backend retorne algo como { documentos: [...] } ou diretamente a lista:
         const docs = Array.isArray(data) ? data : data?.documentos || [];
-        setPncpDocs(docs);
+        setPncpRemoteDocs(docs);
       } catch (error) {
         console.error(error);
-        showToast('Erro ao carregar documentos do PNCP.', 'error');
+        // não derruba a tela por isso; somente mantém vazio
+        setPncpRemoteDocs([]);
+      }
+    },
+    [api]
+  );
+
+  // Local (banco)
+  const fetchLocalDocs = useCallback(
+    async (pid) => {
+      if (!pid) return;
+      try {
+        const { data } = await api.get(`/documentos-pncp/`, { params: { processo: pid } });
+        const docs = Array.isArray(data) ? data : (data.results || []);
+        setLocalDocs(docs);
+      } catch (error) {
+        console.error(error);
+        showToast('Erro ao carregar documentos locais.', 'error');
+        setLocalDocs([]);
       }
     },
     [api, showToast]
@@ -579,7 +726,10 @@ export default function PageProcess() {
       fetchItens(id);
       fetchFornecedoresDoProcesso(id);
       fetchLotes(id);
-      fetchPncpDocs(id); // carrega documentos PNCP
+
+      // IMPORTANTÍSSIMO: carregar local e PNCP em estados separados
+      fetchLocalDocs(id);
+      fetchPncpDocs(id);
     }
   }, [
     id,
@@ -589,6 +739,7 @@ export default function PageProcess() {
     fetchItens,
     fetchFornecedoresDoProcesso,
     fetchLotes,
+    fetchLocalDocs,
     fetchPncpDocs,
   ]);
 
@@ -733,104 +884,137 @@ export default function PageProcess() {
     }
   };
 
- /* ──────────────────────────────────────────────────────────────────────── */
-/* HANDLERS ESPECÍFICOS: ARQUIVOS / PNCP                                   */
-/* ──────────────────────────────────────────────────────────────────────── */
+  /* ──────────────────────────────────────────────────────────────────────── */
+  /* HANDLERS ESPECÍFICOS: ARQUIVOS (corrigidos)                              */
+  /* - Upsert: se existe doc local -> PATCH /{id}/                            */
+  /* - Se não existe -> POST                                                  */
+  /* - Publicar: POST /{id}/enviar-ao-pncp/                                   */
+  /* - Remover PNCP: DELETE /processos/{pid}/pncp/arquivos/{seq}/             */
+  /* - Remover Local: DELETE /documentos-pncp/{id}/                           */
+  /* ──────────────────────────────────────────────────────────────────────── */
 
-const handleChangeDocFile = (tipoId, file) => {
-  setDocUploads((prev) => ({
-    ...prev,
-    [tipoId]: {
-      ...(prev[tipoId] || {}),
-      file,
-    },
-  }));
-};
+  const findLocalByTipo = (tipoId) =>
+    (localDocs || []).find((d) => Number(d.tipo_documento_id) === Number(tipoId));
 
-// Wrapper para 6.3.6 (Inserir Documento a uma Contratação) via backend
-const handlePublishDocPncp = async (tipoId) => {
-  if (!processoId) return;
+  const handleUpsertDocFile = async (tipoId, file) => {
+    if (!file || !processoId) return;
 
-  const row = docUploads[tipoId];
-  if (!row?.file) {
-    showToast("Selecione o arquivo antes de publicar no PNCP.", "warning");
-    return;
-  }
+    setSendingKey(`tipo:${tipoId}`);
+    try {
+      const docTypeObj = DOCUMENT_TYPES.find((d) => d.id === tipoId);
+      const titulo = docTypeObj ? docTypeObj.nome : `Documento ${tipoId}`;
 
-  setSendingDocId(tipoId);
-  try {
-    // Busca o nome do tipo para gerar o título automático
-    const docTypeObj = DOCUMENT_TYPES.find((d) => d.id === tipoId);
-    const nomeTipo = docTypeObj ? docTypeObj.nome : `Documento ${tipoId}`;
-    const tituloAutomatico = `${nomeTipo}`;
+      const fd = new FormData();
+      fd.append("arquivo", file);
+      fd.append("tipo_documento_id", tipoId);
+      fd.append("titulo", titulo);
+      fd.append("processo", processoId);
 
-    const fd = new FormData();
-    fd.append("arquivo", row.file); // campo binário
-    fd.append("tipo_documento_id", tipoId); // Tipo-Documento-Id
-    fd.append("titulo_documento", tituloAutomatico); // Título gerado automaticamente
+      const existing = findLocalByTipo(tipoId);
 
-    // Endpoint do backend:
-    // POST /processos/:id/pncp/arquivos/
-    await api.post(`/processos/${processoId}/pncp/arquivos/`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    showToast("Documento enviado ao PNCP com sucesso!", "success");
-
-    // Limpa seleção local desse tipo
-    setDocUploads((prev) => ({
-      ...prev,
-      [tipoId]: { ...prev[tipoId], file: null },
-    }));
-
-    // Recarrega lista de documentos do PNCP (6.3.8)
-    await fetchPncpDocs(processoId);
-  } catch (error) {
-    console.error(error);
-    const msg =
-      error.response?.data?.detail || "Erro ao enviar documento ao PNCP.";
-    showToast(msg, "error");
-  } finally {
-    setSendingDocId(null);
-  }
-};
-
-const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
-  if (!processoId) return;
-
-  if (!sequencialDocumento) {
-    showToast("Identificador do documento no PNCP não encontrado.", "error");
-    return;
-  }
-
-  try {
-    // usa o primeiro parâmetro só para controlar o spinner
-    setSendingDocId(localDocId);
-
-    await api.delete(
-      `/processos/${processoId}/pncp/arquivos/${sequencialDocumento}/`,
-      {
-        data: {
-          justificativa: "Exclusão solicitada pelo sistema de origem.",
-        },
+      if (existing?.id) {
+        // PATCH: evita criar novo registro
+        await api.patch(`/documentos-pncp/${existing.id}/`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        // POST: cria novo
+        await api.post(`/documentos-pncp/`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
-    );
 
-    showToast("Documento excluído do PNCP com sucesso.", "success");
+      showToast("Arquivo salvo com sucesso!", "success");
+      await fetchLocalDocs(processoId);
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao salvar arquivo no banco de dados.", "error");
+    } finally {
+      setSendingKey(null);
+    }
+  };
 
-    // Recarrega lista de documentos do PNCP
-    await fetchPncpDocs(processoId);
-  } catch (error) {
-    const msg =
-      error?.response?.data?.detail ||
-      error?.response?.data?.message ||
-      "Erro ao excluir documento no PNCP.";
-    showToast(msg, "error");
-  } finally {
-    setSendingDocId(null);
-  }
-};
+  const handlePublishDocPncp = async (idLocalNoBanco, tipoId) => {
+    setSendingKey(`tipo:${tipoId}`);
+    try {
+      await api.post(`/documentos-pncp/${idLocalNoBanco}/enviar-ao-pncp/`);
+      showToast("Documento publicado no PNCP com sucesso!", "success");
 
+      // após publicar, atualiza as duas fontes
+      await Promise.all([fetchLocalDocs(processoId), fetchPncpDocs(processoId)]);
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.detail || "Erro ao publicar no PNCP.";
+      showToast(msg, "error");
+    } finally {
+      setSendingKey(null);
+    }
+  };
+
+  const handleRemoveDocPncp = async (tipoId, sequencialDocumento) => {
+    if (!processoId) return;
+    if (!sequencialDocumento) {
+      showToast("Sequencial do documento no PNCP não encontrado.", "error");
+      return;
+    }
+
+    setSendingKey(`tipo:${tipoId}`);
+    try {
+      await api.delete(
+        `/processos/${processoId}/pncp/arquivos/${sequencialDocumento}/`,
+        { data: { justificativa: "Exclusão solicitada pelo usuário." } }
+      );
+
+      showToast("Documento removido do PNCP com sucesso.", "success");
+      await Promise.all([fetchLocalDocs(processoId), fetchPncpDocs(processoId)]);
+    } catch (error) {
+      console.error(error);
+      const msg =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        "Erro ao excluir documento no PNCP.";
+      showToast(msg, "error");
+    } finally {
+      setSendingKey(null);
+    }
+  };
+
+  const handleDeleteLocalDoc = async (docId) => {
+    try {
+      await api.delete(`/documentos-pncp/${docId}/`);
+      showToast("Arquivo local removido.", "success");
+      await fetchLocalDocs(processoId);
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao remover rascunho local.", "error");
+    }
+  };
+
+  const handleViewFile = (url) => {
+    if (!url) return showToast("Arquivo não disponível para visualização.", "warning");
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDownloadFile = async (url, name) => {
+    try {
+      if (!url) return showToast("Arquivo não disponível para download.", "warning");
+
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Falha ao baixar arquivo.");
+
+      const blob = await res.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = name || "arquivo";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao baixar arquivo.", "error");
+    }
+  };
 
   /* ──────────────────────────────────────────────────────────────────────── */
   /* RENDER                                                                  */
@@ -838,7 +1022,6 @@ const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
 
   return (
     <div className="min-h-screen pb-20 flex justify-center items-start">
-      {/* MODAIS GLOBAIS */}
       <AnimatePresence>
         {isItemModalOpen && (
           <ItemModal
@@ -910,9 +1093,7 @@ const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
         )}
       </AnimatePresence>
 
-      {/* CONTEÚDO CENTRALIZADO */}
       <div className="max-w-7xl w-full px-2 md:px-4 lg:px-0 py-4 space-y-6">
-        {/* Cabeçalho/resumo do processo */}
         {!isEditing && (
           <ProcessHeader
             formData={formData}
@@ -923,7 +1104,6 @@ const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
           />
         )}
 
-        {/* Bloco de edição (Dados Gerais) */}
         {isEditing && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -950,11 +1130,8 @@ const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
           </motion.div>
         )}
 
-        {/* Abas (Itens / Lotes / Fornecedores / Arquivos) – somente após salvar */}
         {processoId && !isEditing && (
           <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[480px]">
-            
-            {/* Navegação de Abas - PADRONIZADA */}
             <div className="flex items-center px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary overflow-x-auto gap-1">
               <TabButton
                 id="itens"
@@ -988,7 +1165,6 @@ const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
               />
             </div>
 
-            {/* Conteúdo das Abas */}
             <div className="p-6 bg-slate-50/50 dark:bg-slate-900/20 min-h-[380px]">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -1054,13 +1230,15 @@ const handleDeleteDocPncp = async (localDocId, sequencialDocumento) => {
                   {activeTab === 'arquivos' && (
                     <ArquivosSection
                       documentTypes={DOCUMENT_TYPES}
-                      uploads={docUploads}
-                      pncpDocs={pncpDocs}
-                      onFileChange={handleChangeDocFile}
-                      onPublish={handlePublishDocPncp}
-                      onDelete={handleDeleteDocPncp}   // 👈 AQUI
-                      sendingDocId={sendingDocId}
-                      
+                      localDocs={localDocs}
+                      pncpRemoteDocs={pncpRemoteDocs}
+                      onFileUpsert={handleUpsertDocFile}
+                      onPublishPncp={handlePublishDocPncp}
+                      onRemovePncp={handleRemoveDocPncp}
+                      onDeleteLocal={handleDeleteLocalDoc}
+                      onView={handleViewFile}
+                      onDownload={handleDownloadFile}
+                      sendingKey={sendingKey}
                     />
                   )}
                 </motion.div>
