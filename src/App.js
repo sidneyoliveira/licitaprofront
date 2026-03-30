@@ -17,7 +17,6 @@ import Fornecedores from './pages/Fornecedores';
 import Usuarios from './pages/Usuarios';
 import Notificacoes from './pages/Notificacoes';
 import Perfil from './pages/Perfil';
-import Configuracoes from './pages/Configuracoes';
 import NewProcess from './pages/NewProcess';
 import PageProcess from './pages/PageProcess';
 import CompleteProfile from './pages/CompleteProfile';
@@ -54,7 +53,6 @@ function App() {
             <Route path="complete-profile" element={<CompleteProfile />} />
             <Route path="notificacoes" element={<Notificacoes />} />
             <Route path="perfil" element={<Perfil />} />
-            <Route path="configuracoes" element={<Configuracoes />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

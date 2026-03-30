@@ -256,19 +256,19 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             initial={{ scale: 0.95, opacity: 0, y: 20 }} 
             animate={{ scale: 1, opacity: 1, y: 0 }} 
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-5xl bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            className="relative w-full max-w-5xl bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden flex flex-col max-h-[90vh]"
           >
             {/* ─ HEADER (CORRIGIDO: Sem sticky) ─ */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-dark-border bg-white dark:bg-dark-bg-secondary flex-shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary flex-shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                   {isEdit ? "Editar Perfil" : "Novo Membro"}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   {isEdit ? `Gerenciando usuário #${user.id}` : "Preencha os dados para conceder acesso."}
                 </p>
               </div>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-bg-primary text-gray-500 transition-colors">
+              <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -277,12 +277,12 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             <div className="flex flex-1 overflow-hidden flex-col md:flex-row min-h-0">
               
               {/* Sidebar */}
-              <div className="w-full md:w-72 bg-gray-50/80 dark:bg-dark-bg-primary/50 border-r border-gray-100 dark:border-dark-border p-6 flex flex-col gap-6 overflow-y-auto flex-shrink-0">
+              <div className="w-full md:w-72 bg-slate-50 dark:bg-dark-bg-primary border-r border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-6 overflow-y-auto flex-shrink-0">
                 
                 {/* Avatar */}
                 <div className="flex flex-col items-center text-center">
                   <div className="relative group">
-                    <div className="w-28 h-28 rounded-full border-4 border-white dark:border-dark-bg-secondary shadow-lg overflow-hidden bg-gray-200">
+                    <div className="w-28 h-28 rounded-full border-4 border-white dark:border-dark-bg-secondary overflow-hidden bg-slate-200">
                       <img 
                         src={preview || `https://ui-avatars.com/api/?name=${form.first_name || 'Novo'}&background=random&color=fff`} 
                         alt="Avatar" 
@@ -292,7 +292,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                     <button 
                       type="button"
                       onClick={() => fileRef.current.click()}
-                      className="absolute bottom-0 right-0 p-2 bg-accent-blue text-white rounded-full shadow-md hover:bg-blue-600 transition-transform hover:scale-105"
+                      className="absolute bottom-0 right-0 p-2 bg-accent-blue text-white rounded-full hover:bg-accent-blue-hover transition-colors"
                       title="Alterar foto"
                     >
                       <Camera className="w-4 h-4" />
@@ -301,14 +301,14 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                   <input ref={fileRef} type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                   
                   <div className="mt-3">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{(((form.first_name || "") + " " + (form.last_name || "")).trim() || "Novo Usuário")}</h3>
-                    <p className="text-xs text-gray-500">{form.email || "sem email"}</p>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">{(((form.first_name || "") + " " + (form.last_name || "")).trim() || "Novo Usuário")}</h3>
+                    <p className="text-xs text-slate-500">{form.email || "sem email"}</p>
                   </div>
                   
                  
                 </div>
 
-                <hr className="border-gray-200 dark:border-dark-border" />
+                <hr className="border-slate-200 dark:border-slate-700" />
 
                 {/* Menu */}
                 <nav className="space-y-1">
@@ -320,13 +320,13 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors
                         ${activeTab === tab.id 
-                          ? "bg-white dark:bg-dark-bg-secondary text-accent-blue shadow-sm ring-1 ring-gray-200 dark:ring-dark-border" 
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-bg-secondary/50"
+                          ? "bg-white dark:bg-dark-bg-secondary text-accent-blue border border-slate-200 dark:border-slate-700" 
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                         }`}
                     >
-                      <tab.icon className={`w-4.5 h-4.5 ${activeTab === tab.id ? "text-accent-blue" : "text-gray-400"}`} />
+                      <tab.icon className={`w-4.5 h-4.5 ${activeTab === tab.id ? "text-accent-blue" : "text-slate-400"}`} />
                       {tab.label}
                     </button>
                   ))}
@@ -345,9 +345,9 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                     {/* GERAL */}
                     {activeTab === "geral" && (
                       <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
-                        <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-100 dark:border-dark-border">
+                        <div className="flex items-center gap-2 mb-6 pb-2 border-b border-slate-200 dark:border-slate-700">
                           <User className="w-5 h-5 text-accent-blue" />
-                          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Informações Básicas</h3>
+                          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Informações Básicas</h3>
                         </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
@@ -382,9 +382,9 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                     {/* TAB: SEGURANÇA */}
                     {activeTab === "seguranca" && (
                       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                        <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-100 dark:border-dark-border">
+                        <div className="flex items-center gap-2 mb-6 pb-2 border-b border-slate-200 dark:border-slate-700">
                           <Lock className="w-5 h-5 text-accent-blue" />
-                          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Segurança e Login</h3>
+                          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Segurança e Login</h3>
                         </div>
                         <div>
                           <Label required>Nome de Usuário</Label>
@@ -397,7 +397,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                             error={errors.username}
                             icon={User}
                           />
-                          {isEdit && <p className="text-xs text-gray-400 mt-1">O nome de usuário não pode ser alterado.</p>}
+                          {isEdit && <p className="text-xs text-slate-400 mt-1">O nome de usuário não pode ser alterado.</p>}
                         </div>
 
                         <div className="p-5 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-800/30 rounded-xl space-y-4">
@@ -441,9 +441,9 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                     {/* PERMISSÕES */}
                     {activeTab === "permissoes" && (
                       <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
-                        <div className="flex items-center gap-2 mb-6 pb-2 border-b border-gray-100 dark:border-dark-border">
+                        <div className="flex items-center gap-2 mb-6 pb-2 border-b border-slate-200 dark:border-slate-700">
                           <Shield className="w-5 h-5 text-accent-blue" />
-                          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Controle de Acesso</h3>
+                          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Controle de Acesso</h3>
                         </div>
 
                         <div className="space-y-4">
@@ -481,11 +481,11 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             </div>
 
             {/* ─ FOOTER (Fixed) ─ */}
-            <div className="px-6 py-4 bg-gray-50 dark:bg-dark-bg-primary border-t border-gray-100 dark:border-dark-border flex justify-end gap-3 flex-shrink-0">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
               <button 
                 type="button" 
                 onClick={onClose} 
-                className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-dark-bg-secondary transition-colors"
+                className="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
                 disabled={saving}
               >
                 Cancelar
@@ -493,7 +493,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
               <button 
                 onClick={handleSubmit} 
                 disabled={saving || loadingData}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-accent-blue hover:bg-blue-700 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
+                className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-accent-blue hover:bg-accent-blue-hover transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {saving ? (
                   <>

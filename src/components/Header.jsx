@@ -377,10 +377,9 @@ const Header = ({ toggleSidebar }) => {
   return (
     <header
       className="
-        sticky top-0 z-40 mt-4 mx-3
-        rounded-2xl border border-white/70 dark:border-white/10
-        bg-white/78 dark:bg-slate-900/65
-        backdrop-blur-xl shadow-[0_8px_24px_rgba(15,23,42,0.10)] dark:shadow-[0_16px_34px_rgba(2,6,23,0.42)]
+        sticky top-0 z-40
+        border-b border-slate-200 dark:border-slate-700
+        bg-white dark:bg-dark-bg-secondary
       "
     >
       <div className="flex items-center justify-between px-3 py-3 h-16">
@@ -476,15 +475,15 @@ const Header = ({ toggleSidebar }) => {
                   transition={{ duration: 0.1 }}
                   className="
                     absolute right-0 mt-3 w-80 md:w-96
-                    bg-white/95 dark:bg-slate-900/90
-                    border border-white/70 dark:border-white/10
-                    rounded-2xl shadow-[0_12px_28px_rgba(15,23,42,0.16)] dark:shadow-[0_20px_40px_rgba(2,6,23,0.55)]
+                    bg-white dark:bg-dark-bg-secondary
+                    border border-slate-200 dark:border-slate-700
+                    rounded-xl shadow-lg
                     z-50 overflow-hidden
-                    text-slate-800 dark:text-slate-50
+                    text-slate-800 dark:text-slate-100
                   "
                 >
                   {/* Cabeçalho notificações */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-slate-700 dark:text-slate-100">
                         Notificações
@@ -531,7 +530,7 @@ const Header = ({ toggleSidebar }) => {
                   </div>
 
                   {/* Lista notificações */}
-                  <div className="max-h-[320px] overflow-y-auto custom-scrollbar bg-white/90 dark:bg-slate-900/70 backdrop-blur-sm">
+                  <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
                     {loadingNotifs ? (
                       <div className="flex flex-col items-center justify-center py-8 text-slate-400">
                         <RefreshCw className="w-6 h-6 animate-spin mb-2" />
@@ -589,7 +588,7 @@ const Header = ({ toggleSidebar }) => {
                                     {n.mensagem}
                                   </p>
 
-                                  <div className="flex gap-3 mt-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                  <div className="flex gap-3 mt-2">
                                     {n.href && (
                                       <Link
                                         to={n.href}
@@ -620,7 +619,7 @@ const Header = ({ toggleSidebar }) => {
                                 </div>
                               </div>
 
-                              <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+                              <div className="absolute top-4 right-4 w-2 h-2 bg-accent-blue rounded-full" />
                             </div>
                           );
                         })}
@@ -633,10 +632,10 @@ const Header = ({ toggleSidebar }) => {
                     onClick={() => setNotifOpen(false)}
                     className="
                       block w-full py-3 text-center text-xs font-semibold
-                      text-blue-600 dark:text-blue-400
-                      bg-slate-50/85 dark:bg-slate-900/70
-                      border-t border-slate-100 dark:border-slate-800
-                      hover:bg-blue-50/60 dark:hover:bg-slate-800
+                      text-accent-blue dark:text-blue-400
+                      bg-slate-50 dark:bg-dark-bg-primary
+                      border-t border-slate-200 dark:border-slate-700
+                      hover:bg-slate-100 dark:hover:bg-slate-800
                       transition-colors
                     "
                   >
@@ -657,11 +656,11 @@ const Header = ({ toggleSidebar }) => {
               className="
                 flex items-center gap-3
                 px-4 py-1
-                rounded-xl
-                bg-slate-100 hover:bg-slate-200
-                dark:bg-slate-800 dark:hover:bg-slate-700
-                text-slate-800 dark:text-slate-50
-                transition-all
+                rounded-lg
+                hover:bg-slate-100
+                dark:hover:bg-slate-800
+                text-slate-800 dark:text-slate-100
+                transition-colors
                 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
               "
             >
@@ -672,10 +671,8 @@ const Header = ({ toggleSidebar }) => {
                   bg-slate-200
                   dark:bg-slate-700
                   flex items-center justify-center
-                  text-slate-700 dark:text-slate-100
+                  text-slate-700 dark:text-slate-200
                   overflow-hidden
-                  shadow-sm
-                  ring-2 ring-white/60 dark:ring-slate-800
                 "
               >
                 {user?.profile_image ? (
@@ -706,15 +703,15 @@ const Header = ({ toggleSidebar }) => {
                   transition={{ duration: 0.1 }}
                   className="
                     absolute right-0 mt-3 w-60
-                    bg-white/95 dark:bg-slate-900/90
-                    border border-white/70 dark:border-white/10
-                    rounded-xl shadow-[0_12px_28px_rgba(15,23,42,0.16)] dark:shadow-[0_20px_40px_rgba(2,6,23,0.55)]
+                    bg-white dark:bg-dark-bg-secondary
+                    border border-slate-200 dark:border-slate-700
+                    rounded-xl shadow-lg
                     z-50 overflow-hidden
-                    text-slate-800 dark:text-slate-50
+                    text-slate-800 dark:text-slate-100
                   "
                 >
-                  <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/70">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-50 truncate">
+                  <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                       {user?.first_name} {user?.last_name}
                     </p>
                     <p

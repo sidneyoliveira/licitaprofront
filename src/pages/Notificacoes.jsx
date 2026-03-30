@@ -443,15 +443,15 @@ export default function Notificacoes() {
       </Helmet>
 
       {/* Cabeçalho */}
-      <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-md p-4">
+      <div className="ui-page-header">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div className="flex items-center gap-2">
-            <Bell className="w-6 h-6 text-accent-blue" />
+            <Bell className="w-5 h-5 text-accent-blue" />
             <div>
-              <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary">
+              <h1 className="text-xl font-bold text-slate-800 dark:text-white">
                 Central de Notificações
               </h1>
-              <p className="mt-1 text-md text-light-text-secondary dark:text-dark-text-secondary">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {isLoading ? "Carregando..." : `Exibindo ${total} notificações`}
               </p>
             </div>
@@ -629,7 +629,7 @@ export default function Notificacoes() {
       </div>
 
       {/* Lista */}
-      <div className="bg-white dark:bg-dark-bg-primary rounded-md p-0">
+      <div className="ui-card rounded-xl p-0">
         {isLoading ? (
           <div className="text-center py-10">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mx-auto"></div>

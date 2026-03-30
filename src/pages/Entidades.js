@@ -75,7 +75,7 @@ const OrgaoItem = React.memo(({ orgao, onEdit, onDelete }) => (
 const EntidadeAcordeon = React.memo(
   ({ entidade, orgaos, isOpen, onToggle, onEdit, onDelete, onAddOrgao }) => {
     return (
-      <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div
           className="flex justify-between items-center px-4 py-3 cursor-pointer"
           onClick={onToggle}
@@ -385,13 +385,14 @@ export default function Entidades() {
         )}
 
         {/* Cabeçalho / Filtros */}
-        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl p-4 md:p-6 space-y-4">
+        <div className="ui-page-header space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary">
+              <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <Building className="w-5 h-5 text-accent-blue" />
                 Entidades e Unidades
               </h1>
-              <p className="mt-1 text-sm md:text-base text-light-text-secondary dark:text-dark-text-secondary">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Gerencie {hierarchicalData.length}{" "}
                 {hierarchicalData.length === 1 ? "entidade" : "entidades"} e{" "}
                 {totalOrgaos} {totalOrgaos === 1 ? "órgão" : "órgãos"} cadastrados.
@@ -400,7 +401,7 @@ export default function Entidades() {
             <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => handleOpenModal(null, "entidade")}
-                className="inline-flex items-center gap-2 text-sm bg-accent-blue text-white hover:bg-accent-blue/90 rounded-lg shadow-sm"
+                className="ui-btn-primary"
               >
                 <Plus className="w-4 h-4" />
                 Nova Entidade

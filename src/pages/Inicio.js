@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   FileText,
   Building2,
@@ -9,7 +8,6 @@ import {
   Activity,
   Calendar,
   ArrowRight,
-  Settings,
   UserCheck,
   Clock,
 } from "lucide-react";
@@ -51,19 +49,17 @@ const getAvatarUrl = (name) => {
 
 // Card de Estatísticas (KPI)
 const StatCard = ({ title, value, icon: Icon, to }) => (
-  <Link to={to} className="block h-full group">
-    <motion.div
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
-      className="h-full p-6 ui-card hover:border-accent-blue/35 dark:hover:border-accent-blue/35"
+  <Link to={to} className="block h-full">
+    <div
+      className="h-full p-5 ui-card"
     >
       <div className="flex items-start justify-between mb-4">
-  <div className="p-3 rounded-xl bg-gradient-to-br from-accent-blue/15 to-cyan-300/20 dark:from-accent-blue/30 dark:to-cyan-400/20 text-accent-blue dark:text-blue-300">
-          <Icon size={24} strokeWidth={2} />
+        <div className="p-2.5 rounded-lg bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400">
+          <Icon size={22} strokeWidth={2} />
         </div>
         <ArrowRight
           size={16}
-          className="text-slate-300 dark:text-slate-600 group-hover:text-accent-blue transition-colors"
+          className="text-slate-300 dark:text-slate-600"
         />
       </div>
 
@@ -75,19 +71,19 @@ const StatCard = ({ title, value, icon: Icon, to }) => (
           {title}
         </p>
       </div>
-    </motion.div>
+    </div>
   </Link>
 );
 
 // Card de Atalho
 const ShortcutCard = ({ label, icon: Icon, to, description }) => (
-  <Link to={to} className="group block h-full">
-    <div className="flex items-center gap-4 p-4 ui-card hover:border-accent-blue/30 h-full">
-  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/15 to-cyan-300/20 dark:from-accent-blue/30 dark:to-cyan-400/20 flex items-center justify-center text-accent-blue dark:text-blue-300 group-hover:scale-105 transition-transform duration-300">
+  <Link to={to} className="block h-full">
+    <div className="flex items-center gap-4 p-4 ui-card h-full">
+      <div className="w-10 h-10 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 flex items-center justify-center text-accent-blue dark:text-blue-400">
         <Icon size={20} strokeWidth={2} />
       </div>
       <div className="flex-1 min-w-0">
-  <h4 className="font-semibold text-slate-800 dark:text-white text-sm truncate group-hover:text-accent-blue transition-colors">
+        <h4 className="font-semibold text-slate-800 dark:text-white text-sm truncate">
           {label}
         </h4>
         {description && (
@@ -96,7 +92,7 @@ const ShortcutCard = ({ label, icon: Icon, to, description }) => (
           </p>
         )}
       </div>
-  <div className="text-slate-300 dark:text-slate-600 group-hover:text-accent-blue transition-colors">
+      <div className="text-slate-300 dark:text-slate-600">
         <ArrowRight size={18} />
       </div>
     </div>
@@ -105,8 +101,8 @@ const ShortcutCard = ({ label, icon: Icon, to, description }) => (
 
 // Item de Atividade Recente
 const RecentActivityItem = ({ process }) => (
-  <div className="group flex items-center gap-4 p-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/45 rounded-xl transition-colors duration-200">
-  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-accent-blue dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+  <div className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+    <div className="w-10 h-10 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 text-accent-blue dark:text-blue-400 flex items-center justify-center flex-shrink-0">
       <FileText size={18} />
     </div>
 
@@ -137,7 +133,7 @@ const RecentActivityItem = ({ process }) => (
 
         <Link
           to={`/processos/editar/${process.id}`}
-          className="text-xs font-bold text-accent-blue dark:text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className="text-xs font-bold text-accent-blue dark:text-blue-400 hover:underline"
         >
           Ver detalhes
         </Link>
@@ -239,9 +235,7 @@ const Inicio = () => {
 
       <div className="max-w-7xl w-full py-2 space-y-4 px-3 md:px-0">
         {/* CABEÇALHO / HERO */}
-        <header className="ui-card flex flex-col md:flex-row md:items-center justify-between px-6 py-6 gap-4 relative overflow-hidden">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-accent-blue/15 blur-3xl" />
-          <div className="pointer-events-none absolute -left-10 -bottom-12 h-44 w-44 rounded-full bg-cyan-300/15 blur-3xl" />
+        <header className="ui-card flex flex-col md:flex-row md:items-center justify-between px-6 py-6 gap-4">
           <div className="flex items-center gap-5">
             <img
               src={user?.profile_image || getAvatarUrl(displayName)}
@@ -305,12 +299,6 @@ const Inicio = () => {
                 description="Controle de acesso ao sistema"
                 icon={Users}
                 to="/usuarios"
-              />
-              <ShortcutCard
-                label="Configurações"
-                description="Preferências gerais do sistema"
-                icon={Settings}
-                to="/configuracoes"
               />
             </div>
           </section>

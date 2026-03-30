@@ -38,7 +38,7 @@ const Label = ({ children, className = "" }) => (
 );
 
 const ReadOnlyInput = ({ icon: Icon, value, className = "", ...props }) => (
-  <div className={`relative group ${className}`}>
+  <div className={`relative ${className}`}>
     {Icon && (
       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
         <Icon size={18} strokeWidth={2} />
@@ -46,9 +46,9 @@ const ReadOnlyInput = ({ icon: Icon, value, className = "", ...props }) => (
     )}
     <div
       className={`
-        w-full bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 
-        rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 text-sm 
-        transition-all cursor-default font-medium flex items-center
+        w-full bg-slate-50 dark:bg-dark-bg-primary text-slate-700 dark:text-slate-300 
+        rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-3 text-sm 
+        cursor-default font-medium flex items-center
         ${Icon ? "pl-11" : ""}
       `}
       {...props}
@@ -59,9 +59,9 @@ const ReadOnlyInput = ({ icon: Icon, value, className = "", ...props }) => (
 );
 
 const SectionHeader = ({ title, icon: Icon, action }) => (
-  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-700/50">
+  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
     <div className="flex items-center gap-3">
-  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-accent-blue dark:text-blue-400">
+  <div className="p-2 bg-accent-blue/10 dark:bg-accent-blue/20 rounded-lg text-accent-blue dark:text-blue-400">
         <Icon size={20} strokeWidth={2} />
       </div>
       <h3 className="text-base font-bold text-slate-800 dark:text-white tracking-tight">
@@ -117,16 +117,16 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800"
+            className="relative w-full max-w-md bg-white dark:bg-dark-bg-secondary rounded-xl shadow-lg overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700"
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary">
               <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-accent-blue">
+                  <div className="p-2 bg-accent-blue/10 dark:bg-accent-blue/20 rounded-lg text-accent-blue">
                       <Paperclip size={20} />
                   </div>
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white">
@@ -135,7 +135,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X size={20} />
               </button>
@@ -193,7 +193,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Ex: CNH, Comprovante de Residência..."
-                  className="w-full h-12 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue outline-none transition-all"
+                  className="w-full h-12 px-4 bg-white dark:bg-dark-bg-primary border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-accent-blue/30 focus:border-accent-blue outline-none transition-all"
                 />
               </div>
 
@@ -201,14 +201,14 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={!file || uploading}
-                  className="px-6 py-2.5 text-sm font-bold text-white bg-accent-blue hover:bg-accent-blue-hover rounded-xl shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all active:scale-95"
+                  className="px-6 py-2.5 text-sm font-bold text-white bg-accent-blue hover:bg-accent-blue-hover rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
                 >
                   {uploading ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -367,7 +367,7 @@ const Perfil = () => {
         />
 
         {/* --- CABEÇALHO DO PERFIL --- */}
-        <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden p-4 md:p-6">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-6 w-full">
                 
                 {/* Avatar */}
@@ -380,7 +380,7 @@ const Perfil = () => {
                         />
                     </div>
                     {user.is_superuser && (
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md border-2 border-white dark:border-dark-bg-secondary flex items-center gap-1 whitespace-nowrap z-10">
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white dark:border-dark-bg-secondary flex items-center gap-1 whitespace-nowrap z-10">
                             <ShieldCheck size={12} /> ADMIN
                         </div>
                     )}
@@ -404,7 +404,7 @@ const Perfil = () => {
                             active={user.is_active}
                             icon={user.is_active ? CheckCircle : Shield}
                         />
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-dark-bg-primary text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             <Clock size={14} className="text-slate-400" />
                             Membro desde {new Date(user.date_joined).getFullYear()}
                         </div>
@@ -415,7 +415,7 @@ const Perfil = () => {
                 <div className="flex-shrink-0 mt-2 md:mt-0">
                     <button
                         onClick={() => setEditModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-accent-blue transition-all shadow-sm border border-slate-200 dark:border-slate-700"
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-dark-bg-primary text-slate-600 dark:text-slate-300 text-sm font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-accent-blue transition-colors border border-slate-200 dark:border-slate-700"
                     >
                         <Edit size={16} />
                         Editar Perfil
@@ -431,7 +431,7 @@ const Perfil = () => {
           <div className="lg:col-span-2 space-y-4">
              
              {/* Card Dados Pessoais */}
-             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                 <SectionHeader title="Dados Pessoais" icon={User} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
@@ -448,7 +448,7 @@ const Perfil = () => {
                    </div>
                    <div>
                       <Label>Nível de Acesso</Label>
-                      <div className="h-[46px] flex items-center px-4 bg-gray-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300">
+                      <div className="h-[46px] flex items-center px-4 bg-slate-50 dark:bg-dark-bg-primary border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300">
                           <Shield className="w-4 h-4 mr-2 text-accent-blue" />
                           {user.is_superuser ? "Administrador Total" : user.is_staff ? "Membro da Equipe" : "Usuário Padrão"}
                       </div>
@@ -457,7 +457,7 @@ const Perfil = () => {
              </div>
 
              {/* Card Contato */}
-             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                 <SectionHeader title="Informações de Contato" icon={Phone} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
@@ -472,14 +472,14 @@ const Perfil = () => {
              </div>
 
              {/* Card Documentos */}
-             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                 <SectionHeader 
                     title="Documentos" 
                     icon={FileText} 
                     action={
                         <button 
                             onClick={() => setAttachModalOpen(true)}
-                            className="text-xs font-bold text-accent-blue hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors"
+                            className="text-xs font-bold text-accent-blue hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 bg-accent-blue/10 dark:bg-accent-blue/20 rounded-lg transition-colors"
                         >
                             <Plus size={14} strokeWidth={3} /> Novo
                         </button>
@@ -494,13 +494,13 @@ const Perfil = () => {
                         </div>
                     ) : (
                         documents.map(doc => (
-                            <div key={doc.id} className="group flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-blue-200 hover:bg-blue-50/30 dark:hover:bg-slate-800 transition-all duration-200">
+                            <div key={doc.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                 <div className="flex items-center gap-4 overflow-hidden">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-dark-bg-primary text-slate-500 flex items-center justify-center flex-shrink-0">
                                         <FileText size={20} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-accent-blue transition-colors">
+                                        <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate">
                                             {doc.name}
                                         </h4>
                                         <p className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
@@ -512,11 +512,11 @@ const Perfil = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="p-2 text-slate-400 hover:text-accent-blue hover:bg-white rounded-lg transition-colors shadow-sm">
+                                <div className="flex items-center gap-2">
+                                    <button className="p-2 text-slate-400 hover:text-accent-blue hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                                         <Download size={18} />
                                     </button>
-                                    <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors shadow-sm">
+                                    <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
@@ -531,14 +531,14 @@ const Perfil = () => {
           <div className="lg:col-span-1 space-y-8">
              
              {/* Bloco de Notas */}
-             <div className="bg-amber-50 dark:bg-dark-bg-secondary p-6 rounded-2xl border border-amber-100/50 dark:border-slate-700 h-[500px] flex flex-col shadow-sm relative overflow-hidden">
+             <div className="bg-amber-50 dark:bg-dark-bg-secondary p-6 rounded-xl border border-amber-100 dark:border-slate-700 h-[500px] flex flex-col relative overflow-hidden">
 
                 <div className="flex items-center justify-between mb-6 relative z-10 ">
                     <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
                         <StickyNote size={20} />
                         <h3 className="font-bold text-sm uppercase tracking-wide">Anotações</h3>
                     </div>
-                    <span className="text-xs font-medium bg-white/60 px-2 py-1 rounded-md text-amber-800">{notes.length} notas</span>
+                    <span className="text-xs font-medium bg-white/60 dark:bg-slate-800 px-2 py-1 rounded-md text-amber-800 dark:text-amber-400">{notes.length} notas</span>
                 </div>
 
                 {/* Input de Nota */}
@@ -547,7 +547,7 @@ const Perfil = () => {
                         value={newNote}
                         onChange={(e) => setNewNote(e.target.value)}
                         placeholder="Digite uma anotação rápida..."
-                        className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-900 border-none rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-amber-400/50 placeholder:text-slate-400"
+                        className="w-full pl-4 pr-10 py-3 bg-white dark:bg-dark-bg-primary border border-amber-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/50 placeholder:text-slate-400"
                         onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
                     />
                     <button 
@@ -573,7 +573,7 @@ const Perfil = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 key={note.id} 
-                                className="group bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-amber-100/50 dark:border-slate-700 hover:shadow-md transition-all relative"
+                                className="bg-white dark:bg-dark-bg-primary p-4 rounded-lg border border-amber-100 dark:border-slate-700 transition-colors relative"
                             >
                                 <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed pr-6">
                                     {note.text}
@@ -584,7 +584,7 @@ const Perfil = () => {
                                 
                                 <button 
                                     onClick={() => handleDeleteNote(note.id)}
-                                    className="absolute top-3 right-3 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 p-1.5 rounded-lg"
+                                    className="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg"
                                 >
                                     <Trash2 size={14} />
                                 </button>

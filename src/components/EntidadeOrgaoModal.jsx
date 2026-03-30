@@ -158,17 +158,17 @@ export const EntidadeOrgaoModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-slate-800"
+        className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-lg w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700"
       >
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary">
             <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-accent-blue dark:text-blue-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 text-accent-blue dark:text-blue-400 flex items-center justify-center">
                     <Icon size={20} strokeWidth={2.5} />
                 </div>
                 <div>
@@ -185,7 +185,7 @@ export const EntidadeOrgaoModal = ({
             </div>
             <button
                 onClick={onClose}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
             >
                 <X size={20} />
             </button>
@@ -218,7 +218,7 @@ export const EntidadeOrgaoModal = ({
                                     type="button"
                                     onClick={handleImportPncp}
                                     disabled={isImportingPncp || !formData.cnpj}
-                                    className="flex items-center gap-2 px-4 bg-slate-100 hover:bg-accent-blue hover:text-white text-slate-600 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-2 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-accent-blue hover:text-white text-slate-600 dark:text-slate-300 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     title="Buscar dados no PNCP"
                                 >
                                     {isImportingPncp ? (
@@ -270,7 +270,7 @@ export const EntidadeOrgaoModal = ({
                         />
                     </div>
                     
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-dark-bg-primary border border-slate-200 dark:border-slate-700">
                         <p className="text-xs text-slate-500 dark:text-slate-400 flex gap-2">
                             <InfoIcon size={14} className="text-accent-blue flex-shrink-0 mt-0.5" />
                             <span>
@@ -283,19 +283,19 @@ export const EntidadeOrgaoModal = ({
             )}
 
             {/* Footer de Ações */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <button
                     type="button"
                     onClick={onClose}
                     disabled={isSaving || isImportingPncp}
-                    className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
                     disabled={isSaving || isImportingPncp}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-accent-blue text-white hover:bg-accent-blue-hover shadow-lg shadow-blue-900/20 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold bg-accent-blue text-white hover:bg-accent-blue-hover transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {isSaving ? (
                         <Loader2 size={18} className="animate-spin" />

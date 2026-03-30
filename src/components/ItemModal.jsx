@@ -5,9 +5,9 @@ import { useToast } from '../context/ToastContext';
 import useAxios from '../hooks/useAxios';
 
 // --- ESTILOS PADRONIZADOS ---
-const INPUT_STYLE = "w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm transition-all disabled:bg-gray-100 disabled:text-gray-400";
-const LABEL_STYLE = "block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wide";
-const SECTION_STYLE = "p-4 rounded-lg border mb-4";
+const INPUT_STYLE = "w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent-blue/30 focus:border-accent-blue bg-white dark:bg-dark-bg-primary text-slate-900 dark:text-slate-100 text-sm transition-all disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 placeholder:text-slate-400";
+const LABEL_STYLE = "block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide";
+const SECTION_STYLE = "p-4 rounded-lg border border-slate-200 dark:border-slate-700 mb-4";
 
 const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, proximaOrdem }) => {
     const { showToast } = useToast();
@@ -178,32 +178,32 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="bg-white w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+                        className="bg-white dark:bg-dark-bg-secondary w-full max-w-4xl max-h-[90vh] rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg flex flex-col overflow-hidden"
                     >
                         {/* HEADER */}
-                        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary flex justify-between items-center">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                     {itemParaEditar ? `Editar Item #${formData.numero_item}` : `Novo Item #${formData.numero_item}`}
                                     {!itemParaEditar && (
-                                        <span className="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
+                                        <span className="bg-accent-blue/10 text-accent-blue text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
                                             Automático
                                         </span>
                                     )}
                                 </h3>
                                 {processo && (
-                                    <p className="text-xs text-gray-500 mt-0.5">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                         Processo: <strong>{processo.numero_processo}</strong>
                                     </p>
                                 )}
                             </div>
-                            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors">
+                            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
@@ -213,7 +213,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                             <form id="itemForm" onSubmit={handleSubmit}>
                                 
                                 {/* 1. CATEGORIA E CLASSIFICAÇÃO */}
-                                <div className={`${SECTION_STYLE} bg-blue-50/40 border-blue-100`}>
+                                <div className={`${SECTION_STYLE} bg-accent-blue/5 dark:bg-accent-blue/10 border-accent-blue/20`}>
                                     <div className="flex items-center gap-2 mb-3">
                                         <div className="w-1 h-4 bg-accent-blue rounded-full"></div>
                                         <h4 className="text-xs font-bold text-accent-blue uppercase">Classificação</h4>
@@ -254,10 +254,10 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                 </div>
 
                                 {/* 2. DADOS DO ITEM */}
-                                <div className={`${SECTION_STYLE} bg-white border-gray-200`}>
+                                <div className={`${SECTION_STYLE} bg-white dark:bg-dark-bg-primary`}>
                                     <div className="flex items-center gap-2 mb-3">
                                         <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
-                                        <h4 className="text-xs font-bold text-emerald-700 uppercase">Dados do Objeto</h4>
+                                        <h4 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase">Dados do Objeto</h4>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -324,9 +324,9 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                         </div>
 
                                         <div className="md:col-span-12 flex justify-end">
-                                            <div className="text-right bg-gray-50 px-3 py-2 rounded border border-gray-100">
-                                                <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold block">Total Estimado</span>
-                                                <span className="text-lg font-bold text-gray-800">
+                                            <div className="text-right bg-slate-50 dark:bg-dark-bg-primary px-3 py-2 rounded border border-slate-200 dark:border-slate-700">
+                                                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-bold block">Total Estimado</span>
+                                                <span className="text-lg font-bold text-slate-800 dark:text-white">
                                                     {formData.quantidade && formData.valor_estimado
                                                         ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(formData.quantidade * formData.valor_estimado)
                                                         : 'R$ 0,00'}
@@ -337,7 +337,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                 </div>
 
                                 {/* 3. SITUAÇÃO E FORNECEDOR */}
-                                <div className={`${SECTION_STYLE} bg-gray-50 border-gray-200 mb-0`}>
+                                <div className={`${SECTION_STYLE} bg-slate-50 dark:bg-dark-bg-primary mb-0`}>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label className={LABEL_STYLE}>Situação</label>
@@ -386,11 +386,11 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                         </div>
 
                         {/* FOOTER */}
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                        <div className="px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white transition-colors"
+                                className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors"
                             >
                                 Cancelar
                             </button>

@@ -206,10 +206,11 @@ const Processos = () => {
 
       <div className="max-w-7xl w-full py-2 space-y-2 px-3 md:px-0">
         {/* HEADER / HERO */}
-        <section className="bg-white dark:bg-dark-bg-secondary rounded-2xl px-6 py-6 ">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <section className="ui-page-header space-y-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-accent-blue" />
                 Meus Processos
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">

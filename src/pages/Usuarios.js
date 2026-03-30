@@ -304,24 +304,24 @@ export default function Usuarios() {
       />
 
       {/* Card de Filtros / Cabeçalho */}
-      <div className="bg-white dark:bg-dark-bg-secondary p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border space-y-4">
+      <div className="ui-page-header space-y-4">
         {/* Linha 1: Título + botão principal */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-              <UserIcon className="w-6 h-6 text-accent-blue" />
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <UserIcon className="w-5 h-5 text-accent-blue" />
               Usuários
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Gerencie o acesso e permissões da equipe.
             </p>
           </div>
 
           <Button
             onClick={() => handleEdit(null)}
-            className="w-full sm:w-auto bg-accent-blue hover:bg-blue-700 text-white shadow-sm"
+            className="w-full sm:w-auto ui-btn-primary"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4" />
             Novo Usuário
           </Button>
         </div>
@@ -329,7 +329,7 @@ export default function Usuarios() {
         {/* Linha 2: busca + botão filtros */}
         <div className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Buscar por nome, e-mail ou username..."
@@ -338,20 +338,20 @@ export default function Usuarios() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg-primary text-gray-900 dark:text-white focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue transition-all outline-none"
+              className="ui-input pl-9"
             />
           </div>
 
           <Button
             variant="secondary"
             onClick={() => setShowFilters((prev) => !prev)}
-            className={`whitespace-nowrap ${
+            className={`whitespace-nowrap ui-btn-outline ${
               showFilters || search || sortBy !== "nome"
-                ? "border-accent-blue text-accent-blue bg-accent-blue/5"
+                ? "border-accent-blue text-accent-blue"
                 : ""
             }`}
           >
-            <Filter className="w-4 h-4 mr-2" />
+            <Filter className="w-4 h-4" />
             {showFilters ? "Ocultar Filtros" : "Filtros"}
           </Button>
         </div>
@@ -377,7 +377,7 @@ export default function Usuarios() {
                     <button
                       key={item.key}
                       onClick={() => handleSort(item.key)}
-                      className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg border transition-all bg-white dark:bg-dark-bg-primary border-gray-200 dark:border-dark-border text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-bg-secondary`}
+                      className={`flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg border transition-colors bg-white dark:bg-dark-bg-primary border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800`}
                     >
                       <span>{item.label}</span>
                       {sortBy === item.key && (
@@ -406,7 +406,7 @@ export default function Usuarios() {
       </div>
 
       {/* Tabela de Dados */}
-      <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl px-4 overflow-hidden">
+      <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {isLoading ? (
           <div className="p-6">
             <TableSkeleton />
@@ -435,7 +435,7 @@ export default function Usuarios() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/50 dark:bg-dark-bg-primary border-b border-gray-100 dark:border-dark-border text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider">
+                  <tr className="bg-slate-50 dark:bg-dark-bg-primary border-b border-slate-200 dark:border-slate-700 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
                     <th className="p-4 w-14" />
                     <th
                       className="p-4 cursor-pointer hover:text-accent-blue transition-colors"
@@ -485,11 +485,11 @@ export default function Usuarios() {
                     <th className="p-4 text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-dark-border">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {currentItems.map((u) => (
                     <tr
                       key={u.id}
-                      className="group hover:bg-gray-50 dark:hover:bg-dark-bg-primary/50 transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                     >
                       <td className="p-2">
                         <img
@@ -533,22 +533,22 @@ export default function Usuarios() {
                         </div>
                       </td>
                       <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
-                            className="p-2 h-8 w-8 !px-0 rounded-full"
+                            className="p-2 h-8 w-8 !px-0 rounded-lg"
                             onClick={() => handleEdit(u)}
                             title="Editar"
                           >
-                            <Pencil className="w-4 h-4 text-blue-600" />
+                            <Pencil className="w-4 h-4 text-accent-blue" />
                           </Button>
                           <Button
                             variant="ghost"
-                            className="p-2 h-8 w-8 !px-0 rounded-full hover:bg-red-50"
+                            className="p-2 h-8 w-8 !px-0 rounded-lg"
                             onClick={() => setDeletingId(u.id)}
                             title="Excluir"
                           >
-                            <Trash2 className="w-4 h-4 text-red-600" />
+                            <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>
                         </div>
                       </td>
@@ -559,8 +559,8 @@ export default function Usuarios() {
             </div>
 
             {/* Paginação */}
-            <div className="px-6 py-4 border-t border-gray-100 dark:border-dark-border flex flex-col md:flex-row items-center justify-between gap-4">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+              <span className="text-sm text-slate-500 dark:text-slate-400">
                 Mostrando{" "}
                 <strong>
                   {totalItems === 0

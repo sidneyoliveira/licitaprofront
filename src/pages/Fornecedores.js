@@ -12,7 +12,8 @@ import {
   Plus,
   Trash,
   ArrowUpDown,
-  Pencil,        // <-- import do ícone de edição
+  Pencil,
+  UserCheck,
 } from "lucide-react";
 
 import { FornecedorModal } from "./NewProcess";
@@ -270,24 +271,25 @@ export default function Fornecedores() {
         />
 
         {/* Cabeçalho / Filtros */}
-        <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-2xl p-4 md:p-6 space-y-4">
+        <div className="ui-page-header space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-light-text-primary dark:text-dark-text-primary">
+              <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-accent-blue" />
                 Fornecedores
               </h1>
-              <p className="mt-1 text-sm md:text-base text-light-text-secondary dark:text-dark-text-secondary">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 {isLoading
                   ? "Carregando..."
-                  : `Listando ${total} ${
+                  : `${total} ${
                       total === 1 ? "fornecedor" : "fornecedores"
-                    }`}
+                    } cadastrados.`}
               </p>
             </div>
             <div>
               <Button
                 onClick={handleOpenNovoFornecedor}
-                className="inline-flex items-center gap-2 text-sm bg-accent-blue text-white hover:bg-accent-blue/90 rounded-lg shadow-sm"
+                className="ui-btn-primary"
               >
                 <Plus className="w-4 h-4" />
                 Novo Fornecedor
@@ -396,7 +398,7 @@ export default function Fornecedores() {
         </div>
 
         {/* Tabela */}
-        <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl p-4 md:p-6">
+        <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mb-3" />
@@ -428,7 +430,7 @@ export default function Fornecedores() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-gray-50/50 dark:bg-dark-bg-primary border-b border-gray-100 dark:border-dark-border text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider">
+                    <tr className="bg-slate-50 dark:bg-dark-bg-primary border-b border-slate-200 dark:border-slate-700 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
                       <th
                         className="p-4 cursor-pointer hover:text-accent-blue transition-colors"
                         onClick={() => toggleSort("razao_social")}
@@ -477,11 +479,11 @@ export default function Fornecedores() {
                       <th className="p-4 text-right">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-dark-border">
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                     {current.map((f) => (
                       <tr
                         key={f.id}
-                        className="hover:bg-gray-50 dark:hover:bg-dark-bg-primary/50 transition-colors"
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                       >
                         <td className="p-4">
                           <div className="font-semibold text-slate-800 dark:text-dark-text-primary">
@@ -509,26 +511,26 @@ export default function Fornecedores() {
                         <td className="p-4 text-sm">{safe(f?.municipio)}</td>
                         <td className="p-4 text-sm">{safe(f?.uf)}</td>
                         <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* EDITAR - sempre visível */}
+                          <div className="flex items-center justify-end gap-1">
+                            {/* EDITAR */}
                             <Button
-                              className="p-2 h-8 w-8 !px-0 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                              className="p-2 h-8 w-8 !px-0 rounded-lg ui-btn-ghost"
                               onClick={() => {
                                 setFornecedorSelecionado(f);
                                 setIsFornecedorModalOpen(true);
                               }}
                               title="Editar fornecedor"
                             >
-                              <Pencil className="w-4 h-4 text-blue-600" />
+                              <Pencil className="w-4 h-4 text-accent-blue" />
                             </Button>
 
-                            {/* EXCLUIR - sempre visível */}
+                            {/* EXCLUIR */}
                             <Button
-                              className="p-2 h-8 w-8 !px-0 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
+                              className="p-2 h-8 w-8 !px-0 rounded-lg ui-btn-ghost"
                               onClick={() => askDelete(f.id)}
                               title="Excluir fornecedor"
                             >
-                              <Trash className="w-4 h-4 text-red-600" />
+                              <Trash className="w-4 h-4 text-red-500" />
                             </Button>
                           </div>
                         </td>

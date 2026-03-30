@@ -1,10 +1,10 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, FileText, Users, Building2, Settings, UserCheck } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Building2, UserCheck } from "lucide-react";
 
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
   const navItem =
-    "flex items-center gap-3 px-4 py-2.5 text-sm rounded-xl font-medium transition-colors";
+    "flex items-center gap-3 px-4 py-2.5 text-sm rounded-lg font-medium transition-colors";
 
   return (
     <>
@@ -18,15 +18,14 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
 
       {/* Sidebar principal */}
       <aside
-        className={`fixed z-30 top-0 left-0 h-full bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl border-r border-white/60 dark:border-white/10 transform transition-transform duration-300 ease-in-out
+        className={`fixed z-30 top-0 left-0 h-full bg-white dark:bg-dark-bg-secondary border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 ease-in-out
           ${isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
           ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"} flex flex-col`}
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent-blue/20 to-transparent" />
         {/* Logo e título */}
-        <div className="flex items-center justify-center px-4 py-4 mt-3 relative z-10">
+        <div className="flex items-center justify-center px-4 py-4 mt-3">
           <div
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-blue-500 flex items-center justify-center text-lg font-extrabold text-white shadow-lg shadow-blue-900/25"
+            className="w-10 h-10 rounded-lg bg-accent-blue flex items-center justify-center text-lg font-extrabold text-white"
           >
             L3
           </div>
@@ -44,8 +43,8 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-gradient-to-r from-accent-blue/15 to-cyan-400/10 text-accent-blue dark:text-white dark:from-accent-blue/35 dark:to-cyan-400/10"
-                  : "text-gray-700 hover:bg-white/80 dark:text-gray-300 dark:hover:bg-slate-800/75"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -58,8 +57,8 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-gradient-to-r from-accent-blue/15 to-cyan-400/10 text-accent-blue dark:text-white dark:from-accent-blue/35 dark:to-cyan-400/10"
-                  : "text-gray-700 hover:bg-white/80 dark:text-gray-300 dark:hover:bg-slate-800/75"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -72,8 +71,8 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-gradient-to-r from-accent-blue/15 to-cyan-400/10 text-accent-blue dark:text-white dark:from-accent-blue/35 dark:to-cyan-400/10"
-                  : "text-gray-700 hover:bg-white/80 dark:text-gray-300 dark:hover:bg-slate-800/75"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -86,8 +85,8 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-gradient-to-r from-accent-blue/15 to-cyan-400/10 text-accent-blue dark:text-white dark:from-accent-blue/35 dark:to-cyan-400/10"
-                  : "text-gray-700 hover:bg-white/80 dark:text-gray-300 dark:hover:bg-slate-800/75"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               }`
             }
           >
@@ -100,32 +99,18 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-gradient-to-r from-accent-blue/15 to-cyan-400/10 text-accent-blue dark:text-white dark:from-accent-blue/35 dark:to-cyan-400/10"
-                  : "text-gray-700 hover:bg-white/80 dark:text-gray-300 dark:hover:bg-slate-800/75"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               }`
             }
           >
             <Users size={18} />
             {isOpen && "Usuários"}
           </NavLink>
-
-          <NavLink
-            to="/configuracoes"
-            className={({ isActive }) =>
-              `${navItem} ${
-                isActive
-                  ? "bg-gradient-to-r from-accent-blue/15 to-cyan-400/10 text-accent-blue dark:text-white dark:from-accent-blue/35 dark:to-cyan-400/10"
-                  : "text-gray-700 hover:bg-white/80 dark:text-gray-300 dark:hover:bg-slate-800/75"
-              }`
-            }
-          >
-            <Settings size={18} />
-            {isOpen && "Configurações"}
-          </NavLink>
         </nav>
 
         {/* Rodapé da Sidebar */}
-        <div className="p-3 border-t border-white/60 dark:border-white/10 text-xs text-gray-500 dark:text-gray-400 relative z-10">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-400 dark:text-slate-500">
           {isOpen && "© 2025 L3 Solutions"}
         </div>
       </aside>

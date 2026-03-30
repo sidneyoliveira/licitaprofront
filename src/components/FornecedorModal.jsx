@@ -34,9 +34,9 @@ const formatCEP = (value) => {
 };
 
 // --- ESTILOS ---
-const INPUT_STYLE = "w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm transition-all disabled:bg-gray-100 disabled:text-gray-400";
-const LABEL_STYLE = "block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wide";
-const SECTION_TITLE = "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-1";
+const INPUT_STYLE = "w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent-blue/30 focus:border-accent-blue bg-white dark:bg-dark-bg-primary text-slate-900 dark:text-slate-100 text-sm transition-all disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 placeholder:text-slate-400";
+const LABEL_STYLE = "block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide";
+const SECTION_TITLE = "text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-1";
 
 const FornecedorModal = ({
     isOpen,
@@ -188,49 +188,49 @@ const FornecedorModal = ({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        className="bg-white w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+                        className="bg-white dark:bg-dark-bg-secondary w-full max-w-4xl max-h-[90vh] rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg flex flex-col overflow-hidden"
                     >
                         {/* HEADER */}
-                        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary flex justify-between items-center">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-800">
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                                     {isEditing ? 'Editar Fornecedor' : 'Gerenciar Fornecedores'}
                                 </h3>
                                 {!isEditing && (
                                     <div className="flex gap-4 mt-2 text-sm">
                                         <button 
                                             onClick={() => setMode('search')}
-                                            className={`pb-1 border-b-2 transition-colors ${mode === 'search' ? 'border-accent-blue text-accent-blue font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                            className={`pb-1 border-b-2 transition-colors ${mode === 'search' ? 'border-accent-blue text-accent-blue font-bold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                                         >
                                             Buscar no Catálogo
                                         </button>
                                         <button 
                                             onClick={() => setMode('create')}
-                                            className={`pb-1 border-b-2 transition-colors ${mode === 'create' ? 'border-accent-blue text-accent-blue font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                            className={`pb-1 border-b-2 transition-colors ${mode === 'create' ? 'border-accent-blue text-accent-blue font-bold' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                                         >
                                             Cadastrar Novo
                                         </button>
                                     </div>
                                 )}
                             </div>
-                            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors">
+                            <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
                         {/* BODY */}
-                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-gray-50/30">
+                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                             
                             {/* MODO BUSCA (CATÁLOGO) */}
                             {mode === 'search' && !isEditing && (
                                 <div className="space-y-4">
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                                         <input
                                             type="text"
                                             placeholder="Buscar por CNPJ ou Razão Social..."
@@ -241,21 +241,21 @@ const FornecedorModal = ({
                                         />
                                     </div>
 
-                                    <div className="border border-gray-200 rounded-lg bg-white overflow-hidden shadow-sm">
+                                    <div className="border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-dark-bg-secondary overflow-hidden">
                                         {filteredCatalogo.length > 0 ? (
-                                            <div className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                                            <div className="divide-y divide-slate-200 dark:divide-slate-700 max-h-[400px] overflow-y-auto">
                                                 {filteredCatalogo.map((f) => (
-                                                    <div key={f.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                                                    <div key={f.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                                         <div>
-                                                            <p className="font-bold text-gray-800">{f.razao_social}</p>
-                                                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                                                <span className="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200">{f.cnpj}</span>
+                                                            <p className="font-bold text-slate-800 dark:text-white">{f.razao_social}</p>
+                                                            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                                                <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-200 dark:border-slate-700">{f.cnpj}</span>
                                                                 {f.municipio && <span>• {f.municipio}/{f.uf}</span>}
                                                             </div>
                                                         </div>
                                                         <button 
                                                             onClick={() => onLink?.(f.id)}
-                                                            className="px-4 py-2 bg-white border border-accent-blue text-accent-blue rounded-lg text-sm font-medium hover:bg-accent-blue hover:text-white transition-all flex items-center gap-2 shadow-sm"
+                                                            className="px-4 py-2 bg-white dark:bg-dark-bg-primary border border-accent-blue text-accent-blue rounded-lg text-sm font-medium hover:bg-accent-blue hover:text-white transition-all flex items-center gap-2"
                                                         >
                                                             <LinkIcon size={16} />
                                                             Vincular
@@ -264,9 +264,9 @@ const FornecedorModal = ({
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="p-8 text-center text-gray-500">
-                                                <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                    <Search size={24} className="text-gray-400" />
+                                            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                                                <div className="bg-slate-100 dark:bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                    <Search size={24} className="text-slate-400" />
                                                 </div>
                                                 <p>Nenhum fornecedor encontrado no catálogo.</p>
                                                 <button 
@@ -286,7 +286,7 @@ const FornecedorModal = ({
                                 <form id="fornecedorForm" onSubmit={handleSubmit} className="space-y-6">
                                     
                                     {/* DADOS DA EMPRESA */}
-                                    <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                    <div className="bg-white dark:bg-dark-bg-primary p-5 rounded-lg border border-slate-200 dark:border-slate-700">
                                         <h4 className={SECTION_TITLE}>
                                             <Building2 size={16} className="text-accent-blue" />
                                             Dados da Empresa
@@ -309,7 +309,7 @@ const FornecedorModal = ({
                                                             type="button" 
                                                             onClick={buscarCNPJ}
                                                             disabled={isSearchingCNPJ}
-                                                            className="px-3 bg-blue-50 text-accent-blue border border-blue-100 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50"
+                                                            className="px-3 bg-accent-blue/10 text-accent-blue border border-accent-blue/20 hover:bg-accent-blue/20 rounded-lg transition-colors disabled:opacity-50"
                                                             title="Buscar dados na Receita"
                                                         >
                                                             {isSearchingCNPJ ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
@@ -350,7 +350,7 @@ const FornecedorModal = ({
                                     </div>
 
                                     {/* CONTATO */}
-                                    <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                    <div className="bg-white dark:bg-dark-bg-primary p-5 rounded-lg border border-slate-200 dark:border-slate-700">
                                         <h4 className={SECTION_TITLE}>
                                             <Phone size={16} className="text-green-600" />
                                             Contato
@@ -382,7 +382,7 @@ const FornecedorModal = ({
                                     </div>
 
                                     {/* ENDEREÇO */}
-                                    <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                    <div className="bg-white dark:bg-dark-bg-primary p-5 rounded-lg border border-slate-200 dark:border-slate-700">
                                         <h4 className={SECTION_TITLE}>
                                             <MapPin size={16} className="text-red-500" />
                                             Endereço
@@ -461,11 +461,11 @@ const FornecedorModal = ({
                         </div>
 
                         {/* FOOTER */}
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                        <div className="px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white transition-colors"
+                                className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors"
                             >
                                 Cancelar
                             </button>

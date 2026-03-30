@@ -28,11 +28,7 @@ const Layout = () => {
   }, [location.pathname, isMobile]);
 
   return (
-    <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-20 -left-24 h-72 w-72 rounded-full bg-accent-blue/20 blur-3xl z-0" />
-      <div className="pointer-events-none absolute -top-16 right-0 h-64 w-64 rounded-full bg-cyan-300/25 dark:bg-cyan-500/20 blur-3xl z-0" />
-      <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-3xl z-0" />
-      
+    <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex">
       <AnimatePresence>
         {(sidebarOpen || !isMobile) && (
           <>
@@ -64,7 +60,7 @@ const Layout = () => {
 
         <main
           key={location.pathname}
-          className="p-1 mx-2 my-2 relative z-10"
+          className="p-2 md:p-4"
         >
           <Outlet />
         </main>
