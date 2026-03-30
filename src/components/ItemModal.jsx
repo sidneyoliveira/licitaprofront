@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import useAxios from '../hooks/useAxios';
 
 // --- ESTILOS PADRONIZADOS ---
-const INPUT_STYLE = "w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] bg-white text-sm transition-all disabled:bg-gray-100 disabled:text-gray-400";
+const INPUT_STYLE = "w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm transition-all disabled:bg-gray-100 disabled:text-gray-400";
 const LABEL_STYLE = "block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wide";
 const SECTION_STYLE = "p-4 rounded-lg border mb-4";
 
@@ -22,7 +22,6 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
     });
     const [fornecedores, setFornecedores] = useState([]);
     
-    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     // Estado do Formulário
@@ -45,7 +44,6 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
     useEffect(() => {
         if (isOpen) {
             const loadData = async () => {
-                setIsLoading(true);
                 try {
                     const resConstantes = await api.get("/constantes/sistema/");
                     setSysOptions(prev => ({ ...prev, ...resConstantes.data }));
@@ -58,7 +56,6 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                     console.error("Erro ao carregar dados:", error);
                     showToast("Erro ao carregar opções do sistema.", "error");
                 } finally {
-                    setIsLoading(false);
                 }
             };
             loadData();
@@ -218,8 +215,8 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                 {/* 1. CATEGORIA E CLASSIFICAÇÃO */}
                                 <div className={`${SECTION_STYLE} bg-blue-50/40 border-blue-100`}>
                                     <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-1 h-4 bg-[#004aad] rounded-full"></div>
-                                        <h4 className="text-xs font-bold text-[#004aad] uppercase">Classificação</h4>
+                                        <div className="w-1 h-4 bg-accent-blue rounded-full"></div>
+                                        <h4 className="text-xs font-bold text-accent-blue uppercase">Classificação</h4>
                                     </div>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -401,7 +398,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                 type="submit"
                                 form="itemForm"
                                 disabled={isSaving}
-                                className="px-6 py-2 bg-[#004aad] text-white rounded-lg text-sm font-medium hover:bg-[#003d91] transition-colors flex items-center gap-2 disabled:opacity-70"
+                                className="px-6 py-2 bg-accent-blue text-white rounded-lg text-sm font-medium hover:bg-accent-blue-hover transition-colors flex items-center gap-2 disabled:opacity-70"
                             >
                                 {isSaving ? (
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

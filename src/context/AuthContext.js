@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { axiosPublic, axiosInstance } from '../api/config';
+import { axiosPublic } from '../api/config';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);

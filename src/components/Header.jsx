@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import AuthContext from "../context/AuthContext";
@@ -123,20 +123,12 @@ const typeMeta = {
   sistema: { icon: Info, color: "text-slate-600", label: "Sistema" },
 };
 
-const badgeTone = {
-  info: "bg-blue-50 text-blue-700 border-blue-200",
-  success: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  warning: "bg-amber-50 text-amber-700 border-amber-200",
-  error: "bg-red-50 text-red-700 border-red-200",
-};
-
 /* =========================================================================
  * Componente Header
  * ========================================================================= */
 const Header = ({ toggleSidebar }) => {
   const { user, logoutUser } = useContext(AuthContext);
   const { isDark, toggleTheme } = useTheme();
-  const navigate = useNavigate();
   const api = useAxios();
 
   /* -----------------------------------------------------------------------
@@ -183,7 +175,7 @@ const Header = ({ toggleSidebar }) => {
   /* -----------------------------------------------------------------------
    * Helpers de fetch
    * --------------------------------------------------------------------- */
-  const fetchArray = async (path, params = {}) => {
+  const fetchArray = useCallback(async (path, params = {}) => {
     try {
       const r = await api.get(path, { params });
       if (Array.isArray(r.data)) return r.data;
@@ -192,7 +184,7 @@ const Header = ({ toggleSidebar }) => {
     } catch {
       return [];
     }
-  };
+  }, [api]);
 
   const fetchAll = useCallback(async () => {
     setLoadingNotifs(true);
@@ -210,7 +202,7 @@ const Header = ({ toggleSidebar }) => {
     } finally {
       setLoadingNotifs(false);
     }
-  }, [api]);
+  }, [fetchArray]);
 
   /* -----------------------------------------------------------------------
    * Agregação de notificações (como em Notificacoes.jsx)

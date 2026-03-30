@@ -104,7 +104,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
       >
         <div className="flex justify-between items-center px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
           <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
-            <Globe className="w-5 h-5 text-[#004aad]" />
+            <Globe className="w-5 h-5 text-accent-blue" />
             Publicar no PNCP
           </h3>
           <button
@@ -125,7 +125,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
             <label className="block text-md font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
               Anexar Edital/Aviso (PDF)
             </label>
-            <div className="relative border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group hover:border-[#004aad] hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
+            <div className="relative border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group hover:border-accent-blue hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
               <input
                 type="file"
                 accept=".pdf"
@@ -136,7 +136,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 className={`p-3 rounded-full mb-3 flex items-center justify-center ${
                   file
                     ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-[#004aad]'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-accent-blue'
                 }`}
               >
                 <FileText className="w-7 h-7" />
@@ -163,7 +163,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={loading || !file}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-[#004aad] text-white hover:bg-[#003d91] shadow-sm shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Enviar agora
@@ -187,17 +187,17 @@ const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
       relative flex items-center gap-2 px-5 py-3 text-xs md:text-sm font-bold transition-colors whitespace-nowrap
       ${
         isActive
-          ? 'text-[#004aad] bg-white dark:bg-dark-bg-secondary'
+          ? 'text-accent-blue bg-white dark:bg-dark-bg-secondary'
           : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60'
       }
     `}
   >
-    <Icon size={18} className={isActive ? 'text-[#004aad]' : 'text-slate-400'} />
+  <Icon size={18} className={isActive ? 'text-accent-blue' : 'text-slate-400'} />
     {label}
     {isActive && (
       <motion.div
         layoutId="activeTab-underline"
-        className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#004aad]"
+  className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-blue"
       />
     )}
   </button>
@@ -237,7 +237,7 @@ const ArquivosSection = ({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div>
           <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#004aad]" />
+            <FileText className="w-4 h-4 text-accent-blue" />
             Documentos da Contratação
           </h3>
         </div>
@@ -321,17 +321,17 @@ const ArquivosSection = ({
                       <button
                         type="button"
                         onClick={() => onView(fileUrl)}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 w-full md:w-auto hover:border-[#004aad] transition-colors"
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 w-full md:w-auto hover:border-accent-blue transition-colors"
                         title="Visualizar"
                       >
                         <FileText className="w-3.5 h-3.5 text-blue-500" />
                         <span className="truncate max-w-[180px] md:max-w-[260px] text-md text-slate-600 dark:text-slate-300 font-medium">
                           {fileName}
                         </span>
-                        <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#004aad]" />
+                        <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-accent-blue" />
                       </button>
                     ) : (
-                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg-secondary cursor-pointer hover:border-[#004aad] hover:bg-slate-50 transition-colors w-full md:w-auto">
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg-secondary cursor-pointer hover:border-accent-blue hover:bg-slate-50 transition-colors w-full md:w-auto">
                         <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
                         <span className="text-md text-slate-600 dark:text-slate-300">
                           Selecionar arquivo
@@ -383,7 +383,7 @@ const ArquivosSection = ({
                           type="button"
                           onClick={() => onPublishPncp(local.id, dt.id)}
                           disabled={rowSending}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-[#004aad] text-white hover:bg-[#003d91] disabled:opacity-50 transition-colors shadow-sm shadow-blue-900/20"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 disabled:opacity-50 transition-colors shadow-sm shadow-blue-900/20"
                           title="Publicar no PNCP"
                         >
                           {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
@@ -1127,7 +1127,7 @@ export default function PageProcess() {
           >
             <div className="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
               <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <LayoutDashboard className="text-[#004aad]" />
+                <LayoutDashboard className="text-accent-blue" />
                 {isNewProcess ? 'Novo Processo' : 'Editar Dados Gerais'}
               </h2>
             </div>

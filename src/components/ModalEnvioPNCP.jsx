@@ -164,7 +164,7 @@ function HintCard({ tone = "info", icon, title, children }) {
       : "bg-blue-50 border-blue-100 text-blue-900";
 
   const iconColor =
-    tone === "warning" ? "text-amber-600" : tone === "error" ? "text-red-600" : "text-[#004aad]";
+    tone === "warning" ? "text-amber-600" : tone === "error" ? "text-red-600" : "text-accent-blue";
 
   return (
     <div className={`border rounded-lg p-4 flex gap-3 ${styles}`}>
@@ -483,7 +483,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <Globe className="w-5 h-5 text-[#004aad]" />
+              <Globe className="w-5 h-5 text-accent-blue" />
             </div>
             <div className="leading-tight">
               <h3 className="font-bold text-lg text-gray-800 dark:text-white">Integração PNCP</h3>
@@ -542,7 +542,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold transition
                   ${
                     operation === OPERATIONS.PUBLISH
-                      ? "border-[#004aad] bg-blue-50 text-[#004aad]"
+                      ? "border-accent-blue bg-blue-50 text-accent-blue"
                       : "border-gray-200 hover:bg-gray-50 text-gray-700"
                   }`}
               >
@@ -600,7 +600,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold transition
                   ${
                     operation === OPERATIONS.ADD_ITEMS
-                      ? "border-[#004aad] bg-blue-50 text-[#004aad]"
+                      ? "border-accent-blue bg-blue-50 text-accent-blue"
                       : "border-gray-200 hover:bg-gray-50 text-gray-700"
                   }
                   ${!hasPncp ? "opacity-60 cursor-not-allowed" : ""}`}
@@ -672,7 +672,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                       setTipoPublicacao(e.target.value);
                     }}
                     disabled={loading}
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] bg-white text-sm disabled:bg-gray-100"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm disabled:bg-gray-100"
                   >
                     {TIPOS_PUBLICACAO.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -697,7 +697,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                     setTipoDocumento(e.target.value);
                   }}
                   disabled={loading}
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] bg-white text-sm disabled:bg-gray-100"
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm disabled:bg-gray-100"
                 >
                   {TIPOS_DOCUMENTO.map((type) => (
                     <option key={type.id} value={type.id}>
@@ -718,7 +718,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 <div
                   className={`
                     relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all
-                    ${file ? "border-green-500 bg-green-50/30" : "border-gray-300 hover:border-[#004aad] hover:bg-slate-50"}
+                    ${file ? "border-green-500 bg-green-50/30" : "border-gray-300 hover:border-accent-blue hover:bg-slate-50"}
                     ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
                   `}
                 >
@@ -817,7 +817,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                     disabled={loading}
                     inputMode="numeric"
                     placeholder="Ex.: 1"
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] bg-white text-sm disabled:bg-gray-100"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm disabled:bg-gray-100"
                   />
                 </div>
 
@@ -864,7 +864,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                     ? "Obrigatório: descreva o motivo da retificação..."
                     : "Opcional: descreva o motivo ou detalhe da operação..."
                 }
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] text-sm disabled:bg-gray-100 resize-none"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue text-sm disabled:bg-gray-100 resize-none"
               />
             </div>
 
@@ -877,7 +877,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#004aad] transition-all duration-300 ease-out"
+                    className="h-full bg-accent-blue transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -899,8 +899,8 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 type="submit"
                 disabled={loading || (requireFile && !file) || !canUseOperation[operation]}
                 className={`
-                  px-6 py-2.5 bg-[#004aad] text-white text-sm font-bold rounded-lg
-                  hover:bg-[#003d91] flex items-center gap-2 shadow-lg shadow-blue-900/20
+                  px-6 py-2.5 bg-accent-blue text-white text-sm font-bold rounded-lg
+                  hover:bg-accent-blue/90 flex items-center gap-2 shadow-lg shadow-blue-900/20
                   transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100
                 `}
               >

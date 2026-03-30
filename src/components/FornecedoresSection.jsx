@@ -62,7 +62,7 @@ export default function FornecedoresSection({
             setFornecedorSelecionado(null);
             setIsFornecedorModalOpen(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#004aad] rounded-md shadow-sm hover:bg-[#003d91]"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-accent-blue rounded-md shadow-sm hover:bg-accent-blue-hover"
         >
           <PlusIcon className="w-5 h-5" />
           Adicionar Fornecedor

@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:text-gray-300  dark:bg-[#0F294A] "
+                  ? "bg-accent-blue/10 text-accent-blue dark:text-gray-300 dark:bg-[#0F294A] "
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }
@@ -57,7 +57,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:bg-[#0F294A]"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-[#0F294A]"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }
@@ -71,7 +71,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:bg-[#0F294A]"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-[#0F294A]"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }
@@ -85,7 +85,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:bg-[#0F294A]"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-[#0F294A]"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }
@@ -99,7 +99,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:bg-[#0F294A]"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-[#0F294A]"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }
@@ -113,7 +113,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             className={({ isActive }) =>
               `${navItem} ${
                 isActive
-                  ? "bg-[#E8F4FF] text-[#1789D2] dark:bg-[#0F294A]"
+                  ? "bg-accent-blue/10 text-accent-blue dark:bg-[#0F294A]"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`
             }

@@ -22,7 +22,7 @@ const StyledCheckbox = ({ checked, onChange, className = "" }) => (
       onChange={onChange}
       className="peer absolute inset-0 z-20 m-0 h-full w-full cursor-pointer opacity-0"
     />
-    <div className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-dark-border transition-none peer-checked:border-[#004aad] peer-checked:bg-[#004aad]`}>
+  <div className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-dark-border transition-none peer-checked:border-accent-blue peer-checked:bg-accent-blue`}>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={`h-3 w-3 text-white ${checked ? "opacity-100" : "opacity-0"}`}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
       </svg>
@@ -31,7 +31,7 @@ const StyledCheckbox = ({ checked, onChange, className = "" }) => (
 );
 
 const inputStyle =
-  "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]";
+  "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue";
 const labelStyle =
   "text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase";
 
@@ -493,7 +493,7 @@ export default function LotesSection({
 
                         <button
                           onClick={() => openEdit(l)}
-                          className="text-[#004aad] hover:text-[#003d91]"
+                          className="text-accent-blue hover:text-accent-blue-hover"
                           title="Editar lote"
                           type="button"
                         >

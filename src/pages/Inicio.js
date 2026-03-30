@@ -9,17 +9,13 @@ import {
   Activity,
   Calendar,
   ArrowRight,
-  Plus,
   Settings,
   UserCheck,
   Clock,
-  LayoutGrid,
-  ShieldCheck,
 } from "lucide-react";
 
 import useAxios from "../hooks/useAxios";
 import AuthContext from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. UTILS & HELPERS                                                        */
@@ -62,12 +58,12 @@ const StatCard = ({ title, value, icon: Icon, to }) => (
       className="h-full p-6 bg-white dark:bg-dark-bg-secondary rounded-2xl  hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200"
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-[#004aad] dark:text-blue-400">
+  <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-accent-blue dark:text-blue-400">
           <Icon size={24} strokeWidth={2} />
         </div>
         <ArrowRight
           size={16}
-          className="text-slate-300 dark:text-slate-600 group-hover:text-[#004aad] transition-colors"
+          className="text-slate-300 dark:text-slate-600 group-hover:text-accent-blue transition-colors"
         />
       </div>
 
@@ -87,11 +83,11 @@ const StatCard = ({ title, value, icon: Icon, to }) => (
 const ShortcutCard = ({ label, icon: Icon, to, description }) => (
   <Link to={to} className="group block h-full">
     <div className="flex items-center gap-4 p-4 bg-white dark:bg-dark-bg-secondary rounded-2xl  hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200 h-full">
-      <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-[#004aad] dark:text-blue-400 group-hover:scale-105 transition-transform duration-300">
+  <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-accent-blue dark:text-blue-400 group-hover:scale-105 transition-transform duration-300">
         <Icon size={20} strokeWidth={2} />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-slate-800 dark:text-white text-sm truncate group-hover:text-[#004aad] transition-colors">
+  <h4 className="font-semibold text-slate-800 dark:text-white text-sm truncate group-hover:text-accent-blue transition-colors">
           {label}
         </h4>
         {description && (
@@ -100,7 +96,7 @@ const ShortcutCard = ({ label, icon: Icon, to, description }) => (
           </p>
         )}
       </div>
-      <div className="text-slate-300 dark:text-slate-600 group-hover:text-[#004aad] transition-colors">
+  <div className="text-slate-300 dark:text-slate-600 group-hover:text-accent-blue transition-colors">
         <ArrowRight size={18} />
       </div>
     </div>
@@ -110,7 +106,7 @@ const ShortcutCard = ({ label, icon: Icon, to, description }) => (
 // Item de Atividade Recente
 const RecentActivityItem = ({ process }) => (
   <div className="group flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors duration-200">
-    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-[#004aad] dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+  <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-accent-blue dark:text-blue-400 flex items-center justify-center flex-shrink-0">
       <FileText size={18} />
     </div>
 
@@ -141,7 +137,7 @@ const RecentActivityItem = ({ process }) => (
 
         <Link
           to={`/processos/editar/${process.id}`}
-          className="text-xs font-bold text-[#004aad] dark:text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className="text-xs font-bold text-accent-blue dark:text-blue-400 hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         >
           Ver detalhes
         </Link>
@@ -169,7 +165,6 @@ const Inicio = () => {
   const { user } = useContext(AuthContext);
   const api = useAxios();
   const navigate = useNavigate();
-  const { showToast } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -254,7 +249,7 @@ const Inicio = () => {
             <div>
               <h1 className="text-2xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {greeting},{" "}
-                <span className="text-[#004aad] dark:text-blue-400">
+                <span className="text-accent-blue dark:text-blue-400">
                   {displayName}
                 </span>
               </h1>
@@ -354,7 +349,7 @@ const Inicio = () => {
                   </p>
                   <button
                     onClick={() => navigate("/processos/novo")}
-                    className="text-[#004aad] dark:text-blue-400 text-sm font-bold hover:underline"
+                    className="text-accent-blue dark:text-blue-400 text-sm font-bold hover:underline"
                   >
                     Criar primeiro processo
                   </button>

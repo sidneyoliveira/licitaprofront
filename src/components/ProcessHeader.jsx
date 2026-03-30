@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   Pencil,
-  Download,
   FileText,
   Calendar,
   Wallet,
@@ -165,7 +164,6 @@ export default function ProcessHeader({
   entidadeNome,
   orgaoNome,
   onEdit,
-  onExportCSV,
   onImport,
   onSuccess // Callback opcional para recarregar dados após sucesso no PNCP
 }) {
@@ -211,26 +209,6 @@ export default function ProcessHeader({
     };
   }, [formData?.numero_certame, formData?.modalidade]);
 
-  // Handler de Exportação
-  const handleExport = () => {
-    if (!onExportCSV) return;
-    onExportCSV({
-      ...formData,
-      entidade_nome: entidadeNomeFinal,
-      orgao_nome: orgaoNomeFinal,
-      cadastroFormatado: formatted.cadastro,
-      aberturaFormatada: formatted.abertura,
-      valorPrevisto: formatted.valor,
-      modalidade_label: labels.modalidade,
-      classificacao_label: labels.classificacao,
-      situacao_label: labels.situacao,
-      tipo_organizacao_label: labels.organizacao,
-      modo_disputa_label: labels.modoDisputa,
-      criterio_julgamento_label: labels.criterio,
-      amparo_legal_label: labels.amparo,
-    });
-  };
-
   return (
     <>
         {/* Renderização do Modal PNCP Interno */}
@@ -254,7 +232,7 @@ export default function ProcessHeader({
             {entidadeNomeFinal && (
                 <Ellipsize
                 as="span"
-                className="inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider bg-[#004aad] text-white rounded-md shadow-sm"
+                className="inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider bg-accent-blue text-white rounded-md shadow-sm"
                 title={entidadeNomeFinal}
                 >
                 {entidadeNomeFinal}
@@ -277,7 +255,7 @@ export default function ProcessHeader({
             {onImport && (
                 <button
                     onClick={onImport}
-                    className="p-2 text-slate-500 hover:text-[#004aad] hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                    className="p-2 text-slate-500 hover:text-accent-blue hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                     title="Importar Planilha"
                 >
                     <UploadCloud size={18} />
@@ -287,7 +265,7 @@ export default function ProcessHeader({
             {/* Botão PNCP (Interno) */}
             <button
                 onClick={() => setIsPncpModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#004aad] text-white rounded-lg text-sm font-bold hover:bg-[#003d91] transition-all shadow-sm shadow-blue-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-accent-blue text-white rounded-lg text-sm font-bold hover:bg-accent-blue-hover transition-all shadow-sm shadow-blue-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Publicar no PNCP"
             >
                 <Globe size={16} />

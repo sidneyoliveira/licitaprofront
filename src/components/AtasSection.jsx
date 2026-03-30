@@ -77,7 +77,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
           <div>
             <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#004aad]" />
+              <FileText className="w-4 h-4 text-accent-blue" />
               {initialData?.id ? 'Editar Ata de Registro de Preços' : 'Nova Ata de Registro de Preços'}
             </h3>
             {processoResumo && (
@@ -128,7 +128,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
                 name="numero_ata_registro_preco"
                 value={form.numero_ata_registro_preco}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004aad]/60"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
                 placeholder="Ex: 72/2025"
                 required
               />
@@ -143,7 +143,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
                 name="ano_ata"
                 value={form.ano_ata}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004aad]/60"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
                 required
               />
             </div>
@@ -159,7 +159,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
                   name="data_assinatura"
                   value={form.data_assinatura}
                   onChange={handleChange}
-                  className="w-full pl-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004aad]/60"
+                  className="w-full pl-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
                   required
                 />
               </div>
@@ -179,7 +179,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
                   name="data_vigencia_inicio"
                   value={form.data_vigencia_inicio}
                   onChange={handleChange}
-                  className="w-full pl-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004aad]/60"
+                  className="w-full pl-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
                   required
                 />
               </div>
@@ -196,7 +196,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
                   name="data_vigencia_fim"
                   value={form.data_vigencia_fim}
                   onChange={handleChange}
-                  className="w-full pl-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004aad]/60"
+                  className="w-full pl-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
                   required
                 />
               </div>
@@ -213,7 +213,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
               value={form.observacao}
               onChange={handleChange}
               rows={3}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#004aad]/60"
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
               placeholder="Ex: Convocação prevista para 22/12/2025 às 11:02:45."
             />
           </div>
@@ -230,7 +230,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-[#004aad] text-white hover:bg-[#003d91] shadow-sm shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm shadow-blue-900/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
               Salvar Ata
@@ -412,7 +412,7 @@ const AtaDocumentosModal = ({
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
           <div>
             <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#004aad]" />
+              <FileText className="w-4 h-4 text-accent-blue" />
               Documentos da Ata {ata.numero_ata_registro_preco || ata.id}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -463,7 +463,7 @@ const AtaDocumentosModal = ({
                     Anexar novo documento
                   </td>
                   <td className="p-2 align-middle" colSpan={3}>
-                    <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg-secondary cursor-pointer hover:border-[#004aad] hover:bg-slate-50 transition-colors">
+                    <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg-secondary cursor-pointer hover:border-accent-blue hover:bg-slate-50 transition-colors">
                       <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
                       <span className="text-[11px] text-slate-600 dark:text-slate-300">
                         Selecionar arquivo (tipo será configurado no backend)
@@ -519,13 +519,13 @@ const AtaDocumentosModal = ({
                           <button
                             type="button"
                             onClick={() => handleViewFile(doc)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-[11px] text-slate-600 dark:text-slate-300 hover:border-[#004aad] transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-[11px] text-slate-600 dark:text-slate-300 hover:border-accent-blue transition-colors"
                           >
                             <FileText className="w-3.5 h-3.5 text-blue-500" />
                             <span className="truncate max-w-[160px] md:max-w-[260px]">
                               {fileName}
                             </span>
-                            <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#004aad]" />
+                            <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-accent-blue" />
                           </button>
                         ) : (
                           <span className="text-[11px] text-slate-400 dark:text-slate-500">
@@ -569,7 +569,7 @@ const AtaDocumentosModal = ({
                               type="button"
                               disabled={rowSending}
                               onClick={() => handlePublish(doc)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#004aad] text-white hover:bg-[#003d91] disabled:opacity-60 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 disabled:opacity-60 transition-colors"
                             >
                               {rowSending ? (
                                 <Loader2 size={13} className="animate-spin" />
@@ -840,7 +840,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div>
           <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#004aad]" />
+            <FileText className="w-4 h-4 text-accent-blue" />
             Atas de Registro de Preços
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -852,7 +852,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
         <button
           type="button"
           onClick={handleOpenNewAta}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold bg-[#004aad] text-white hover:bg-[#003d91] shadow-sm shadow-blue-900/20"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm shadow-blue-900/20"
         >
           <Plus className="w-4 h-4" />
           Nova Ata
@@ -953,7 +953,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
                               href={ata.link_pncp}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-[11px] text-[#004aad] hover:underline mt-0.5"
+                              className="text-[11px] text-accent-blue hover:underline mt-0.5"
                             >
                               Ver na PNCP
                             </a>
@@ -985,7 +985,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
                             type="button"
                             disabled={isSaving}
                             onClick={() => handlePublishAtaPncp(ata)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#004aad] text-white hover:bg-[#003d91] disabled:opacity-60 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 disabled:opacity-60 transition-colors"
                           >
                             {isSaving ? (
                               <Loader2 size={13} className="animate-spin" />

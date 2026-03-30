@@ -13,7 +13,6 @@ import {
 import * as XLSX from "xlsx";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
-import axios from "axios";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. UI HELPERS (BOTÃO + INPUT)                                            */
@@ -55,52 +54,6 @@ const inputClass =
 /* ────────────────────────────────────────────────────────────────────────── */
 
 const CADASTRO_SHEET = "CADASTRO INICIAL";
-const OPTIONAL_FORNEC_SHEET = "FORNECEDORES";
-
-const PROCESSO_COLS = [
-  "processo_ref",
-  "entidade_id",
-  "entidade_nome",
-  "orgao_codigo_unidade",
-  "orgao_nome",
-  "numero_processo",
-  "ano",
-  "objeto",
-  "modalidade",
-  "registro_precos",
-  "tipo_disputa",
-  "data_certame",
-  "hora_certame",
-  "local_sessao",
-];
-
-const ITEM_COLS = [
-  "item_ordem",
-  "lote",
-  "item_descricao",
-  "item_especificacao",
-  "quantidade",
-  "unidade",
-  "valor_unitario_estimado",
-  "categoria",
-  "marca_preferencial",
-];
-
-const FORNEC_COLS = [
-  "cnpj",
-  "razao_social",
-  "nome_fantasia",
-  "email",
-  "telefone",
-  "cep",
-  "logradouro",
-  "numero",
-  "bairro",
-  "complemento",
-  "municipio",
-  "uf",
-  "observacoes",
-];
 
 const safe = (v, fb = "—") =>
   v === null || v === undefined || v === "" ? fb : v;
@@ -172,9 +125,6 @@ export default function ImportacaoProcessoModal({
   const [submitting, setSubmitting] = useState(false);
   const [logs, setLogs] = useState([]);
 
-  const addLog = (msg) =>
-    setLogs((l) => [...l, `[${new Date().toLocaleTimeString()}] ${msg}`]);
-
   const reset = () => {
     setFile(null);
     setParsed(null);
@@ -240,8 +190,6 @@ export default function ImportacaoProcessoModal({
 
       // META DO PROCESSO (linha 7)
       const numero_processo = safe(getCell(sheet, "B7"), "");
-      const data_processo_raw = getCell(sheet, "C7");
-      const numero_certame = safe(getCell(sheet, "D7"), "");
       const data_certame_raw = getCell(sheet, "E7");
       const hora_certame_raw = getCell(sheet, "F7");
 
@@ -410,77 +358,6 @@ export default function ImportacaoProcessoModal({
     }
   };
 
-  // opcional: auto-cadastro de fornecedores por CNPJ
-  const ensureFornecedores = async (list) => {
-    if (!list?.length) return;
-    addLog(`Verificando ${list.length} fornecedor(es) da aba FORNECEDORES...`);
-    try {
-      const uniqByCNPJ = new Map();
-      list.forEach((f) => {
-        const clean = String(f.cnpj || "").replace(/[^\d]/g, "");
-        if (!clean) return;
-        if (!uniqByCNPJ.has(clean)) uniqByCNPJ.set(clean, { ...f, cnpj: clean });
-      });
-      const fornecedores = Array.from(uniqByCNPJ.values());
-      if (!fornecedores.length) return;
-
-      const res = await api.get("/fornecedores/", {
-        params: { limit: 1000 },
-      });
-      const existentes = Array.isArray(res.data)
-        ? res.data
-        : res.data?.results || [];
-      const setExist = new Set(
-        existentes
-          .map((z) => String(z.cnpj || "").replace(/[^\d]/g, ""))
-          .filter(Boolean)
-      );
-
-      for (const f of fornecedores) {
-        const clean = f.cnpj;
-        if (!clean) continue;
-        if (setExist.has(clean)) {
-          addLog(`Fornecedor ${clean} já existe — OK.`);
-          continue;
-        }
-
-        if (autoFornecedor) {
-          try {
-            const b = await axios.get(
-              `https://brasilapi.com.br/api/cnpj/v1/${clean}`
-            );
-            const d = b.data || {};
-            const payload = {
-              cnpj: clean,
-              razao_social: f.razao_social || d.razao_social || "",
-              nome_fantasia: f.nome_fantasia || d.nome_fantasia || "",
-              telefone: f.telefone || d.ddd_telefone_1 || "",
-              email: f.email || d.email || "",
-              cep: f.cep || d.cep || "",
-              logradouro: f.logradouro || d.logradouro || "",
-              numero: f.numero || d.numero || "",
-              bairro: f.bairro || d.bairro || "",
-              complemento: f.complemento || d.complemento || "",
-              municipio: f.municipio || d.municipio || "",
-              uf: f.uf || d.uf || "",
-            };
-            await api.post("/fornecedores/", payload);
-            addLog(`Fornecedor ${clean} cadastrado (BrasilAPI + manual).`);
-            setExist.add(clean);
-          } catch (err) {
-            addLog(
-              `Falha ao cadastrar fornecedor ${clean}. Prosseguindo...`
-            );
-          }
-        }
-      }
-    } catch (e) {
-      addLog(
-        "Não foi possível validar/cadastrar fornecedores. Prosseguindo..."
-      );
-    }
-  };
-
   // envio dos dados (sempre via XLSX para casar com o backend)
   const submitImport = async () => {
     if (!file) {
@@ -540,7 +417,7 @@ export default function ImportacaoProcessoModal({
           {/* HEADER */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-[#004aad] dark:text-blue-400">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-accent-blue dark:text-blue-400">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
               <div>

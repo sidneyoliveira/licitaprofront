@@ -5,7 +5,7 @@ import { Menu, Bell, User } from "lucide-react";
 /**
  * Navbar principal (novo designer L3 SOLUTIONS)
  * - Mantém comunicação e links dinâmicos
- * - Usa o azul do PDF: #1789D2
+ * - Usa tokens de cor do tema (accent-blue)
  * - Responsivo e leve, pronto pra integrar com o Layout e Sidebar
  */
 
@@ -30,10 +30,7 @@ const Navbar = ({ onToggleSidebar }) => {
 
           {/* Logo */}
           <div
-            className="w-11 h-11 flex items-center justify-center rounded-md shadow font-bold text-white text-lg"
-            style={{
-              background: "linear-gradient(135deg,#1789D2,#0F7BC2)",
-            }}
+            className="w-11 h-11 flex items-center justify-center rounded-md shadow font-bold text-white text-lg bg-gradient-to-br from-accent-blue to-accent-blue-hover"
           >
             L3
           </div>
@@ -56,7 +53,7 @@ const Navbar = ({ onToggleSidebar }) => {
           >
             <Bell className="w-5 h-5 text-gray-700 dark:text-gray-200" />
             {/* Exemplo de indicador de notificação */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#1789D2]" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent-blue" />
           </Link>
 
           <Link
@@ -68,10 +65,7 @@ const Navbar = ({ onToggleSidebar }) => {
 
           <Link
             to="/configuracoes"
-            className="px-3 py-2 text-sm font-medium rounded-md text-white shadow-sm"
-            style={{
-              background: "linear-gradient(135deg,#1789D2,#0F7BC2)",
-            }}
+            className="px-3 py-2 text-sm font-medium rounded-md text-white shadow-sm bg-gradient-to-br from-accent-blue to-accent-blue-hover"
           >
             Configurações
           </Link>

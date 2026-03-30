@@ -19,8 +19,7 @@ import {
   X,
   UploadCloud,
   Save,
-  ShieldCheck,
-  Building2
+  ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -62,7 +61,7 @@ const ReadOnlyInput = ({ icon: Icon, value, className = "", ...props }) => (
 const SectionHeader = ({ title, icon: Icon, action }) => (
   <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-700/50">
     <div className="flex items-center gap-3">
-      <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-[#004aad] dark:text-blue-400">
+  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-accent-blue dark:text-blue-400">
         <Icon size={20} strokeWidth={2} />
       </div>
       <h3 className="text-base font-bold text-slate-800 dark:text-white tracking-tight">
@@ -127,7 +126,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary">
               <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-[#004aad]">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-accent-blue">
                       <Paperclip size={20} />
                   </div>
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white">
@@ -152,7 +151,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
                         border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all group
                         ${file 
                             ? 'border-emerald-400 bg-emerald-50/30 dark:border-emerald-800/50' 
-                            : 'border-slate-300 dark:border-slate-700 hover:border-[#004aad] hover:bg-blue-50/30 dark:hover:border-blue-500'
+                            : 'border-slate-300 dark:border-slate-700 hover:border-accent-blue hover:bg-blue-50/30 dark:hover:border-blue-500'
                         }
                     `}
                   >
@@ -176,7 +175,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
                         </div>
                     ) : (
                         <div className="flex flex-col items-center">
-                            <div className="p-3 bg-slate-100 dark:bg-slate-900 text-slate-400 rounded-full mb-3 group-hover:text-[#004aad] group-hover:bg-blue-100 transition-colors">
+                            <div className="p-3 bg-slate-100 dark:bg-slate-900 text-slate-400 rounded-full mb-3 group-hover:text-accent-blue group-hover:bg-blue-100 transition-colors">
                                 <UploadCloud size={32} />
                             </div>
                             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -194,7 +193,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Ex: CNH, Comprovante de Residência..."
-                  className="w-full h-12 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] outline-none transition-all"
+                  className="w-full h-12 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue outline-none transition-all"
                 />
               </div>
 
@@ -209,7 +208,7 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
                 <button
                   type="submit"
                   disabled={!file || uploading}
-                  className="px-6 py-2.5 text-sm font-bold text-white bg-[#004aad] hover:bg-[#003d91] rounded-xl shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all active:scale-95"
+                  className="px-6 py-2.5 text-sm font-bold text-white bg-accent-blue hover:bg-accent-blue-hover rounded-xl shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all active:scale-95"
                 >
                   {uploading ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -340,7 +339,7 @@ const Perfil = () => {
   if (loading || !user) {
     return (
       <div className="w-full h-[80vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-12 h-12 text-[#004aad] animate-spin" />
+  <Loader2 className="w-12 h-12 text-accent-blue animate-spin" />
         <p className="text-slate-500 font-medium animate-pulse">Carregando perfil...</p>
       </div>
     );
@@ -393,7 +392,7 @@ const Perfil = () => {
                         {user.first_name} {user.last_name}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium text-sm flex flex-wrap justify-center md:justify-start items-center gap-2 mt-1">
-                        <span className="text-[#004aad] font-bold">@{user.username}</span>
+                        <span className="text-accent-blue font-bold">@{user.username}</span>
                         <span className="hidden md:inline w-1 h-1 bg-slate-300 rounded-full"></span>
                         <span className="truncate">{user.email}</span>
                     </p>
@@ -416,7 +415,7 @@ const Perfil = () => {
                 <div className="flex-shrink-0 mt-2 md:mt-0">
                     <button
                         onClick={() => setEditModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-[#004aad] transition-all shadow-sm border border-slate-200 dark:border-slate-700"
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-accent-blue transition-all shadow-sm border border-slate-200 dark:border-slate-700"
                     >
                         <Edit size={16} />
                         Editar Perfil
@@ -450,7 +449,7 @@ const Perfil = () => {
                    <div>
                       <Label>Nível de Acesso</Label>
                       <div className="h-[46px] flex items-center px-4 bg-gray-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300">
-                          <Shield className="w-4 h-4 mr-2 text-[#004aad]" />
+                          <Shield className="w-4 h-4 mr-2 text-accent-blue" />
                           {user.is_superuser ? "Administrador Total" : user.is_staff ? "Membro da Equipe" : "Usuário Padrão"}
                       </div>
                    </div>
@@ -480,7 +479,7 @@ const Perfil = () => {
                     action={
                         <button 
                             onClick={() => setAttachModalOpen(true)}
-                            className="text-xs font-bold text-[#004aad] hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors"
+                            className="text-xs font-bold text-accent-blue hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors"
                         >
                             <Plus size={14} strokeWidth={3} /> Novo
                         </button>
@@ -501,7 +500,7 @@ const Perfil = () => {
                                         <FileText size={20} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-[#004aad] transition-colors">
+                                        <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-accent-blue transition-colors">
                                             {doc.name}
                                         </h4>
                                         <p className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
@@ -514,7 +513,7 @@ const Perfil = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="p-2 text-slate-400 hover:text-[#004aad] hover:bg-white rounded-lg transition-colors shadow-sm">
+                                    <button className="p-2 text-slate-400 hover:text-accent-blue hover:bg-white rounded-lg transition-colors shadow-sm">
                                         <Download size={18} />
                                     </button>
                                     <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors shadow-sm">

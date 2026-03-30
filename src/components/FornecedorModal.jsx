@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Save, Building2, Phone, MapPin, Loader2, Link as LinkIcon, Plus } from 'lucide-react';
+import { X, Search, Save, Building2, Phone, MapPin, Loader2, Link as LinkIcon } from 'lucide-react';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext';
 
@@ -34,7 +34,7 @@ const formatCEP = (value) => {
 };
 
 // --- ESTILOS ---
-const INPUT_STYLE = "w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] bg-white text-sm transition-all disabled:bg-gray-100 disabled:text-gray-400";
+const INPUT_STYLE = "w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-white text-sm transition-all disabled:bg-gray-100 disabled:text-gray-400";
 const LABEL_STYLE = "block text-[11px] font-bold text-gray-600 mb-1 uppercase tracking-wide";
 const SECTION_TITLE = "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2 border-b pb-1";
 
@@ -205,13 +205,13 @@ const FornecedorModal = ({
                                     <div className="flex gap-4 mt-2 text-sm">
                                         <button 
                                             onClick={() => setMode('search')}
-                                            className={`pb-1 border-b-2 transition-colors ${mode === 'search' ? 'border-[#004aad] text-[#004aad] font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                            className={`pb-1 border-b-2 transition-colors ${mode === 'search' ? 'border-accent-blue text-accent-blue font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                                         >
                                             Buscar no Catálogo
                                         </button>
                                         <button 
                                             onClick={() => setMode('create')}
-                                            className={`pb-1 border-b-2 transition-colors ${mode === 'create' ? 'border-[#004aad] text-[#004aad] font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                            className={`pb-1 border-b-2 transition-colors ${mode === 'create' ? 'border-accent-blue text-accent-blue font-bold' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
                                         >
                                             Cadastrar Novo
                                         </button>
@@ -255,7 +255,7 @@ const FornecedorModal = ({
                                                         </div>
                                                         <button 
                                                             onClick={() => onLink?.(f.id)}
-                                                            className="px-4 py-2 bg-white border border-[#004aad] text-[#004aad] rounded-lg text-sm font-medium hover:bg-[#004aad] hover:text-white transition-all flex items-center gap-2 shadow-sm"
+                                                            className="px-4 py-2 bg-white border border-accent-blue text-accent-blue rounded-lg text-sm font-medium hover:bg-accent-blue hover:text-white transition-all flex items-center gap-2 shadow-sm"
                                                         >
                                                             <LinkIcon size={16} />
                                                             Vincular
@@ -271,7 +271,7 @@ const FornecedorModal = ({
                                                 <p>Nenhum fornecedor encontrado no catálogo.</p>
                                                 <button 
                                                     onClick={() => setMode('create')}
-                                                    className="mt-2 text-[#004aad] hover:underline text-sm font-medium"
+                                                    className="mt-2 text-accent-blue hover:underline text-sm font-medium"
                                                 >
                                                     Cadastrar novo fornecedor
                                                 </button>
@@ -288,7 +288,7 @@ const FornecedorModal = ({
                                     {/* DADOS DA EMPRESA */}
                                     <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
                                         <h4 className={SECTION_TITLE}>
-                                            <Building2 size={16} className="text-[#004aad]" />
+                                            <Building2 size={16} className="text-accent-blue" />
                                             Dados da Empresa
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -309,7 +309,7 @@ const FornecedorModal = ({
                                                             type="button" 
                                                             onClick={buscarCNPJ}
                                                             disabled={isSearchingCNPJ}
-                                                            className="px-3 bg-blue-50 text-[#004aad] border border-blue-100 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50"
+                                                            className="px-3 bg-blue-50 text-accent-blue border border-blue-100 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50"
                                                             title="Buscar dados na Receita"
                                                         >
                                                             {isSearchingCNPJ ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
@@ -475,7 +475,7 @@ const FornecedorModal = ({
                                     type="submit"
                                     form="fornecedorForm"
                                     disabled={isSaving}
-                                    className="px-6 py-2 bg-[#004aad] text-white rounded-lg text-sm font-medium hover:bg-[#003d91] transition-colors flex items-center gap-2 disabled:opacity-70"
+                                    className="px-6 py-2 bg-accent-blue text-white rounded-lg text-sm font-medium hover:bg-accent-blue-hover transition-colors flex items-center gap-2 disabled:opacity-70"
                                 >
                                     {isSaving ? (
                                         <Loader2 size={16} className="animate-spin" />

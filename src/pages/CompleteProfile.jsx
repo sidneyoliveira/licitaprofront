@@ -14,7 +14,7 @@ import useAxios from "../hooks/useAxios"; // Assuming you have this hook based o
 const InputField = ({ icon: Icon, ...props }) => (
   <div className="relative group">
     {Icon && (
-      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#004aad] transition-colors">
+  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-accent-blue transition-colors">
         <Icon size={18} strokeWidth={2} />
       </div>
     )}
@@ -22,7 +22,7 @@ const InputField = ({ icon: Icon, ...props }) => (
       className={`
         w-full bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200
         rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 text-sm
-        focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]
+  focus:outline-none focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue
         transition-all placeholder:text-slate-400
         ${Icon ? "pl-11" : ""}
       `}
@@ -105,7 +105,7 @@ const CompleteProfile = () => {
         className="w-full max-w-lg bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
       >
         {/* Cabeçalho Visual */}
-        <div className="bg-[#004aad] p-8 text-center relative overflow-hidden">
+  <div className="bg-accent-blue p-8 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-8 -mb-8 blur-2xl"></div>
             
@@ -175,7 +175,7 @@ const CompleteProfile = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-[#004aad] hover:bg-[#003d91] text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-accent-blue hover:bg-accent-blue-hover text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

@@ -139,7 +139,7 @@ const Processos = () => {
 
   // ====== APENAS ESTILO (para bater com a imagem) ======
   const inputBase =
-    'w-full border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1789D2] focus:border-transparent';
+    'w-full border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-accent-blue/30 focus:border-transparent';
   const searchInput =
     'pl-12 pr-4 py-3 rounded-2xl text-base placeholder:text-gray-400';
   const selectInput = 'px-3 py-2 rounded-xl text-sm';
@@ -161,7 +161,7 @@ const Processos = () => {
       </Helmet>
 
       {/* Top bar azul (breadcrumb) */}
-      <div className="bg-[#1789D2] text-white">
+  <div className="bg-accent-blue text-white">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="text-sm font-medium">
             Início <span className="opacity-80">/</span> <span>Processos</span>
@@ -194,7 +194,7 @@ const Processos = () => {
 
               <Button
                 onClick={handleCreate}
-                className="bg-[#1789D2] hover:bg-[#0F7BC2] text-white shadow rounded-full"
+                className="bg-accent-blue hover:bg-accent-blue-hover text-white shadow rounded-full"
               >
                 <Plus size={16} />
                 Adicionar
@@ -202,7 +202,7 @@ const Processos = () => {
 
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="border border-[#1789D2] text-[#1789D2] hover:bg-[#E8F4FF] bg-white"
+                className="border border-accent-blue text-accent-blue hover:bg-blue-50 bg-white"
               >
                 <Filter size={16} />
                 Filtros
@@ -232,13 +232,13 @@ const Processos = () => {
           <div className="mt-4 flex items-center gap-2 lg:hidden">
             <Button
               onClick={() => setShowFilters(!showFilters)}
-              className="border border-[#1789D2] text-[#1789D2] hover:bg-[#E8F4FF] bg-white"
+              className="border border-accent-blue text-accent-blue hover:bg-blue-50 bg-white"
             >
               <Filter size={16} />
               Filtros
             </Button>
             {hasActiveFilters && (
-              <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-[#E8F4FF] text-[#1789D2] border border-[#CBE6FF]">
+              <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-accent-blue border border-blue-100">
                 Ativos
               </span>
             )}
@@ -315,7 +315,7 @@ const Processos = () => {
         <div className="mt-5 space-y-4">
           {isLoading ? (
             <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1789D2] mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue mx-auto"></div>
               <p className="text-sm text-[#7A8CA8] mt-3">Carregando...</p>
             </div>
           ) : processos.length > 0 ? (
@@ -344,14 +344,14 @@ const Processos = () => {
               {hasActiveFilters ? (
                 <Button
                   onClick={clearFilters}
-                  className="border border-[#1789D2] text-[#1789D2] hover:bg-[#E8F4FF] bg-white"
+                  className="border border-accent-blue text-accent-blue hover:bg-blue-50 bg-white"
                 >
                   Limpar Filtros
                 </Button>
               ) : (
                 <Button
                   onClick={handleCreate}
-                  className="bg-[#1789D2] hover:bg-[#0F7BC2] text-white"
+                  className="bg-accent-blue hover:bg-accent-blue-hover text-white"
                 >
                   <Plus size={16} />
                   Criar Primeiro Processo

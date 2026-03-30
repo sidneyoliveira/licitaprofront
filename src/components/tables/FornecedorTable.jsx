@@ -20,8 +20,8 @@ const StyledCheckbox = ({ checked, onChange, className = "" }) => (
         pointer-events-none flex h-5 w-5 items-center justify-center rounded 
         border-2 transition-all duration-200 ease-in-out
         ${checked 
-            ? 'border-[#004aad] bg-[#004aad]' 
-            : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent hover:border-[#004aad]/50'
+            ? 'border-accent-blue bg-accent-blue' 
+            : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent hover:border-accent-blue/50'
         }
     `}>
       <svg 
@@ -129,7 +129,7 @@ export default function FornecedorTable({
                             <Building2 size={18} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-[#004aad] transition-colors">
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-accent-blue transition-colors">
                                 {forn.razao_social}
                             </span>
                             {forn.nome_fantasia && (
@@ -162,7 +162,7 @@ export default function FornecedorTable({
                         {onEdit && (
                             <button 
                                 onClick={() => onEdit(forn)} 
-                                className="p-1.5 text-slate-400 hover:text-[#004aad] hover:bg-blue-50 rounded-md transition-colors"
+                                className="p-1.5 text-slate-400 hover:text-accent-blue hover:bg-blue-50 rounded-md transition-colors"
                                 title="Editar Fornecedor"
                             >
                             <Pencil size={16} />
@@ -210,7 +210,7 @@ export default function FornecedorTable({
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Total de Participantes:
             </span>
-            <span className="text-sm font-bold text-[#004aad]">
+            <span className="text-sm font-bold text-accent-blue">
                 {fornecedores.length}
             </span>
         </div>

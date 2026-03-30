@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   X, 
   Save, 
   Building2, 
   Landmark, 
   DownloadCloud, 
-  Loader2, 
-  CheckCircle2 
+  Loader2
 } from 'lucide-react';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 
 // --- ESTILOS PADRONIZADOS ---
-const INPUT_STYLE = "w-full h-12 px-4 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] bg-slate-50 dark:bg-slate-800/50 text-sm font-medium transition-all placeholder:text-slate-400";
+const INPUT_STYLE = "w-full h-12 px-4 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue bg-slate-50 dark:bg-slate-800/50 text-sm font-medium transition-all placeholder:text-slate-400";
 const LABEL_STYLE = "block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide";
 
 export const EntidadeOrgaoModal = ({
@@ -139,7 +138,6 @@ export const EntidadeOrgaoModal = ({
     setIsImportingPncp(true);
     try {
       const res = await api.post('/orgaos/importar-pncp/', { cnpj: digits });
-      const ent = res.data?.entidade;
       const created = res.data?.created ?? 0;
       const updated = res.data?.updated ?? 0;
 
@@ -170,7 +168,7 @@ export const EntidadeOrgaoModal = ({
         {/* Cabeçalho */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary">
             <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-[#004aad] dark:text-blue-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-accent-blue dark:text-blue-400 flex items-center justify-center">
                     <Icon size={20} strokeWidth={2.5} />
                 </div>
                 <div>
@@ -220,7 +218,7 @@ export const EntidadeOrgaoModal = ({
                                     type="button"
                                     onClick={handleImportPncp}
                                     disabled={isImportingPncp || !formData.cnpj}
-                                    className="flex items-center gap-2 px-4 bg-slate-100 hover:bg-[#004aad] hover:text-white text-slate-600 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-2 px-4 bg-slate-100 hover:bg-accent-blue hover:text-white text-slate-600 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     title="Buscar dados no PNCP"
                                 >
                                     {isImportingPncp ? (
@@ -234,7 +232,7 @@ export const EntidadeOrgaoModal = ({
                         </div>
                         {!isEditing && (
                             <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                                <span className="font-bold text-[#004aad]">Dica:</span> Digite o CNPJ e clique no botão para importar automaticamente o nome e as unidades vinculadas do Portal Nacional.
+                                <span className="font-bold text-accent-blue">Dica:</span> Digite o CNPJ e clique no botão para importar automaticamente o nome e as unidades vinculadas do Portal Nacional.
                             </p>
                         )}
                     </div>
@@ -274,7 +272,7 @@ export const EntidadeOrgaoModal = ({
                     
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                         <p className="text-xs text-slate-500 dark:text-slate-400 flex gap-2">
-                            <InfoIcon size={14} className="text-[#004aad] flex-shrink-0 mt-0.5" />
+                            <InfoIcon size={14} className="text-accent-blue flex-shrink-0 mt-0.5" />
                             <span>
                                 Esta unidade será vinculada à entidade pai selecionada. 
                                 O código da unidade (UASG/Id) é gerado automaticamente na integração ou pode ser editado posteriormente.
@@ -297,7 +295,7 @@ export const EntidadeOrgaoModal = ({
                 <button
                     type="submit"
                     disabled={isSaving || isImportingPncp}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-[#004aad] text-white hover:bg-[#003d91] shadow-lg shadow-blue-900/20 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-accent-blue text-white hover:bg-accent-blue-hover shadow-lg shadow-blue-900/20 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {isSaving ? (
                         <Loader2 size={18} className="animate-spin" />

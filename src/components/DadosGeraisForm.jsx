@@ -4,7 +4,7 @@ import { useToast } from "../context/ToastContext";
 
 // Estilos
 const INPUT_STYLE =
-  "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad] disabled:bg-gray-100 disabled:text-gray-400";
+  "w-full px-3 py-2 text-sm border rounded-md bg-white border-slate-300 dark:bg-dark-bg-secondary dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-accent-blue/20 focus:border-accent-blue disabled:bg-gray-100 disabled:text-gray-400";
 const LABEL_STYLE =
   "text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase";
 
@@ -452,7 +452,7 @@ export default function DadosGeraisForm({
         <button
           type="submit"
           disabled={isLoading}
-          className="px-4 py-2 rounded-md text-white bg-[#004aad] hover:bg-[#003d91] disabled:opacity-50"
+          className="px-4 py-2 rounded-md text-white bg-accent-blue hover:bg-accent-blue-hover disabled:opacity-50"
         >
           {isNew ? "Salvar e Continuar" : "Salvar Alterações"}
         </button>
