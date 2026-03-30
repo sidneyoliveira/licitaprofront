@@ -6,6 +6,7 @@ import {
   Users,
   Building2,
   UserCheck,
+  Scale,
 } from "lucide-react";
 
 /* Seções de navegação */
