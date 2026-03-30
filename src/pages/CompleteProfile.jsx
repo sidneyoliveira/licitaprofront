@@ -110,7 +110,7 @@ const CompleteProfile = () => {
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-8 -mb-8 blur-2xl"></div>
             
             <div className="relative z-10 flex flex-col items-center">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm mb-4 border border-white/30 text-white shadow-lg">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 border border-white/30 text-white shadow-lg">
                     <FileSignature size={32} />
                 </div>
                 <h2 className="text-2xl font-bold text-white tracking-tight">

@@ -95,7 +95,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -183,24 +183,41 @@ const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`
-      relative flex items-center gap-2 px-5 py-3 text-xs md:text-sm font-bold transition-colors whitespace-nowrap
-      ${
-        isActive
-          ? 'text-accent-blue bg-white dark:bg-dark-bg-secondary'
-          : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60'
-      }
-    `}
+    className={`ui-tab-btn ${isActive ? 'ui-tab-btn-active' : ''}`}
+    aria-selected={isActive}
+    role="tab"
+    id={`tab-${id}`}
   >
-  <Icon size={18} className={isActive ? 'text-accent-blue' : 'text-slate-400'} />
+    <Icon size={17} className={isActive ? 'text-accent-blue' : 'text-slate-400'} />
     {label}
-    {isActive && (
-      <motion.div
-        layoutId="activeTab-underline"
-  className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-blue"
-      />
-    )}
   </button>
+);
+
+const StyledCheckbox = ({ checked, onChange, className = '' }) => (
+  <label
+    className={`relative inline-flex items-center justify-center cursor-pointer select-none ${className}`}
+    aria-checked={checked}
+    role="checkbox"
+  >
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="peer absolute inset-0 z-20 m-0 h-full w-full cursor-pointer opacity-0"
+    />
+    <div className="pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-slate-600 peer-checked:border-accent-blue peer-checked:bg-accent-blue">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={3}
+        stroke="currentColor"
+        className={`h-3 w-3 text-white ${checked ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    </div>
+  </label>
 );
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -224,6 +241,30 @@ const ArquivosSection = ({
   sendingKey,
 }) => {
   const [activeMenu, setActiveMenu] = useState(null);
+  const [selectedDocTypes, setSelectedDocTypes] = useState(new Set());
+
+  const allDocTypesSelected =
+    documentTypes.length > 0 && documentTypes.every((d) => selectedDocTypes.has(d.id));
+
+  const toggleSelectDocType = (id) => {
+    setSelectedDocTypes((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllDocTypes = () => {
+    setSelectedDocTypes((prev) => {
+      const next = new Set(prev);
+      if (allDocTypesSelected) {
+        documentTypes.forEach((d) => next.delete(d.id));
+      } else {
+        documentTypes.forEach((d) => next.add(d.id));
+      }
+      return next;
+    });
+  };
 
   const findByTipo = (list, tipoId) =>
     (list || []).find((d) => Number(d.tipo_documento_id ?? d.tipoDocumentoId) === Number(tipoId));
@@ -240,13 +281,21 @@ const ArquivosSection = ({
             <FileText className="w-4 h-4 text-accent-blue" />
             Documentos da Contratação
           </h3>
+          {selectedDocTypes.size > 0 && (
+            <p className="text-xs text-accent-blue mt-1 font-semibold">
+              {selectedDocTypes.size} tipo(s) de documento selecionado(s).
+            </p>
+          )}
         </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse ui-process-table">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800 text-md md:text-xs uppercase text-slate-500 dark:text-slate-400">
+              <th className="p-2 md:p-3 w-12 text-center">
+                <StyledCheckbox checked={allDocTypesSelected} onChange={toggleSelectAllDocTypes} />
+              </th>
               <th className="p-2 md:p-3 w-14">Ordem</th>
               <th className="p-2 md:p-3">Tipo de Documento</th>
               <th className="p-2 md:p-3">Arquivo Local</th>
@@ -281,12 +330,16 @@ const ArquivosSection = ({
                 null;
 
               const rowSending = sendingKey === `tipo:${dt.id}`;
+              const isSelected = selectedDocTypes.has(dt.id);
 
               return (
                 <tr
                   key={dt.id}
-                  className="text-xs md:text-sm group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
+                  className={`text-xs md:text-sm group transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/20'}`}
                 >
+                  <td className="p-2 md:p-3 align-middle text-center">
+                    <StyledCheckbox checked={isSelected} onChange={() => toggleSelectDocType(dt.id)} />
+                  </td>
                   <td className="p-2 md:p-3 text-slate-500 dark:text-slate-400 align-middle">
                     {dt.id}
                   </td>
@@ -1120,11 +1173,7 @@ export default function PageProcess() {
         )}
 
         {isEditing && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6"
-          >
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <div className="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
               <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <LayoutDashboard className="text-accent-blue" />
@@ -1142,12 +1191,12 @@ export default function PageProcess() {
               entidades={entidades}
               orgaos={orgaos}
             />
-          </motion.div>
+          </div>
         )}
 
         {processoId && !isEditing && (
           <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[480px]">
-            <div className="flex items-center px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary overflow-x-auto gap-1">
+            <div className="ui-tab-list" role="tablist" aria-label="Abas do processo">
               <TabButton
                 id="itens"
                 label="Itens do Processo"
@@ -1191,14 +1240,7 @@ export default function PageProcess() {
             </div>
 
             <div className="p-6 bg-slate-50/50 dark:bg-slate-900/20 min-h-[380px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
-                  transition={{ duration: 0.18 }}
-                >
+              <div>
                   {activeTab === 'itens' && (
                     <ItemsSection
                       itens={itens}
@@ -1284,8 +1326,7 @@ export default function PageProcess() {
                     />
                   )}
 
-                </motion.div>
-              </AnimatePresence>
+              </div>
             </div>
           </div>
         )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { MotionConfig } from 'framer-motion';
 
 import PrivateRoute from './utils/PrivateRoute';
 import Layout from './components/Layout';
@@ -23,7 +24,10 @@ import CompleteProfile from './pages/CompleteProfile';
 
 function App() {
   return (
-    <>
+    <MotionConfig
+      reducedMotion="user"
+      transition={{ duration: 0.14, ease: 'easeOut' }}
+    >
       <Helmet>
         <title>L3 Solutions - Gestão de Processos</title>
         <meta name="description" content="Sistema de gestão de processos licitatórios." />
@@ -56,7 +60,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
-    </>
+    </MotionConfig>
   );
 }
 

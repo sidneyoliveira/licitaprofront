@@ -249,7 +249,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-slate-900/40 transition-opacity"
           />
           
           <motion.div 

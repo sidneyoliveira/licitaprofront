@@ -461,7 +461,7 @@ const Cadastros = () => {
 
           {/* Modal simples (inline) */}
           {showEntModal && (
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
               <div className="w-full max-w-xl">
                 <Card>
                   <CardHeader
@@ -515,7 +515,7 @@ const Cadastros = () => {
 
           {/* Modal simples (inline) */}
           {showOrgModal && (
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
               <div className="w-full max-w-xl">
                 <Card>
                   <CardHeader

@@ -41,7 +41,7 @@ const Modal = ({ isOpen, onClose, children, maxWidth = "max-w-xl" }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onClick={onClose} />
-      <div className={`relative w-full ${maxWidth} bg-white dark:bg-dark-bg-secondary rounded-md shadow-xl md:ml-40 p-5`}>
+      <div className={`relative w-full ${maxWidth} ui-modal-panel md:ml-40`}>
         {children}
       </div>
     </div>
@@ -74,10 +74,12 @@ const LoteFormModal = ({ open, onClose, initialData, onSave, isSaving }) => {
 
   return (
     <Modal isOpen={open} onClose={onClose}>
-      <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 ">
-        {initialData?.id ? "Editar Lote" : "Adicionar Lote"}
-      </h3>
-      <form onSubmit={submit} className="space-y-4">
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/40">
+        <h3 className="text-base font-bold text-slate-800 dark:text-white">
+          {initialData?.id ? "Editar Lote" : "Adicionar Lote"}
+        </h3>
+      </div>
+      <form onSubmit={submit} className="space-y-4 p-5">
         <div className="grid grid-cols-[1fr_3fr] gap-4">
           <div>
             <label className={labelStyle}>Número *</label>
@@ -106,14 +108,14 @@ const LoteFormModal = ({ open, onClose, initialData, onSave, isSaving }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary"
+            className="ui-btn ui-btn-outline"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={!!isSaving}
-            className="px-4 py-2 rounded-md bg-[#0f766e] text-white hover:bg-[#115e59] disabled:opacity-70 font-semibold text-sm"
+            className="ui-btn ui-btn-primary"
           >
             {isSaving ? "Salvando..." : "Salvar"}
           </button>
@@ -174,7 +176,8 @@ const LoteItensModal = ({
 
   return (
     <Modal isOpen={open} onClose={onClose} maxWidth="max-w-3xl">
-      <div className="flex items-start justify-between gap-3">
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/40">
+        <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-bold text-slate-800 dark:text-white">
             Itens do Lote {lote?.numero}
@@ -192,11 +195,13 @@ const LoteItensModal = ({
             onChange={(e) => setTerm(e.target.value)}
           />
         </div>
+        </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
-        <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
-          <thead className="bg-slate-50 dark:bg-slate-800/40">
+      <div className="p-5">
+      <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+        <table className="ui-process-table">
+          <thead>
             <tr>
               <th className="py-3 px-4 w-12">
                 <StyledCheckbox checked={allSelected} onChange={toggleAll} />
@@ -244,7 +249,7 @@ const LoteItensModal = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary"
+          className="ui-btn ui-btn-outline"
         >
           Cancelar
         </button>
@@ -252,10 +257,11 @@ const LoteItensModal = ({
           type="button"
           disabled={busy}
           onClick={() => onSave?.(selected)}
-          className="px-4 py-2 rounded-md bg-[#0f766e] text-white hover:bg-[#115e59] disabled:opacity-70 font-semibold text-sm"
+          className="ui-btn ui-btn-primary"
         >
           {busy ? "Salvando..." : "Salvar seleção"}
         </button>
+      </div>
       </div>
     </Modal>
   );
@@ -284,6 +290,7 @@ export default function LotesSection({
 
   const [showDelete, setShowDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [selectedLotes, setSelectedLotes] = useState(new Set());
 
   // sync props
   useEffect(() => setLotes(lotesProp), [lotesProp]);
@@ -303,6 +310,31 @@ export default function LotesSection({
     });
     return map;
   }, [itens]);
+
+  const areAllLotesSelected = useMemo(() => {
+    if (!lotes?.length) return false;
+    return lotes.every((l) => selectedLotes.has(l.id));
+  }, [lotes, selectedLotes]);
+
+  const onSelectLote = (id) => {
+    setSelectedLotes((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const onSelectAllLotes = () => {
+    setSelectedLotes((prev) => {
+      const next = new Set(prev);
+      if (areAllLotesSelected) {
+        lotes.forEach((l) => next.delete(l.id));
+      } else {
+        lotes.forEach((l) => next.add(l.id));
+      }
+      return next;
+    });
+  };
 
   const ensureLotes = useCallback(async () => {
     if (reloadLotes) return reloadLotes();
@@ -430,6 +462,7 @@ export default function LotesSection({
           <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Lotes do Processo</h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
             {(lotes || []).length} lote(s) cadastrado(s).
+            {selectedLotes.size > 0 && ` ${selectedLotes.size} selecionado(s).`}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -448,9 +481,12 @@ export default function LotesSection({
 
       {/* Tabela */}
       <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary shadow-sm">
-        <table className="w-full divide-y divide-slate-200 dark:divide-slate-700">
-          <thead className="bg-slate-50 dark:bg-slate-800/40">
+        <table className="ui-process-table">
+          <thead>
             <tr>
+              <th className="w-12 text-center">
+                <StyledCheckbox checked={areAllLotesSelected} onChange={onSelectAllLotes} />
+              </th>
               <th className="py-3 px-4 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">
                 Nº
               </th>
@@ -468,15 +504,19 @@ export default function LotesSection({
           <tbody>
             {(lotes || []).length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-8 text-slate-500">
+                <td colSpan={5} className="text-center py-8 text-slate-500">
                   Nenhum lote cadastrado.
                 </td>
               </tr>
             ) : (
               (lotes || []).map((l) => {
                 const qtd = countByLote.get(l.id) ?? "—";
+                const isSelected = selectedLotes.has(l.id);
                 return (
-                  <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                  <tr key={l.id} className={`${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
+                    <td className="py-3 px-4 text-center">
+                      <StyledCheckbox checked={isSelected} onChange={() => onSelectLote(l.id)} />
+                    </td>
                     <td className="py-3 px-4 text-sm font-semibold">#{l.numero}</td>
                     <td className="py-3 px-4 text-sm">{l.descricao || "—"}</td>
                     <td className="py-3 px-4 text-sm text-right">{qtd}</td>

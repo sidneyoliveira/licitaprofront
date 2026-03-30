@@ -18,6 +18,33 @@ import {
   Edit,
 } from 'lucide-react';
 
+const StyledCheckbox = ({ checked, onChange, className = '' }) => (
+  <label
+    className={`relative inline-flex items-center justify-center cursor-pointer select-none ${className}`}
+    aria-checked={checked}
+    role="checkbox"
+  >
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="peer absolute inset-0 z-20 m-0 h-full w-full cursor-pointer opacity-0"
+    />
+    <div className="pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-slate-600 peer-checked:border-accent-blue peer-checked:bg-accent-blue">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={3}
+        stroke="currentColor"
+        className={`h-3 w-3 text-white ${checked ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    </div>
+  </label>
+);
+
 /* --------------------------------------------------------------------- */
 /* Modal de Cadastro / Edição da Ata                                     */
 /* --------------------------------------------------------------------- */
@@ -66,12 +93,13 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: -10 }}
-        className="w-full max-w-3xl bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+        transition={{ duration: 0.12 }}
+        className="w-full max-w-3xl ui-modal-panel"
       >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
@@ -401,12 +429,13 @@ const AtaDocumentosModal = ({
   if (!open || !ata) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: -10 }}
-        className="w-full max-w-4xl bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+        transition={{ duration: 0.12 }}
+        className="w-full max-w-4xl ui-modal-panel"
       >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
@@ -689,6 +718,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
   const [docsModalOpen, setDocsModalOpen] = useState(false);
   const [ataParaDocs, setAtaParaDocs] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
+  const [selectedAtas, setSelectedAtas] = useState(new Set());
 
   const fetchAtas = useCallback(async () => {
     if (!processoId) return;
@@ -714,6 +744,28 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
 
   const isAtaPublished = (ata) =>
     ata?.status === 'publicada' || !!ata?.pncp_sequencial_ata || !!ata?.pncp_numero_controle;
+
+  const areAllAtasSelected = atas.length > 0 && atas.every((a) => selectedAtas.has(a.id));
+
+  const handleSelectAta = (id) => {
+    setSelectedAtas((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAllAtas = () => {
+    setSelectedAtas((prev) => {
+      const next = new Set(prev);
+      if (areAllAtasSelected) {
+        atas.forEach((a) => next.delete(a.id));
+      } else {
+        atas.forEach((a) => next.add(a.id));
+      }
+      return next;
+    });
+  };
 
   /* --------------------------- Handlers Ata --------------------------- */
 
@@ -847,6 +899,9 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
             Cadastre as Atas vinculadas a este processo, publique no PNCP e gerencie os documentos
             específicos de cada ata.
           </p>
+          {selectedAtas.size > 0 && (
+            <p className="text-xs text-accent-blue mt-1 font-semibold">{selectedAtas.size} ata(s) selecionada(s).</p>
+          )}
         </div>
 
         <button
@@ -861,9 +916,12 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
 
       {/* Tabela de Atas */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="ui-process-table text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase text-slate-500 dark:text-slate-400">
+              <th className="p-2 w-12 text-center">
+                <StyledCheckbox checked={areAllAtasSelected} onChange={handleSelectAllAtas} />
+              </th>
               <th className="p-2 w-10">ID</th>
               <th className="p-2">Ata / Vigência</th>
               <th className="p-2 hidden md:table-cell">Situação PNCP</th>
@@ -874,7 +932,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {loading && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-slate-500 dark:text-slate-400 text-xs">
+                <td colSpan={6} className="p-6 text-center text-slate-500 dark:text-slate-400 text-xs">
                   <Loader2 className="w-4 h-4 inline-block mr-2 animate-spin" />
                   Carregando atas...
                 </td>
@@ -883,7 +941,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
 
             {!loading && atas.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-slate-500 dark:text-slate-400 text-xs">
+                <td colSpan={6} className="p-6 text-center text-slate-500 dark:text-slate-400 text-xs">
                   Nenhuma Ata de Registro de Preços cadastrada para este processo.
                 </td>
               </tr>
@@ -893,12 +951,16 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
               atas.map((ata) => {
                 const published = isAtaPublished(ata);
                 const isSaving = savingAtaId === ata.id;
+                const isSelected = selectedAtas.has(ata.id);
 
                 return (
                   <tr
                     key={ata.id}
-                    className="text-xs md:text-sm hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors group"
+                    className={`text-xs md:text-sm group transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/20'}`}
                   >
+                    <td className="p-2 align-middle text-center">
+                      <StyledCheckbox checked={isSelected} onChange={() => handleSelectAta(ata.id)} />
+                    </td>
                     <td className="p-2 align-middle text-slate-500 dark:text-slate-400">
                       {ata.id}
                     </td>

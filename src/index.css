@@ -49,6 +49,44 @@ html {
   scrollbar-color: var(--scroll-thumb) var(--scroll-bg);
 }
 
+:root {
+  --ui-fast-transition: 120ms;
+  --ui-fast-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Deixa interações mais responsivas e leves */
+button,
+a,
+input,
+select,
+textarea,
+[role='button'] {
+  transition-duration: var(--ui-fast-transition) !important;
+  transition-timing-function: var(--ui-fast-ease) !important;
+}
+
+.transition,
+.transition-all,
+.transition-colors,
+.transition-opacity,
+.transition-shadow,
+.transition-transform {
+  transition-duration: var(--ui-fast-transition) !important;
+  transition-timing-function: var(--ui-fast-ease) !important;
+}
+
+/* Respeita acessibilidade e reduz custo de animações quando o usuário preferir */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer components {
   .ui-card {
     @apply bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm;
@@ -84,6 +122,34 @@ html {
 
   .ui-modal-panel {
     @apply bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden;
+  }
+
+  .ui-tab-list {
+    @apply flex items-center gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary px-3;
+  }
+
+  .ui-tab-btn {
+    @apply relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap rounded-t-xl border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors;
+  }
+
+  .ui-tab-btn-active {
+    @apply text-accent-blue border-accent-blue bg-slate-50/70 dark:bg-slate-800/40;
+  }
+
+  .ui-process-table {
+    @apply w-full divide-y divide-slate-200 dark:divide-slate-700;
+  }
+
+  .ui-process-table thead {
+    @apply bg-slate-50 dark:bg-slate-800/40;
+  }
+
+  .ui-process-table th {
+    @apply py-3 px-4 text-left text-xs font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300;
+  }
+
+  .ui-process-table td {
+    @apply py-3 px-4 text-sm;
   }
 }
 
