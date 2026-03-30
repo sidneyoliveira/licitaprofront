@@ -6,7 +6,6 @@ import {
   Users,
   Building2,
   UserCheck,
-  Scale,
 } from "lucide-react";
 
 /* Seções de navegação */
@@ -45,28 +44,26 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
         {/* ── Logo ── */}
         <div
           className={`
-            flex items-center h-16 px-4
+            flex items-center h-16 px-5
             border-b border-slate-200/80 dark:border-slate-700/60
-            ${isOpen ? "gap-3" : "justify-center"}
+            ${isOpen ? "" : "justify-center"}
           `}
         >
-          {/* Ícone L3 */}
-          <div className="relative flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-blue to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/30">
-              <Scale size={18} className="text-white" />
+          {isOpen ? (
+            /* Logo texto: L3 SOLUTIONS */
+            <div className="flex items-baseline gap-[3px] select-none">
+              <span className="text-[22px] font-black tracking-tight text-[#1e3a6e] dark:text-[#4a7fd4] leading-none">
+                L3
+              </span>
+              <span className="text-[14px] font-bold tracking-[0.18em] text-slate-500 dark:text-slate-400 uppercase leading-none ml-1">
+                SOLUTIONS
+              </span>
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-[#141c2e]" />
-          </div>
-
-          {isOpen && (
-            <div className="overflow-hidden">
-              <p className="text-[15px] font-bold tracking-tight text-slate-800 dark:text-white leading-none">
-                LicitaPro
-              </p>
-              <p className="text-[10px] font-medium tracking-widest text-accent-blue dark:text-blue-400 mt-0.5 uppercase">
-                L3 Solutions
-              </p>
-            </div>
+          ) : (
+            /* Collapsed: apenas "L3" centralizado */
+            <span className="text-[16px] font-black text-[#1e3a6e] dark:text-[#4a7fd4] select-none">
+              L3
+            </span>
           )}
         </div>
 
@@ -124,23 +121,23 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
         {/* ── Rodapé ── */}
         <div
           className={`
-            py-3 px-4 border-t border-slate-200/80 dark:border-slate-700/60
+            py-3 px-5 border-t border-slate-200/80 dark:border-slate-700/60
             ${isOpen ? "" : "flex justify-center"}
           `}
         >
           {isOpen ? (
             <div>
-              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                L3 Solutions
+              <p className="text-[11px] font-bold text-[#1e3a6e] dark:text-[#4a7fd4]">
+                L3 SOLUTIONS
               </p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
                 v2.0 · © {new Date().getFullYear()}
               </p>
             </div>
           ) : (
-            <div className="w-7 h-7 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 flex items-center justify-center">
-              <Scale size={14} className="text-accent-blue dark:text-blue-400" />
-            </div>
+            <span className="text-[11px] font-black text-[#1e3a6e] dark:text-[#4a7fd4] select-none">
+              L3
+            </span>
           )}
         </div>
       </aside>

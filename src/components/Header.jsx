@@ -20,7 +20,6 @@ import {
   Menu,
   Sun,
   Moon,
-  Scale,
   LogOut as LogOutIcon,
   RefreshCw,
   AlertTriangle,
@@ -387,26 +386,7 @@ const Header = ({ toggleSidebar }) => {
 
         {/* ── ESQUERDA: Logo + toggle ── */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Logo visível no header quando sidebar está fechada */}
-          <div className="flex items-center gap-2.5">
-            <div className="relative">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-blue to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/25">
-                <Scale className="w-[18px] h-[18px] text-white" />
-              </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-[#141c2e]" />
-            </div>
-            <div className="hidden lg:block">
-              <p className="text-[14px] font-bold tracking-tight text-slate-800 dark:text-white leading-none">
-                LicitaPro
-              </p>
-              <p className="text-[9px] font-semibold tracking-widest text-accent-blue dark:text-blue-400 uppercase mt-0.5">
-                L3 Solutions
-              </p>
-            </div>
-          </div>
-
-          {/* Divisor */}
-          <div className="hidden lg:block h-8 w-px bg-slate-200 dark:bg-slate-700/60 mx-1" />
+        
 
           {/* Botão toggle sidebar */}
           <button
