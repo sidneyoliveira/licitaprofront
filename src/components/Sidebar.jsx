@@ -49,22 +49,16 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
             ${isOpen ? "" : "justify-center"}
           `}
         >
-          {isOpen ? (
-            /* Logo texto: L3 SOLUTIONS */
-            <div className="flex items-baseline gap-[3px] select-none">
-              <span className="text-[22px] font-black tracking-tight text-[#1e3a6e] dark:text-[#4a7fd4] leading-none">
-                L3
-              </span>
-              <span className="text-[14px] font-bold tracking-[0.18em] text-slate-500 dark:text-slate-400 uppercase leading-none ml-1">
-                SOLUTIONS
-              </span>
-            </div>
-          ) : (
-            /* Collapsed: apenas "L3" centralizado */
-            <span className="text-[16px] font-black text-[#1e3a6e] dark:text-[#4a7fd4] select-none">
+          <div className="flex items-center justify-center select-none">
+            <div className="w-10 h-10 flex items-center text-3xl font-extrabold text-gray-800 dark:text-white leading-none">
               L3
-            </span>
-          )}
+            </div>
+            {isOpen && (
+              <h1 className="text-3xl font-regular tracking-tight text-[#757575] dark:text-[#d6d6d6]">
+                SOLUTIONS
+              </h1>
+            )}
+          </div>
         </div>
 
         {/* ── Navegação ── */}
@@ -121,23 +115,23 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
         {/* ── Rodapé ── */}
         <div
           className={`
-            py-3 px-5 border-t border-slate-200/80 dark:border-slate-700/60
+            py-3 px-4 border-t border-slate-200/80 dark:border-slate-700/60
             ${isOpen ? "" : "flex justify-center"}
           `}
         >
           {isOpen ? (
             <div>
-              <p className="text-[11px] font-bold text-[#1e3a6e] dark:text-[#4a7fd4]">
-                L3 SOLUTIONS
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                L3 Solutions
               </p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
                 v2.0 · © {new Date().getFullYear()}
               </p>
             </div>
           ) : (
-            <span className="text-[11px] font-black text-[#1e3a6e] dark:text-[#4a7fd4] select-none">
-              L3
-            </span>
+            <div className="w-7 h-7 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 flex items-center justify-center">
+              <Scale size={14} className="text-accent-blue dark:text-blue-400" />
+            </div>
           )}
         </div>
       </aside>
