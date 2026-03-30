@@ -24,7 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 /* ────────────────────────────────────────────────────────────────────────── */
 const Button = ({ children, className = "", ...props }) => (
   <button
-    className={`flex items-center justify-center font-medium gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 px-4 py-2 ${className}`}
+    className={`ui-btn ${className}`}
     {...props}
   >
     {children}
@@ -32,9 +32,7 @@ const Button = ({ children, className = "", ...props }) => (
 );
 
 const inputCampo =
-  "w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-white dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
-const inputStyle =
-  "w-full px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
+  "ui-input";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Subcomponentes                                                            */

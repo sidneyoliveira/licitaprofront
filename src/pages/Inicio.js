@@ -239,7 +239,7 @@ const Inicio = () => {
   return (
     <div className="min-h-screen pb-20 flex justify-center items-start">
       <Helmet>
-        <title>Dashboard | Licitapro</title>
+        <title>Dashboard | L3 Solutions</title>
       </Helmet>
 
       <div className="max-w-7xl w-full py-2 space-y-4 px-3 md:px-0">

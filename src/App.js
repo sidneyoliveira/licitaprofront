@@ -7,7 +7,6 @@ import Layout from './components/Layout';
 
 // Públicas
 import Login from './pages/Login';
-import Register from './pages/Register';
 
 // Privadas
 import Inicio from './pages/Inicio';
@@ -33,7 +32,7 @@ function App() {
       <Routes>
         {/* Públicas */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+  <Route path="/register" element={<Navigate to="/login" replace />} />
 
         {/* Privadas */}
         <Route element={<PrivateRoute />}>
@@ -42,6 +41,7 @@ function App() {
 
             <Route path="processos" element={<Processos />} />
             <Route path="processos/novo" element={<NewProcess />} />
+            <Route path="processos/editar/:id" element={<NewProcess />} />
             <Route path="processos/:id" element={<PageProcess />} />
 
             <Route path="entidades" element={<Entidades />} />

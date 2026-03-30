@@ -35,18 +35,13 @@ const Button = ({
   variant = "primary",
   ...props
 }) => {
-  const baseStyle =
-    "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-accent-blue/60 disabled:opacity-60";
+  const baseStyle = "ui-btn";
 
   const variants = {
-    primary:
-      "bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm",
-    outline:
-      "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-100 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
-    ghost:
-      "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10",
-    import:
-      "border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-100 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
+    primary: "ui-btn-primary",
+    outline: "ui-btn-outline",
+    ghost: "ui-btn-danger",
+    import: "ui-btn-outline",
   };
 
   return (
@@ -60,7 +55,7 @@ const Button = ({
 };
 
 const inputClass =
-  "w-full px-3 py-2 rounded-lg text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-accent-blue placeholder:text-slate-400 dark:placeholder:text-slate-500";
+  "ui-input";
 
 const ProcessosSkeleton = () => (
   <div className="space-y-3 mt-4">
@@ -219,7 +214,7 @@ const Processos = () => {
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Gerencie{" "}
-                <span className="font-semibold text-[#004aad] dark:text-blue-400">
+                <span className="font-semibold text-accent-blue dark:text-blue-400">
                   {processos.length}
                 </span>{" "}
                 licitações cadastradas.

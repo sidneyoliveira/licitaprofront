@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -10,7 +10,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { loginUser, loginWithGoogle, googleClientId } = useContext(AuthContext);
+  const { loginUser, loginWithGoogle } = useContext(AuthContext);
   const { showToast } = useToast();
 
   // ======= LOGIN NORMAL =======
@@ -27,7 +27,7 @@ const Login = () => {
   };
 
   // ======= LOGIN COM GOOGLE =======
-  const handleGoogleCallback = async (response) => {
+  const handleGoogleCallback = useCallback(async (response) => {
     if (!response?.credential) {
       showToast("Falha ao obter credencial Google", "error");
       return;
@@ -37,7 +37,7 @@ const Login = () => {
     } catch {
       showToast("Erro ao autenticar com Google.", "error");
     }
-  };
+  }, [loginWithGoogle, showToast]);
 
   // ======= INICIALIZA O GOOGLE SIGN-IN =======
   useEffect(() => {
@@ -206,7 +206,7 @@ const Login = () => {
           </p>
 
           <p className="mt-10 text-white/70 text-sm flex items-center justify-center gap-2">
-            <a href="https://www.llassessoriaeservicos.com.br/"  target="_blank" className="inline-flex items-center gap-2">
+            <a href="https://www.llassessoriaeservicos.com.br/"  target="_blank" rel="noreferrer" className="inline-flex items-center gap-2">
               <img
                 src={LogoLL}
                 alt="L&L Acessoria e Serviços"

@@ -25,7 +25,7 @@ import DadosGeraisForm from "../components/DadosGeraisForm";
 /* ────────────────────────────────────────────────────────────────────────── */
 
 const inputClass =
-  "w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-accent-blue";
+  "ui-input";
 
 const labelClass =
   "text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase";
@@ -37,15 +37,15 @@ const Button = ({
   ...props
 }) => {
   const base =
-    "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-accent-blue/60 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap";
+    "ui-btn whitespace-nowrap";
 
   const variants = {
     primary:
-      "bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm",
+      "ui-btn-primary",
     outline:
-      "border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800",
+      "ui-btn-outline",
     ghost:
-      "bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
+      "ui-btn-ghost",
   };
 
   return (
@@ -73,7 +73,7 @@ const TabButton = ({ label, isActive, onClick, isDisabled }) => (
   >
     {label}
     {isActive && (
-      <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-[#004aad]" />
+      <span className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-accent-blue" />
     )}
   </button>
 );
@@ -91,7 +91,7 @@ const StyledCheckbox = ({ checked, onChange, className = "" }) => (
       className="peer absolute inset-0 z-20 m-0 h-full w-full cursor-pointer opacity-0"
     />
     <div
-      className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-slate-600 transition-colors peer-checked:border-[#004aad] peer-checked:bg-[#004aad]`}
+      className={`pointer-events-none flex h-5 w-5 items-center justify-center rounded border-2 border-slate-300 dark:border-slate-600 transition-colors peer-checked:border-accent-blue peer-checked:bg-accent-blue`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -187,7 +187,7 @@ const ItemModal = ({ isOpen, onClose, onSave, itemSelecionado }) => {
           {/* HEADER */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-[#004aad] dark:text-blue-400">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-accent-blue dark:text-blue-400">
                 <ClipboardDocumentIcon className="w-5 h-5" />
               </div>
               <div>
@@ -426,7 +426,7 @@ export const FornecedorModal = ({
           {/* HEADER */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-[#004aad] dark:text-blue-400">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-accent-blue dark:text-blue-400">
                 <BuildingOffice2Icon className="w-5 h-5" />
               </div>
               <div>
@@ -688,7 +688,7 @@ const ItensTable = ({
   onSelectAll,
   areAllSelected,
 }) => (
-  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary shadow-sm">
+  <div className="ui-table-wrap">
     <table className="w-full divide-y divide-slate-200 dark:divide-slate-800">
       <thead className="bg-slate-50 dark:bg-slate-900/60">
         <tr>
@@ -739,7 +739,7 @@ const ItensTable = ({
                 <button
                   onClick={() => onEdit(item)}
                   title="Editar"
-                  className="text-[#004aad] hover:text-[#003d91]"
+                  className="text-accent-blue hover:text-accent-blue/80"
                 >
                   <PencilIcon className="w-5 h-5" />
                 </button>
@@ -772,7 +772,7 @@ const ItensTable = ({
 );
 
 const FornecedorTable = ({ fornecedores, handleAskDelete, onEdit }) => (
-  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary shadow-sm">
+  <div className="ui-table-wrap">
     <table className="w-full divide-y divide-slate-200 dark:divide-slate-800">
       <thead className="bg-slate-50 dark:bg-slate-900/60">
         <tr>
@@ -816,7 +816,7 @@ const FornecedorTable = ({ fornecedores, handleAskDelete, onEdit }) => (
                 <div className="space-x-4">
                   <button
                     onClick={() => onEdit(forn)}
-                    className="text-[#004aad] hover:text-[#003d91]"
+                    className="text-accent-blue hover:text-accent-blue/80"
                   >
                     <PencilIcon className="w-5 h-5 inline" />
                   </button>

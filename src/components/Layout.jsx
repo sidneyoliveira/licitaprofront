@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import Rodape from './Rodape';
 
 const Layout = () => {
   const [isMobile, setIsMobile] = useState(() =>

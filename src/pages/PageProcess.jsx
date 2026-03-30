@@ -38,6 +38,9 @@ import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 
+import AtasSection from '../components/AtasSection';
+
+
 /* ────────────────────────────────────────────────────────────────────────── */
 /* TIPOS DE DOCUMENTO (PNCP 5.12)                                            */
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -1168,6 +1171,15 @@ export default function PageProcess() {
                 isActive={activeTab === 'fornecedores'}
                 onClick={() => setActiveTab('fornecedores')}
               />
+              {formData.registro_precos && (
+                <TabButton
+                  id="atas"
+                  label="Atas de Registro de Preços"
+                  icon={FileText}
+                  isActive={activeTab === 'atas'}
+                  onClick={() => setActiveTab('atas')}
+                />
+              )}
               <TabButton
                 id="arquivos"
                 label="Arquivos"
@@ -1175,6 +1187,7 @@ export default function PageProcess() {
                 isActive={activeTab === 'arquivos'}
                 onClick={() => setActiveTab('arquivos')}
               />
+
             </div>
 
             <div className="p-6 bg-slate-50/50 dark:bg-slate-900/20 min-h-[380px]">
@@ -1253,6 +1266,24 @@ export default function PageProcess() {
                       sendingKey={sendingKey}
                     />
                   )}
+
+                  {activeTab === 'atas' && formData.registro_precos && (
+                    <AtasSection
+                      processoId={processoId}
+                      api={api}
+                      showToast={showToast}
+                      processoResumo={{
+                        local: 'Itarema/CE',
+                        orgao: entidadeNome || orgaoNome,
+                        modalidade: formData.modalidade_nome, 
+                        dataDivulgacao: formData.pncp_publicado_em
+                          ? new Date(formData.pncp_publicado_em).toLocaleDateString('pt-BR')
+                          : null,
+                        objeto: formData.objeto,
+                      }}
+                    />
+                  )}
+
                 </motion.div>
               </AnimatePresence>
             </div>

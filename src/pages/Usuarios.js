@@ -54,14 +54,12 @@ const RoleBadge = ({ isStaff }) => (
 );
 
 const Button = ({ children, variant = "primary", className = "", ...props }) => {
-  const base =
-    "flex items-center justify-center font-medium gap-2 transition-all duration-200 px-4 py-2 rounded-lg text-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
+  const base = "ui-btn";
   const variants = {
-    primary: "bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm hover:shadow",
-    secondary:
-      "bg-white dark:bg-dark-bg-primary border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-bg-secondary",
-    danger: "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400",
-    ghost: "text-gray-500 hover:bg-gray-100 dark:hover:bg-dark-bg-secondary dark:text-gray-400",
+    primary: "ui-btn-primary",
+    secondary: "ui-btn-outline",
+    danger: "ui-btn-danger",
+    ghost: "ui-btn-ghost",
   };
   return (
     <button

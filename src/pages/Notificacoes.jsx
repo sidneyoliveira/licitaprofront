@@ -28,7 +28,7 @@ import {
 /* ────────────────────────────────────────────────────────────────────────── */
 const Button = ({ children, className = "", ...props }) => (
   <button
-    className={`flex items-center justify-center font-medium gap-2 focus:outline-none disabled:pointer-events-none whitespace-nowrap transition-all duration-200 px-4 py-2 ${className}`}
+    className={`ui-btn ${className}`}
     {...props}
   >
     {children}
@@ -36,9 +36,7 @@ const Button = ({ children, className = "", ...props }) => (
 );
 
 const inputCampo =
-  "w-full px-1 py-1 text-sm text-medium rounded-md focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent border dark:bg-dark-bg-primary rounded-lg dark:border-dark-bg-primary";
-const inputStyle =
-  "w-full px-3 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-accent-blue focus:border-transparent";
+  "ui-input";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Utils                                                                     */
@@ -113,8 +111,6 @@ const pickProcessDate = (p) => {
   return null;
 };
 
-const safe = (v, fb = "—") => (v === null || v === undefined || v === "" ? fb : v);
-
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Página: Notificações                                                      */
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -159,7 +155,7 @@ export default function Notificacoes() {
   /* ──────────────────────────────────────────────────────────────────────── */
   /* Fetch                                                                    */
   /* ──────────────────────────────────────────────────────────────────────── */
-  const fetchArray = async (path, params = {}) => {
+  const fetchArray = useCallback(async (path, params = {}) => {
     try {
       const r = await api.get(path, { params });
       if (Array.isArray(r.data)) return r.data;
@@ -168,7 +164,7 @@ export default function Notificacoes() {
     } catch {
       return [];
     }
-  };
+  }, [api]);
 
   const fetchAll = useCallback(async () => {
     setIsLoading(true);
@@ -189,7 +185,7 @@ export default function Notificacoes() {
     } finally {
       setIsLoading(false);
     }
-  }, [api, showToast]);
+  }, [fetchArray, showToast]);
 
   useEffect(() => {
     fetchAll();  
@@ -464,7 +460,7 @@ export default function Notificacoes() {
           <div className="flex items-center gap-2">
             <Button
               onClick={markAllRead}
-              className={`${inputStyle} h-8 gap-1 inline-flex items-center text-sm bg-emerald-600 text-white hover:bg-emerald-700`}
+              className={`h-8 gap-1 inline-flex items-center text-sm bg-emerald-600 text-white hover:bg-emerald-700`}
               title="Marcar todas como lidas"
             >
               <CheckCircle2 className="w-4 h-4" /> Marcar tudo como lido
@@ -620,7 +616,7 @@ export default function Notificacoes() {
                   <div>
                     <Button
                       onClick={clearFilters}
-                      className={`${inputStyle} h-8 gap-1 inline-flex items-center text-sm border border-light-border dark:border-dark-border`}
+                      className={`h-8 gap-1 inline-flex items-center text-sm border border-light-border dark:border-dark-border`}
                     >
                       Limpar filtros
                     </Button>
