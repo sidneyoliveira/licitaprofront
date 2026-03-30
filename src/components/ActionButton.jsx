@@ -4,7 +4,7 @@ export default function ActionButton({ text, onClick, variant = 'primary', icon:
   const baseStyle = "ui-btn";
   const styles = {
     primary: 'ui-btn-primary',
-    secondary: 'bg-accent-green text-white hover:bg-accent-green/90',
+    secondary: 'bg-gradient-to-r from-accent-green to-emerald-500 text-white hover:from-accent-green hover:to-emerald-600 shadow-[0_8px_16px_rgba(16,185,129,0.25)]',
     outlined: 'ui-btn-outline',
   };
 

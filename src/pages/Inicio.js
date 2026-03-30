@@ -55,10 +55,10 @@ const StatCard = ({ title, value, icon: Icon, to }) => (
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
-      className="h-full p-6 bg-white dark:bg-dark-bg-secondary rounded-2xl  hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200"
+      className="h-full p-6 ui-card hover:border-accent-blue/35 dark:hover:border-accent-blue/35"
     >
       <div className="flex items-start justify-between mb-4">
-  <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-accent-blue dark:text-blue-400">
+  <div className="p-3 rounded-xl bg-gradient-to-br from-accent-blue/15 to-cyan-300/20 dark:from-accent-blue/30 dark:to-cyan-400/20 text-accent-blue dark:text-blue-300">
           <Icon size={24} strokeWidth={2} />
         </div>
         <ArrowRight
@@ -82,8 +82,8 @@ const StatCard = ({ title, value, icon: Icon, to }) => (
 // Card de Atalho
 const ShortcutCard = ({ label, icon: Icon, to, description }) => (
   <Link to={to} className="group block h-full">
-    <div className="flex items-center gap-4 p-4 bg-white dark:bg-dark-bg-secondary rounded-2xl  hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200 h-full">
-  <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-accent-blue dark:text-blue-400 group-hover:scale-105 transition-transform duration-300">
+    <div className="flex items-center gap-4 p-4 ui-card hover:border-accent-blue/30 h-full">
+  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/15 to-cyan-300/20 dark:from-accent-blue/30 dark:to-cyan-400/20 flex items-center justify-center text-accent-blue dark:text-blue-300 group-hover:scale-105 transition-transform duration-300">
         <Icon size={20} strokeWidth={2} />
       </div>
       <div className="flex-1 min-w-0">
@@ -105,7 +105,7 @@ const ShortcutCard = ({ label, icon: Icon, to, description }) => (
 
 // Item de Atividade Recente
 const RecentActivityItem = ({ process }) => (
-  <div className="group flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-colors duration-200">
+  <div className="group flex items-center gap-4 p-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/45 rounded-xl transition-colors duration-200">
   <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-accent-blue dark:text-blue-400 flex items-center justify-center flex-shrink-0">
       <FileText size={18} />
     </div>
@@ -239,14 +239,16 @@ const Inicio = () => {
 
       <div className="max-w-7xl w-full py-2 space-y-4 px-3 md:px-0">
         {/* CABEÇALHO / HERO */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between bg-white dark:bg-dark-bg-secondary rounded-2xl px-6 py-6 gap-4">
+        <header className="ui-card flex flex-col md:flex-row md:items-center justify-between px-6 py-6 gap-4 relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-accent-blue/15 blur-3xl" />
+          <div className="pointer-events-none absolute -left-10 -bottom-12 h-44 w-44 rounded-full bg-cyan-300/15 blur-3xl" />
           <div className="flex items-center gap-5">
             <img
               src={user?.profile_image || getAvatarUrl(displayName)}
               alt="Avatar"
               className="w-16 h-16 rounded-full object-cover bg-slate-100 dark:bg-slate-700"
             />
-            <div>
+            <div className="relative z-10">
               <h1 className="text-2xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {greeting},{" "}
                 <span className="text-accent-blue dark:text-blue-400">
@@ -316,7 +318,7 @@ const Inicio = () => {
           {/* COLUNA DIREITA: PROCESSOS RECENTES */}
           <section className="lg:col-span-2 flex flex-col gap-6">
 
-            <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-sm overflow-hidden min-h-[300px]">
+            <div className="ui-card overflow-hidden min-h-[300px]">
               {isLoading ? (
                 <div className="p-6 space-y-6">
                   {[1, 2, 3].map((i) => (

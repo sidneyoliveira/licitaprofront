@@ -378,9 +378,9 @@ const Header = ({ toggleSidebar }) => {
     <header
       className="
         sticky top-0 z-40 mt-4 mx-3
-        rounded-2xl
-        bg-white/95 dark:bg-dark-bg-secondary
-        backdrop-blur
+        rounded-2xl border border-white/70 dark:border-white/10
+        bg-white/78 dark:bg-slate-900/65
+        backdrop-blur-xl shadow-[0_8px_24px_rgba(15,23,42,0.10)] dark:shadow-[0_16px_34px_rgba(2,6,23,0.42)]
       "
     >
       <div className="flex items-center justify-between px-3 py-3 h-16">
@@ -476,9 +476,9 @@ const Header = ({ toggleSidebar }) => {
                   transition={{ duration: 0.1 }}
                   className="
                     absolute right-0 mt-3 w-80 md:w-96
-                    bg-white dark:bg-slate-900
-                    border border-slate-200 dark:border-slate-700
-                    rounded-2xl
+                    bg-white/95 dark:bg-slate-900/90
+                    border border-white/70 dark:border-white/10
+                    rounded-2xl shadow-[0_12px_28px_rgba(15,23,42,0.16)] dark:shadow-[0_20px_40px_rgba(2,6,23,0.55)]
                     z-50 overflow-hidden
                     text-slate-800 dark:text-slate-50
                   "
@@ -531,7 +531,7 @@ const Header = ({ toggleSidebar }) => {
                   </div>
 
                   {/* Lista notificações */}
-                  <div className="max-h-[320px] overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
+                  <div className="max-h-[320px] overflow-y-auto custom-scrollbar bg-white/90 dark:bg-slate-900/70 backdrop-blur-sm">
                     {loadingNotifs ? (
                       <div className="flex flex-col items-center justify-center py-8 text-slate-400">
                         <RefreshCw className="w-6 h-6 animate-spin mb-2" />
@@ -634,7 +634,7 @@ const Header = ({ toggleSidebar }) => {
                     className="
                       block w-full py-3 text-center text-xs font-semibold
                       text-blue-600 dark:text-blue-400
-                      bg-slate-50 dark:bg-slate-900
+                      bg-slate-50/85 dark:bg-slate-900/70
                       border-t border-slate-100 dark:border-slate-800
                       hover:bg-blue-50/60 dark:hover:bg-slate-800
                       transition-colors
@@ -706,9 +706,9 @@ const Header = ({ toggleSidebar }) => {
                   transition={{ duration: 0.1 }}
                   className="
                     absolute right-0 mt-3 w-60
-                    bg-white dark:bg-slate-900
-                    border border-slate-200 dark:border-slate-700
-                    rounded-xl shadow-xl
+                    bg-white/95 dark:bg-slate-900/90
+                    border border-white/70 dark:border-white/10
+                    rounded-xl shadow-[0_12px_28px_rgba(15,23,42,0.16)] dark:shadow-[0_20px_40px_rgba(2,6,23,0.55)]
                     z-50 overflow-hidden
                     text-slate-800 dark:text-slate-50
                   "

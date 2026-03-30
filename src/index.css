@@ -6,10 +6,19 @@
 
 body {
   @apply bg-light-bg-primary text-light-text-primary;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(31, 111, 235, 0.15), transparent 34%),
+    radial-gradient(circle at 85% 0%, rgba(34, 211, 238, 0.14), transparent 28%),
+    linear-gradient(180deg, #f4f8ff 0%, #eef3fb 45%, #e9f0fb 100%);
 }
 
 .dark body {
-  @apply bg-gradient-to-br from-[#0A0E1E] via-[#100b21] to-[#0A0E1E] text-dark-text-primary;
+  @apply text-dark-text-primary;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(31, 111, 235, 0.24), transparent 32%),
+    radial-gradient(circle at 88% 4%, rgba(14, 165, 233, 0.18), transparent 24%),
+    radial-gradient(circle at 50% 120%, rgba(66, 153, 225, 0.14), transparent 28%),
+    linear-gradient(160deg, #060a19 0%, #0b122b 42%, #0f1a3a 100%);
 }
 
 /* ==== TEMA CLARO ==== */
@@ -89,19 +98,19 @@ textarea,
 
 @layer components {
   .ui-card {
-    @apply bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm;
+    @apply rounded-2xl border border-white/70 dark:border-white/10 bg-white/90 dark:bg-slate-900/65 backdrop-blur-md shadow-[0_8px_30px_rgba(15,23,42,0.08)] dark:shadow-[0_12px_34px_rgba(2,6,23,0.45)];
   }
 
   .ui-btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-accent-blue/60;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-accent-blue/60;
   }
 
   .ui-btn-primary {
-    @apply bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm;
+    @apply bg-gradient-to-r from-accent-blue to-blue-500 text-white hover:from-accent-blue-hover hover:to-blue-600 shadow-[0_8px_16px_rgba(31,111,235,0.28)];
   }
 
   .ui-btn-outline {
-    @apply border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800;
+    @apply border border-slate-300/90 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-800/90;
   }
 
   .ui-btn-ghost {
@@ -113,27 +122,27 @@ textarea,
   }
 
   .ui-input {
-    @apply w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-accent-blue;
+    @apply w-full px-3 py-2 text-sm rounded-xl border border-slate-300/90 dark:border-slate-700/80 bg-white/85 dark:bg-slate-900/70 text-slate-700 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-accent-blue;
   }
 
   .ui-table-wrap {
-    @apply overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary shadow-sm;
+    @apply overflow-x-auto rounded-2xl border border-white/70 dark:border-white/10 bg-white/85 dark:bg-slate-900/60 backdrop-blur-sm shadow-[0_8px_30px_rgba(15,23,42,0.08)] dark:shadow-[0_12px_32px_rgba(2,6,23,0.42)];
   }
 
   .ui-modal-panel {
-    @apply bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden;
+    @apply bg-white/95 dark:bg-slate-900/90 rounded-2xl border border-white/70 dark:border-white/10 backdrop-blur-xl shadow-[0_20px_50px_rgba(2,6,23,0.32)] overflow-hidden;
   }
 
   .ui-tab-list {
-    @apply flex items-center gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-dark-bg-secondary px-3;
+    @apply flex items-center gap-1 overflow-x-auto border-b border-slate-200/80 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/55 px-3 backdrop-blur-sm;
   }
 
   .ui-tab-btn {
-    @apply relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap rounded-t-xl border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors;
+    @apply relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap rounded-t-xl border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50/80 dark:hover:bg-slate-800/55 transition-colors;
   }
 
   .ui-tab-btn-active {
-    @apply text-accent-blue border-accent-blue bg-slate-50/70 dark:bg-slate-800/40;
+    @apply text-accent-blue border-accent-blue bg-gradient-to-b from-accent-blue/10 to-accent-blue/5 dark:from-accent-blue/25 dark:to-accent-blue/10;
   }
 
   .ui-process-table {
@@ -141,7 +150,7 @@ textarea,
   }
 
   .ui-process-table thead {
-    @apply bg-slate-50 dark:bg-slate-800/40;
+    @apply bg-slate-50/90 dark:bg-slate-800/45;
   }
 
   .ui-process-table th {

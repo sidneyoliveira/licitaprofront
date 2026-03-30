@@ -29,7 +29,9 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex relative overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-accent-blue to-[#0d3977] dark:bg-dark-bg-primary z-0" />
+      <div className="pointer-events-none absolute -top-20 -left-24 h-72 w-72 rounded-full bg-accent-blue/20 blur-3xl z-0" />
+      <div className="pointer-events-none absolute -top-16 right-0 h-64 w-64 rounded-full bg-cyan-300/25 dark:bg-cyan-500/20 blur-3xl z-0" />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-3xl z-0" />
       
       <AnimatePresence>
         {(sidebarOpen || !isMobile) && (
@@ -60,16 +62,12 @@ const Layout = () => {
       >
         <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <motion.main
+        <main
           key={location.pathname}
-          className="p-1 mx-2 my-2"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.15 }}
+          className="p-1 mx-2 my-2 relative z-10"
         >
           <Outlet />
-        </motion.main>
+        </main>
       </div>
     </div>
   );
