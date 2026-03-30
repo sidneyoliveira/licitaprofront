@@ -19,7 +19,8 @@ import {
   X,
   UploadCloud,
   Save,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -263,18 +264,19 @@ const Perfil = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 1. Carregar Usuário e Notas
+  // 1. Carregar Usuário, Notas e Documentos
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Faz as duas requisições em paralelo
-      const [userRes, notesRes] = await Promise.all([
+      const [userRes, notesRes, docsRes] = await Promise.all([
         api.get("/me/"),
-        api.get("/anotacoes/")
+        api.get("/anotacoes/"),
+        api.get("/arquivos-user/"),
       ]);
       
       setUser(userRes.data);
-      setNotes(notesRes.data); // O serializer já retorna { id, text, date }
+      setNotes(notesRes.data);
+      setDocuments(docsRes.data?.results || docsRes.data || []);
       
     } catch (err) {
       console.error(err);
@@ -320,20 +322,34 @@ const Perfil = () => {
     }
   };
 
+  // 4. Upload Arquivo (POST multipart)
   const handleUploadDocument = async ({ file, description }) => {
-    // Mock upload
-    const newDoc = {
-      usuario: user.id,
-      arquivo: file.name,
-      descricao: description || "Sem descrição",
-      enviado_em: new Date().toISOString().split("T")[0],
-      // size: `${(file.size / 1024).toFixed(1)} KB`
-    };
-    const response = await api.post("/arquivos-user/", {
-      arquivo: newDoc,
-    });
-    setDocuments([response.data, ...documents]);
-    showToast("Arquivo anexado com sucesso!", "success");
+    try {
+      const formData = new FormData();
+      formData.append("arquivo", file);
+      if (description) formData.append("descricao", description);
+
+      const response = await api.post("/arquivos-user/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setDocuments([response.data, ...documents]);
+      showToast("Arquivo anexado com sucesso!", "success");
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao anexar arquivo.", "error");
+    }
+  };
+
+  // 5. Deletar Arquivo (DELETE)
+  const handleDeleteDocument = async (id) => {
+    try {
+      await api.delete(`/arquivos-user/${id}/`);
+      setDocuments(documents.filter((d) => d.id !== id));
+      showToast("Arquivo removido.", "success");
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao remover arquivo.", "error");
+    }
   };
 
   if (loading || !user) {
@@ -396,6 +412,14 @@ const Perfil = () => {
                         <span className="hidden md:inline w-1 h-1 bg-slate-300 rounded-full"></span>
                         <span className="truncate">{user.email}</span>
                     </p>
+                    
+                    {/* Entidade vinculada */}
+                    {user.entidade_nome && (
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1.5">
+                        <Building2 size={13} className="text-slate-400" />
+                        {user.entidade_nome}
+                      </p>
+                    )}
                     
                     {/* Badges */}
                     <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
@@ -501,22 +525,28 @@ const Perfil = () => {
                                     </div>
                                     <div className="min-w-0">
                                         <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate">
-                                            {doc.name}
+                                            {doc.descricao || doc.arquivo?.split("/").pop() || "Documento"}
                                         </h4>
                                         <p className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                                            <span>{doc.description}</span>
-                                            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                            <span>{doc.date}</span>
-                                            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                            <span>{doc.size}</span>
+                                            <span>{doc.enviado_em ? new Date(doc.enviado_em).toLocaleDateString("pt-BR") : ""}</span>
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button className="p-2 text-slate-400 hover:text-accent-blue hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                                        <Download size={18} />
-                                    </button>
-                                    <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                    {doc.arquivo_url && (
+                                        <a
+                                            href={doc.arquivo_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 text-slate-400 hover:text-accent-blue hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                        >
+                                            <Download size={18} />
+                                        </a>
+                                    )}
+                                    <button
+                                        onClick={() => handleDeleteDocument(doc.id)}
+                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                    >
                                         <Trash2 size={18} />
                                     </button>
                                 </div>

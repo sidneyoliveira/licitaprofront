@@ -505,6 +505,11 @@ export default function Usuarios() {
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           @{u.username}
                         </div>
+                        {u.entidade_nome && (
+                          <div className="text-[10px] font-medium text-blue-600 dark:text-blue-400 mt-0.5">
+                            {u.entidade_nome}
+                          </div>
+                        )}
                       </td>
                       <td className="p-4 hidden md:table-cell">
                         <div className="flex flex-col gap-1">

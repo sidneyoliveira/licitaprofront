@@ -7,6 +7,7 @@ import {
   Building2,
   UserCheck,
   Scale,
+  UserCircle,
 } from "lucide-react";
 
 /* Seções de navegação */
@@ -24,6 +25,12 @@ const NAV_SECTIONS = [
       { to: "/entidades", icon: Building2, label: "Entidades" },
       { to: "/fornecedores", icon: UserCheck, label: "Fornecedores" },
       { to: "/usuarios", icon: Users, label: "Usuários" },
+    ],
+  },
+  {
+    label: "CONTA",
+    items: [
+      { to: "/perfil", icon: UserCircle, label: "Meu Perfil" },
     ],
   },
 ];

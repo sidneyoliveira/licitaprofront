@@ -225,16 +225,16 @@ const Inicio = () => {
         to: "/processos?status=andamento",
       },
       {
+        title: "Publicados PNCP",
+        value: stats?.processos_publicados,
+        icon: Activity,
+        to: "/processos?status=publicado",
+      },
+      {
         title: "Fornecedores",
         value: stats?.total_fornecedores,
         icon: Users,
         to: "/fornecedores",
-      },
-      {
-        title: "Órgãos",
-        value: stats?.total_orgaos,
-        icon: Building2,
-        to: "/entidades",
       },
     ],
     [stats]

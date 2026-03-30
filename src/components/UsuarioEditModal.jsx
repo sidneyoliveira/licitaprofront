@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Phone,
   Calendar,
-  CreditCard
+  CreditCard,
+  Building2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAxios from "../hooks/useAxios";
@@ -106,12 +107,13 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [entidades, setEntidades] = useState([]);
 
   // -- Form State --
   const [form, setForm] = useState({
     username: "", first_name: "", last_name: "", email: "", cpf: "",
     data_nascimento: "", phone: "", is_active: true, is_staff: false,
-    password: "", confirm_password: ""
+    password: "", confirm_password: "", entidade: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -125,16 +127,26 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
     setForm({
       username: "", first_name: "", last_name: "", email: "", cpf: "",
       data_nascimento: "", phone: "", is_active: true, is_staff: false,
-      password: "", confirm_password: ""
+      password: "", confirm_password: "", entidade: "",
     });
     setErrors({});
     setSelectedFile(null);
     setPreview(null);
     setActiveTab("geral");
 
+    fetchEntidades();
     if (isEdit) fetchDetails();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);
+
+  const fetchEntidades = async () => {
+    try {
+      const { data } = await api.get("/entidades/");
+      setEntidades(data?.results || data || []);
+    } catch (e) {
+      console.error("Erro ao carregar entidades", e);
+    }
+  };
 
   const fetchDetails = async () => {
     setLoadingData(true);
@@ -151,6 +163,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
         phone: data.phone || "",
         is_active: data.is_active ?? true,
         is_staff: data.is_staff ?? false,
+        entidade: data.entidade || "",
       }));
       setPreview(data.profile_image);
     } catch (e) {
@@ -214,8 +227,11 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
     try {
       const formData = new FormData();
       
-      const fields = ["username", "first_name", "last_name", "email", "cpf", "data_nascimento", "phone", "is_active", "is_staff"];
-      fields.forEach(f => formData.append(f, form[f] === null ? "" : form[f]));
+      const fields = ["username", "first_name", "last_name", "email", "cpf", "data_nascimento", "phone", "is_active", "is_staff", "entidade"];
+      fields.forEach(f => {
+        const val = form[f];
+        formData.append(f, val === null || val === undefined ? "" : val);
+      });
 
       if (form.password) formData.append("password", form.password);
       if (selectedFile) formData.append("profile_image", selectedFile);
@@ -447,6 +463,25 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                         </div>
 
                         <div className="space-y-4">
+                          {/* Entidade vinculada */}
+                          <div className="p-4 bg-slate-50 dark:bg-dark-bg-primary rounded-xl border border-slate-200 dark:border-slate-700">
+                            <Label>Entidade Vinculada</Label>
+                            <p className="text-xs text-slate-500 mb-2">Define quais dados este usuário pode acessar.</p>
+                            <select
+                              name="entidade"
+                              value={form.entidade || ""}
+                              onChange={handleChange}
+                              className="w-full bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-white rounded-xl border border-gray-200 dark:border-dark-border px-3 py-2.5 text-sm transition-all outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/10"
+                            >
+                              <option value="">— Sem entidade (acesso global) —</option>
+                              {entidades.map((ent) => (
+                                <option key={ent.id} value={ent.id}>
+                                  {ent.nome} {ent.cnpj ? `(${ent.cnpj})` : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
                           <Switch 
                             label="Conta Ativa"
                             description="Desative para bloquear o acesso temporariamente sem excluir o usuário."
