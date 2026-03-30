@@ -134,14 +134,14 @@ const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
 /* 2. SUBCOMPONENTES VISUAIS                                                 */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const InfoItem = ({ icon: Icon, label, value, iconColor = "text-slate-400", valueColor = "", className = "" }) => (
+const InfoItem = ({ icon: Icon, label, value, iconColor = "text-slate-600", valueColor = "", className = "" }) => (
   <div className={`flex flex-col ${className}`}>
-    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
-      {Icon && <Icon size={14} className={iconColor} />}
+    <span className="text-sm uppercase tracking-wider font-bold text-slate-600 dark:text-slate-500 mb-1 flex items-center gap-1.5">
+      {Icon && <Icon size={16} className={iconColor} />}
       {label}
     </span>
     <div className={`text-sm font-semibold leading-snug break-words ${valueColor || "text-slate-700 dark:text-slate-200"}`}>
-      {value || <span className="text-slate-400 font-normal italic">Não informado</span>}
+      {value || <span className="text-slate-600 font-normal italic">Não informado</span>}
     </div>
   </div>
 );
@@ -309,7 +309,7 @@ export default function ProcessHeader({
                       iconColor="text-blue-500"
                       label="Objeto"
                       value={
-                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                        <p className="text-sm text-slate-800 dark:text-slate-300 leading-relaxed font-medium">
                           {formData?.objeto || "Objeto não informado."}
                         </p>
                       }
@@ -321,8 +321,8 @@ export default function ProcessHeader({
                       value={labels.amparo}
                     />
                     <div>
-                      <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
-                        <Megaphone size={14} className="text-amber-500" /> Certame
+                      <span className="text-sm uppercase tracking-wider font-bold text-slate-600 dark:text-slate-500 mb-1 flex items-center gap-1.5">
+                        <Megaphone size={16} className="text-amber-500" /> Certame
                       </span>
                       <span className="inline-block mt-1 px-3 py-1 text-sm font-bold rounded-md border border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">
                         {labels.modalidade}
