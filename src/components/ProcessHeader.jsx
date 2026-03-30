@@ -13,12 +13,6 @@ import {
   AlertCircle,
   Globe,
   UploadCloud,
-  Users,
-  Eye,
-  CalendarCheck,
-  CalendarClock,
-  BookOpenCheck,
-  Megaphone,
 } from "lucide-react";
 import {
   MODALIDADES,
@@ -51,6 +45,18 @@ const modalidadeSiglaMap = {
   leilao_eletronico: "LE",
   leilao_presencial: "LP",
   dialogo_competitivo: "DC",
+};
+
+/** Cor do badge do certame de acordo com a modalidade */
+const getModalidadeColor = (modalidadeValue) => {
+  const v = String(modalidadeValue).toLowerCase();
+  if (v.includes("pregao"))          return { bg: "bg-emerald-50 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-300 dark:border-emerald-700" };
+  if (v.includes("concorrencia"))    return { bg: "bg-blue-50 dark:bg-blue-900/30",       text: "text-blue-700 dark:text-blue-300",       border: "border-blue-300 dark:border-blue-700" };
+  if (v.includes("dispensa"))        return { bg: "bg-amber-50 dark:bg-amber-900/30",     text: "text-amber-700 dark:text-amber-300",     border: "border-amber-300 dark:border-amber-700" };
+  if (v.includes("inexigibilidade")) return { bg: "bg-purple-50 dark:bg-purple-900/30",   text: "text-purple-700 dark:text-purple-300",   border: "border-purple-300 dark:border-purple-700" };
+  if (v.includes("credenciamento"))  return { bg: "bg-teal-50 dark:bg-teal-900/30",       text: "text-teal-700 dark:text-teal-300",       border: "border-teal-300 dark:border-teal-700" };
+  if (v.includes("leilao"))          return { bg: "bg-orange-50 dark:bg-orange-900/30",   text: "text-orange-700 dark:text-orange-300",   border: "border-orange-300 dark:border-orange-700" };
+  return { bg: "bg-slate-100 dark:bg-slate-800", text: "text-slate-600 dark:text-slate-300", border: "border-slate-300 dark:border-slate-600" };
 };
 
 /**
@@ -203,7 +209,7 @@ export default function ProcessHeader({
   }), [formData]);
 
   // Construção do Título (Certame vs Processo)
-  const { numeroCertame, anoCertame, siglaModalidade } = useMemo(() => {
+  const { numeroCertame, anoCertame, siglaModalidade, modalidadeColor } = useMemo(() => {
     const modalidadeValue = toCode(MODALIDADES, formData?.modalidade);
     const sigla = modalidadeSiglaMap[modalidadeValue] || "";
     const [num, ano] = formData?.numero_certame ? String(formData.numero_certame).split("/") : [];
@@ -212,6 +218,7 @@ export default function ProcessHeader({
       numeroCertame: num,
       anoCertame: ano || new Date().getFullYear(),
       siglaModalidade: sigla,
+      modalidadeColor: getModalidadeColor(modalidadeValue || ""),
     };
   }, [formData?.numero_certame, formData?.modalidade]);
 
@@ -302,7 +309,7 @@ export default function ProcessHeader({
                 <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white flex flex-wrap items-center gap-2">
                     {labels.modalidade}
                     {(numeroCertame || formData?.numero_processo) && (
-                    <span className="text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-600 ml-1">
+                    <span className={`text-sm font-bold px-3 py-1 rounded-md border ${modalidadeColor.bg} ${modalidadeColor.text} ${modalidadeColor.border} ml-1`}>
                         {numeroCertame
                         ? `Nº ${numeroCertame}/${anoCertame}${siglaModalidade ? `-${siglaModalidade}` : ""}`
                         : `Proc. ${formData?.numero_processo}`}
@@ -324,29 +331,29 @@ export default function ProcessHeader({
 
             {/* LINHA 1: Dados Legais e Administrativos */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-2 border-b border-slate-100 dark:border-slate-700/50 pb-5">
-            <InfoItem icon={Scale} label="Amparo Legal" value={labels.amparo} className="col-span-2 lg:col-span-1" />
-            <InfoItem icon={Tag} label="Classificação" value={labels.classificacao} />
-            <InfoItem icon={Layers} label="Organização" value={labels.organizacao} />
-            <InfoItem icon={Clock} label="Vigência" value={formatted.vigencia} />
-            <InfoItem icon={ClipboardList} label="Data Cadastro" value={formatted.cadastro} />
+            <InfoItem icon={Scale} iconColor="text-indigo-500" label="Amparo Legal" value={labels.amparo} className="col-span-2 lg:col-span-1" />
+            <InfoItem icon={Tag} iconColor="text-cyan-500" label="Classificação" value={labels.classificacao} />
+            <InfoItem icon={Layers} iconColor="text-violet-500" label="Organização" value={labels.organizacao} />
+            <InfoItem icon={Clock} iconColor="text-orange-500" label="Vigência" value={formatted.vigencia} />
+            <InfoItem icon={ClipboardList} iconColor="text-rose-500" label="Data Cadastro" value={formatted.cadastro} />
             </div>
 
             {/* LINHA 2: Dados do Certame (Valores e Disputa) */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 pt-2">
-            <InfoItem icon={Gavel} label="Modo de Disputa" value={labels.modoDisputa} />
-            <InfoItem icon={Scale} label="Julgamento" value={labels.criterio} />
-            <InfoItem icon={Calendar} label="Abertura da Sessão" value={formatted.abertura} />
+            <InfoItem icon={Gavel} iconColor="text-blue-500" label="Modo de Disputa" value={labels.modoDisputa} />
+            <InfoItem icon={Scale} iconColor="text-teal-500" label="Julgamento" value={labels.criterio} />
+            <InfoItem icon={Calendar} iconColor="text-blue-500" label="Abertura da Sessão" value={formatted.abertura} valueColor="text-blue-600 dark:text-blue-400" />
             
             <div className="flex flex-col">
                 <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 flex items-center gap-1.5">
-                <Wallet size={14} /> Valor Estimado
+                <Wallet size={14} className="text-emerald-500" /> Valor Estimado
                 </span>
                 <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                 {formatted.valor || "R$ 0,00"}
                 </span>
             </div>
 
-            <InfoItem icon={AlertCircle} label="Registro de Preço" value={formatted.srp} />
+            <InfoItem icon={AlertCircle} iconColor="text-purple-500" label="Registro de Preço" value={formatted.srp} />
             </div>
 
         </div>

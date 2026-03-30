@@ -179,19 +179,37 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
 /* SUBCOMPONENTE: Botão de Aba                                               */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`ui-tab-btn ${isActive ? 'ui-tab-btn-active' : ''}`}
-    aria-selected={isActive}
-    role="tab"
-    id={`tab-${id}`}
-  >
-    <Icon size={17} className={isActive ? 'text-accent-blue' : 'text-slate-400'} />
-    {label}
-  </button>
-);
+const TAB_COLORS = {
+  itens:        { active: 'text-blue-600 dark:text-blue-400',    border: 'border-blue-600 dark:border-blue-400',    inactive: 'text-slate-400' },
+  lotes:        { active: 'text-violet-600 dark:text-violet-400', border: 'border-violet-600 dark:border-violet-400', inactive: 'text-slate-400' },
+  fornecedores: { active: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-600 dark:border-emerald-400', inactive: 'text-slate-400' },
+  atas:         { active: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-600 dark:border-amber-400',  inactive: 'text-slate-400' },
+  arquivos:     { active: 'text-rose-600 dark:text-rose-400',    border: 'border-rose-600 dark:border-rose-400',    inactive: 'text-slate-400' },
+};
+
+const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => {
+  const colors = TAB_COLORS[id] || TAB_COLORS.itens;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap
+        border-b-2 transition-colors
+        ${isActive
+          ? `${colors.active} ${colors.border}`
+          : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+        }
+      `}
+      aria-selected={isActive}
+      role="tab"
+      id={`tab-${id}`}
+    >
+      <Icon size={17} className={isActive ? colors.active : colors.inactive} />
+      {label}
+    </button>
+  );
+};
 
 const StyledCheckbox = ({ checked, onChange, className = '' }) => (
   <label
