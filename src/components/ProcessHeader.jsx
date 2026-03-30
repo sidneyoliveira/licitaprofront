@@ -9,10 +9,13 @@ import {
   Tag,
   Clock,
   ClipboardList,
-  Layers,
   AlertCircle,
   Globe,
-  UploadCloud
+  UploadCloud,
+  CalendarCheck,
+  CalendarClock,
+  BookOpenCheck,
+  Megaphone,
 } from "lucide-react";
 import {
   MODALIDADES,
@@ -131,13 +134,13 @@ const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
 /* 2. SUBCOMPONENTES VISUAIS                                                 */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const InfoItem = ({ icon: Icon, label, value, className = "" }) => (
+const InfoItem = ({ icon: Icon, label, value, iconColor = "text-slate-400", valueColor = "", className = "" }) => (
   <div className={`flex flex-col ${className}`}>
     <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
-      {Icon && <Icon size={14} className="text-slate-400" />}
+      {Icon && <Icon size={14} className={iconColor} />}
       {label}
     </span>
-    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-snug break-words">
+    <div className={`text-sm font-semibold leading-snug break-words ${valueColor || "text-slate-700 dark:text-slate-200"}`}>
       {value || <span className="text-slate-400 font-normal italic">Não informado</span>}
     </div>
   </div>
@@ -291,56 +294,71 @@ export default function ProcessHeader({
             {/* Título Principal e Objeto */}
             <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-3">
-                <SituacaoBadge situacao={labels.situacao} />
                 
                 <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white flex flex-wrap items-center gap-2">
-                    {labels.modalidade}
-                    {(numeroCertame || formData?.numero_processo) && (
-                    <span className="text-sm font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-600 ml-1">
-                        {numeroCertame
-                        ? `Nº ${numeroCertame}/${anoCertame}${siglaModalidade ? `-${siglaModalidade}` : ""}`
-                        : `Proc. ${formData?.numero_processo}`}
-                    </span>
-                    )}
+                    PROCESSO ADMINISTRATIVO – Nº {formData?.numero_processo || "—"}
                 </h1>
+
+                <SituacaoBadge situacao={labels.situacao} />
                 </div>
 
-                {/* Objeto */}
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <h4 className="text-[11px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                        <FileText size={14} /> Objeto do Processo
-                    </h4>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                        {formData?.objeto || "Objeto não informado."}
-                    </p>
+                {/* Objeto + Certame + Amparo + SRP */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-x-8 gap-y-3 items-start">
+                    <InfoItem
+                      icon={FileText}
+                      iconColor="text-blue-500"
+                      label="Objeto"
+                      value={
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                          {formData?.objeto || "Objeto não informado."}
+                        </p>
+                      }
+                    />
+                    <InfoItem
+                      icon={Scale}
+                      iconColor="text-indigo-500"
+                      label="Amparo Legal"
+                      value={labels.amparo}
+                    />
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
+                        <Megaphone size={14} className="text-amber-500" /> Certame
+                      </span>
+                      <span className="inline-block mt-1 px-3 py-1 text-sm font-bold rounded-md border border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700">
+                        {labels.modalidade}
+                        {numeroCertame
+                          ? ` – ${numeroCertame}/${anoCertame}${siglaModalidade ? `-${siglaModalidade}` : ""}`
+                          : formData?.numero_processo
+                            ? ` – ${formData.numero_processo}`
+                            : ""}
+                      </span>
+                    </div>
+                    <InfoItem
+                      icon={AlertCircle}
+                      iconColor="text-purple-500"
+                      label="Registro de Preço"
+                      value={formatted.srp}
+                      valueColor="text-slate-700 dark:text-slate-200"
+                    />
                 </div>
             </div>
 
-            {/* LINHA 1: Dados Legais e Administrativos */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-2 border-b border-slate-100 dark:border-slate-700/50 pb-5">
-            <InfoItem icon={Scale} label="Amparo Legal" value={labels.amparo} className="col-span-2 lg:col-span-1" />
-            <InfoItem icon={Tag} label="Classificação" value={labels.classificacao} />
-            <InfoItem icon={Layers} label="Organização" value={labels.organizacao} />
-            <InfoItem icon={Clock} label="Vigência" value={formatted.vigencia} />
-            <InfoItem icon={ClipboardList} label="Data Cadastro" value={formatted.cadastro} />
+            {/* LINHA 1: Datas (todas com ícones vermelhos/rosa) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 pt-2 border-t border-slate-100 dark:border-slate-700/50 pb-2">
+              <InfoItem icon={Calendar}       iconColor="text-rose-500"    label="Data do processo"        value={formatted.cadastro} valueColor="text-slate-800 dark:text-slate-100 font-bold" />
+              <InfoItem icon={CalendarCheck}   iconColor="text-rose-500"    label="Data da abertura"        value={formatted.abertura} valueColor="text-slate-800 dark:text-slate-100 font-bold" />
+              <InfoItem icon={Wallet}          iconColor="text-emerald-500" label="Valor estimado"          value={formatted.valor || "R$ 0,00"} valueColor="text-emerald-600 dark:text-emerald-400 font-bold" />
+              <InfoItem icon={Clock}           iconColor="text-orange-500"  label="Vigência"                value={formatted.vigencia} valueColor="text-slate-800 dark:text-slate-100 font-bold" />
+              <InfoItem icon={ClipboardList}   iconColor="text-violet-500"  label="Organização"             value={labels.organizacao} />
+              <InfoItem icon={Tag}             iconColor="text-cyan-500"    label="Classificação"           value={labels.classificacao} />
             </div>
 
-            {/* LINHA 2: Dados do Certame (Valores e Disputa) */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 pt-2">
-            <InfoItem icon={Gavel} label="Modo de Disputa" value={labels.modoDisputa} />
-            <InfoItem icon={Scale} label="Julgamento" value={labels.criterio} />
-            <InfoItem icon={Calendar} label="Abertura da Sessão" value={formatted.abertura} />
-            
-            <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 flex items-center gap-1.5">
-                <Wallet size={14} /> Valor Estimado
-                </span>
-                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                {formatted.valor || "R$ 0,00"}
-                </span>
-            </div>
-
-            <InfoItem icon={AlertCircle} label="Registro de Preço" value={formatted.srp} />
+            {/* LINHA 2: Detalhes do Certame (ícones coloridos variados) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+              <InfoItem icon={Gavel}           iconColor="text-blue-500"    label="Modo de Disputa"         value={labels.modoDisputa}  valueColor="text-slate-800 dark:text-slate-100 font-bold" />
+              <InfoItem icon={Scale}           iconColor="text-teal-500"    label="Critério de Julgamento"  value={labels.criterio}     valueColor="text-slate-800 dark:text-slate-100 font-bold" />
+              <InfoItem icon={CalendarClock}   iconColor="text-indigo-500"  label="Abertura da Sessão"      value={formatted.abertura}  valueColor="text-slate-800 dark:text-slate-100 font-bold" />
+              <InfoItem icon={BookOpenCheck}   iconColor="text-green-500"   label="Situação atual"          value={labels.situacao}     valueColor="text-slate-800 dark:text-slate-100 font-bold" />
             </div>
 
         </div>
