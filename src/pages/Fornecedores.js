@@ -16,7 +16,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
-import { FornecedorModal } from "./NewProcess";
+import FornecedorModal from "../components/FornecedorModal";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* UI helpers                                                                */
