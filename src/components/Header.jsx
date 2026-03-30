@@ -20,6 +20,7 @@ import {
   Menu,
   Sun,
   Moon,
+  Scale,
   LogOut as LogOutIcon,
   RefreshCw,
   AlertTriangle,
@@ -378,59 +379,78 @@ const Header = ({ toggleSidebar }) => {
     <header
       className="
         sticky top-0 z-40
-        border-b border-slate-700 dark:border-slate-700
-        bg-slate-900 dark:bg-dark-bg-secondary
-        text-white
+        bg-white dark:bg-[#141c2e]
+        border-b border-slate-200/80 dark:border-slate-700/60
       "
     >
-      <div className="flex items-center justify-between px-3 py-3 h-16">
+      <div className="flex items-center h-16 px-4 gap-3">
 
-        <div className="flex items-center gap-4 flex-1 min-w-0">
+        {/* ── ESQUERDA: Logo + toggle ── */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Logo visível no header quando sidebar está fechada */}
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-blue to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/25">
+                <Scale className="w-[18px] h-[18px] text-white" />
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-[#141c2e]" />
+            </div>
+            <div className="hidden lg:block">
+              <p className="text-[14px] font-bold tracking-tight text-slate-800 dark:text-white leading-none">
+                LicitaPro
+              </p>
+              <p className="text-[9px] font-semibold tracking-widest text-accent-blue dark:text-blue-400 uppercase mt-0.5">
+                L3 Solutions
+              </p>
+            </div>
+          </div>
+
+          {/* Divisor */}
+          <div className="hidden lg:block h-8 w-px bg-slate-200 dark:bg-slate-700/60 mx-1" />
+
+          {/* Botão toggle sidebar */}
           <button
             onClick={toggleSidebar}
             className="
               inline-flex items-center justify-center
-              w-9 h-9
-              rounded-full
-              bg-white/10 hover:bg-white/20
-              text-white
-              dark:bg-slate-800 dark:hover:bg-slate-700
-              dark:text-slate-100
+              w-9 h-9 rounded-lg
+              text-slate-500 dark:text-slate-400
+              hover:bg-slate-100 dark:hover:bg-slate-800/70
+              hover:text-slate-700 dark:hover:text-slate-200
               transition-colors
-              focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
+              focus:outline-none focus:ring-2 focus:ring-accent-blue/30
             "
             aria-label="Alternar menu lateral"
           >
             <Menu className="w-5 h-5" />
           </button>
-
-          <div className="hidden md:block text-slate-300 dark:text-slate-100 text-sm truncate">
-            <Breadcrumb />
-          </div>
         </div>
 
-        {/* DIREITA: ações + usuário */}
-        <div className="flex items-center gap-2 md:gap-3">
+        {/* ── CENTRO: Breadcrumb ── */}
+        <div className="flex-1 min-w-0 hidden md:flex items-center">
+          <Breadcrumb />
+        </div>
+
+        {/* ── DIREITA: ações + usuário ── */}
+        <div className="flex items-center gap-1.5 ml-auto flex-shrink-0">
           {/* Alternar Tema */}
           <button
             onClick={toggleTheme}
             className="
               inline-flex items-center justify-center
-              w-9 h-9
-              rounded-full
-              bg-white/10 hover:bg-white/20
-              text-white
-              dark:bg-slate-800 dark:hover:bg-slate-700
-              dark:text-slate-100
+              w-9 h-9 rounded-lg
+              text-slate-500 dark:text-slate-400
+              hover:bg-slate-100 dark:hover:bg-slate-800/70
+              hover:text-slate-700 dark:hover:text-slate-200
               transition-colors
-              focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
+              focus:outline-none focus:ring-2 focus:ring-accent-blue/30
             "
             title={isDark ? "Mudar para modo claro" : "Mudar para modo escuro"}
           >
             {isDark ? (
-              <Sun className="w-5 h-5" />
+              <Sun className="w-[18px] h-[18px]" />
             ) : (
-              <Moon className="w-5 h-5" />
+              <Moon className="w-[18px] h-[18px]" />
             )}
           </button>
 
@@ -441,18 +461,16 @@ const Header = ({ toggleSidebar }) => {
               className="
                 relative
                 inline-flex items-center justify-center
-                w-9 h-9
-                rounded-full
-                bg-white/10 hover:bg-white/20
-                text-white
-                dark:bg-slate-800 dark:hover:bg-slate-700
-                dark:text-slate-100
+                w-9 h-9 rounded-lg
+                text-slate-500 dark:text-slate-400
+                hover:bg-slate-100 dark:hover:bg-slate-800/70
+                hover:text-slate-700 dark:hover:text-slate-200
                 transition-colors
-                focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
+                focus:outline-none focus:ring-2 focus:ring-accent-blue/30
               "
               title="Notificações"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-[18px] h-[18px]" />
               {unreadCount > 0 && (
                 <span
                   className="
@@ -460,7 +478,7 @@ const Header = ({ toggleSidebar }) => {
                     w-2.5 h-2.5
                     bg-red-500
                     rounded-full
-                    border-2 border-slate-900 dark:border-slate-900
+                    border-2 border-white dark:border-[#141c2e]
                   "
                 />
               )}
@@ -648,32 +666,31 @@ const Header = ({ toggleSidebar }) => {
           </div>
 
           {/* Divisor vertical*/}
-          <div className="hidden md:block h-8 w-px bg-white/20 dark:bg-slate-700 mx-1" />
+          <div className="hidden md:block h-8 w-px bg-slate-200 dark:bg-slate-700/60 mx-1" />
 
           {/* Menu do Usuário */}
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setUserMenuOpen((v) => !v)}
               className="
-                flex items-center gap-3
-                px-4 py-1
+                flex items-center gap-2.5
+                pl-1 pr-3 py-1
                 rounded-lg
-                hover:bg-white/10
-                dark:hover:bg-slate-800
-                text-white dark:text-slate-100
+                hover:bg-slate-100 dark:hover:bg-slate-800/70
+                text-slate-700 dark:text-slate-200
                 transition-colors
-                focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
+                focus:outline-none focus:ring-2 focus:ring-accent-blue/30
               "
             >
               <div
                 className="
-                  w-9 h-9
-                  rounded-full
-                  bg-white/20
-                  dark:bg-slate-700
+                  w-8 h-8
+                  rounded-lg
+                  bg-gradient-to-br from-accent-blue to-blue-700
                   flex items-center justify-center
-                  text-white dark:text-slate-200
+                  text-white
                   overflow-hidden
+                  shadow-sm shadow-blue-500/20
                 "
               >
                 {user?.profile_image ? (
@@ -683,13 +700,16 @@ const Header = ({ toggleSidebar }) => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="w-5 h-5" />
+                  <User className="w-4 h-4" />
                 )}
               </div>
 
               <div className="hidden md:block text-left">
-                <p className="text-md font-semibold text-white dark:text-slate-50 leading-none max-w-[140px] truncate">
+                <p className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 leading-none max-w-[130px] truncate">
                   {user?.first_name || user?.username || "Usuário"}
+                </p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[130px]">
+                  {user?.email || ""}
                 </p>
               </div>
             </button>

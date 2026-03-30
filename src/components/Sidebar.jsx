@@ -1,117 +1,147 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, FileText, Users, Building2, UserCheck } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  Building2,
+  UserCheck,
+  Scale,
+} from "lucide-react";
+
+/* Seções de navegação */
+const NAV_SECTIONS = [
+  {
+    label: "PRINCIPAL",
+    items: [
+      { to: "/", icon: LayoutDashboard, label: "Início" },
+      { to: "/processos", icon: FileText, label: "Processos" },
+    ],
+  },
+  {
+    label: "CADASTROS",
+    items: [
+      { to: "/entidades", icon: Building2, label: "Entidades" },
+      { to: "/fornecedores", icon: UserCheck, label: "Fornecedores" },
+      { to: "/usuarios", icon: Users, label: "Usuários" },
+    ],
+  },
+];
 
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
-  const navItem =
-    "flex items-center gap-3 px-4 py-2.5 text-sm rounded-lg font-medium transition-colors";
-
   return (
     <>
-      {/* Overlay escuro para mobile */}
-      {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40"
-          onClick={onClose}
-        />
-      )}
-
       {/* Sidebar principal */}
       <aside
-        className={`fixed z-30 top-0 left-0 h-full bg-white dark:bg-dark-bg-secondary border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 ease-in-out
+        className={`
+          fixed z-30 top-0 left-0 h-full flex flex-col
+          bg-white dark:bg-[#141c2e]
+          border-r border-slate-200/80 dark:border-slate-700/60
+          transform transition-all duration-300 ease-in-out
           ${isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
-          ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"} flex flex-col`}
+          ${isMobile ? "w-64" : isOpen ? "w-64" : "w-20"}
+        `}
       >
-        {/* Logo e título */}
-        <div className="flex items-center justify-center px-4 py-4 mt-3">
-          <div
-            className="w-10 h-10 rounded-lg bg-accent-blue flex items-center justify-center text-lg font-extrabold text-white"
-          >
-            L3
+        {/* ── Logo ── */}
+        <div
+          className={`
+            flex items-center h-16 px-4
+            border-b border-slate-200/80 dark:border-slate-700/60
+            ${isOpen ? "gap-3" : "justify-center"}
+          `}
+        >
+          {/* Ícone L3 */}
+          <div className="relative flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-blue to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/30">
+              <Scale size={18} className="text-white" />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white dark:border-[#141c2e]" />
           </div>
+
           {isOpen && (
-            <h1 className="ml-2 text-2xl font-light tracking-tight text-slate-600 dark:text-slate-200">
-              SOLUTIONS
-            </h1>
+            <div className="overflow-hidden">
+              <p className="text-[15px] font-bold tracking-tight text-slate-800 dark:text-white leading-none">
+                LicitaPro
+              </p>
+              <p className="text-[10px] font-medium tracking-widest text-accent-blue dark:text-blue-400 mt-0.5 uppercase">
+                L3 Solutions
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Navegação */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `${navItem} ${
-                isActive
-                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-              }`
-            }
-          >
-            <LayoutDashboard size={18} />
-            {isOpen && "Início"}
-          </NavLink>
+        {/* ── Navegação ── */}
+        <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.label} className="mb-2">
+              {/* Label da seção */}
+              {isOpen && (
+                <p className="px-5 mb-1 text-[10px] font-semibold tracking-widest text-slate-400 dark:text-slate-500 select-none">
+                  {section.label}
+                </p>
+              )}
+              {!isOpen && (
+                <div className="mx-3 my-1 border-t border-slate-200 dark:border-slate-700/60" />
+              )}
 
-          <NavLink
-            to="/processos"
-            className={({ isActive }) =>
-              `${navItem} ${
-                isActive
-                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-              }`
-            }
-          >
-            <FileText size={18} />
-            {isOpen && "Processos"}
-          </NavLink>
-
-          <NavLink
-            to="/entidades"
-            className={({ isActive }) =>
-              `${navItem} ${
-                isActive
-                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-              }`
-            }
-          >
-            <Building2 size={18} />
-            {isOpen && "Entidades"}
-          </NavLink>
-
-          <NavLink
-            to="/fornecedores"
-            className={({ isActive }) =>
-              `${navItem} ${
-                isActive
-                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-              }`
-            }
-          >
-            <UserCheck size={18} />
-            {isOpen && "Fornecedores"}
-          </NavLink>
-
-          <NavLink
-            to="/usuarios"
-            className={({ isActive }) =>
-              `${navItem} ${
-                isActive
-                  ? "bg-accent-blue/10 text-accent-blue dark:bg-accent-blue/20 dark:text-blue-400"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-              }`
-            }
-          >
-            <Users size={18} />
-            {isOpen && "Usuários"}
-          </NavLink>
+              <ul className="space-y-0.5 px-2">
+                {section.items.map(({ to, icon: Icon, label }) => (
+                  <li key={to}>
+                    <NavLink
+                      to={to}
+                      end={to === "/"}
+                      className={({ isActive }) =>
+                        `relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                        ${
+                          isActive
+                            ? "bg-accent-blue text-white shadow-sm shadow-blue-500/20"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-slate-100"
+                        }
+                        ${!isOpen ? "justify-center" : ""}
+                        `
+                      }
+                      title={!isOpen ? label : undefined}
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <Icon
+                            size={18}
+                            className={`flex-shrink-0 ${isActive ? "text-white" : ""}`}
+                          />
+                          {isOpen && (
+                            <span className="truncate">{label}</span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-        {/* Rodapé da Sidebar */}
-        <div className="p-3 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-400 dark:text-slate-500">
-          {isOpen && "© 2025 L3 Solutions"}
+        {/* ── Rodapé ── */}
+        <div
+          className={`
+            py-3 px-4 border-t border-slate-200/80 dark:border-slate-700/60
+            ${isOpen ? "" : "flex justify-center"}
+          `}
+        >
+          {isOpen ? (
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                L3 Solutions
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                v2.0 · © {new Date().getFullYear()}
+              </p>
+            </div>
+          ) : (
+            <div className="w-7 h-7 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 flex items-center justify-center">
+              <Scale size={14} className="text-accent-blue dark:text-blue-400" />
+            </div>
+          )}
         </div>
       </aside>
     </>
