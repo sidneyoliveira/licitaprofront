@@ -378,8 +378,9 @@ const Header = ({ toggleSidebar }) => {
     <header
       className="
         sticky top-0 z-40
-        border-b border-slate-200 dark:border-slate-700
-        bg-white dark:bg-dark-bg-secondary
+        border-b border-slate-700 dark:border-slate-700
+        bg-slate-900 dark:bg-dark-bg-secondary
+        text-white
       "
     >
       <div className="flex items-center justify-between px-3 py-3 h-16">
@@ -391,19 +392,19 @@ const Header = ({ toggleSidebar }) => {
               inline-flex items-center justify-center
               w-9 h-9
               rounded-full
-              bg-slate-100 hover:bg-slate-200
-              text-slate-700
+              bg-white/10 hover:bg-white/20
+              text-white
               dark:bg-slate-800 dark:hover:bg-slate-700
               dark:text-slate-100
               transition-colors
-              focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+              focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
             "
             aria-label="Alternar menu lateral"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="hidden md:block text-slate-700 dark:text-slate-100 text-sm truncate">
+          <div className="hidden md:block text-slate-300 dark:text-slate-100 text-sm truncate">
             <Breadcrumb />
           </div>
         </div>
@@ -417,12 +418,12 @@ const Header = ({ toggleSidebar }) => {
               inline-flex items-center justify-center
               w-9 h-9
               rounded-full
-              bg-slate-100 hover:bg-slate-200
-              text-slate-700
+              bg-white/10 hover:bg-white/20
+              text-white
               dark:bg-slate-800 dark:hover:bg-slate-700
               dark:text-slate-100
               transition-colors
-              focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+              focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
             "
             title={isDark ? "Mudar para modo claro" : "Mudar para modo escuro"}
           >
@@ -442,12 +443,12 @@ const Header = ({ toggleSidebar }) => {
                 inline-flex items-center justify-center
                 w-9 h-9
                 rounded-full
-                bg-slate-100 hover:bg-slate-200
-                text-slate-700
+                bg-white/10 hover:bg-white/20
+                text-white
                 dark:bg-slate-800 dark:hover:bg-slate-700
                 dark:text-slate-100
                 transition-colors
-                focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+                focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
               "
               title="Notificações"
             >
@@ -459,7 +460,7 @@ const Header = ({ toggleSidebar }) => {
                     w-2.5 h-2.5
                     bg-red-500
                     rounded-full
-                    border-2 border-white dark:border-slate-900
+                    border-2 border-slate-900 dark:border-slate-900
                   "
                 />
               )}
@@ -647,7 +648,7 @@ const Header = ({ toggleSidebar }) => {
           </div>
 
           {/* Divisor vertical*/}
-          <div className="hidden md:block h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+          <div className="hidden md:block h-8 w-px bg-white/20 dark:bg-slate-700 mx-1" />
 
           {/* Menu do Usuário */}
           <div className="relative" ref={userMenuRef}>
@@ -657,21 +658,21 @@ const Header = ({ toggleSidebar }) => {
                 flex items-center gap-3
                 px-4 py-1
                 rounded-lg
-                hover:bg-slate-100
+                hover:bg-white/10
                 dark:hover:bg-slate-800
-                text-slate-800 dark:text-slate-100
+                text-white dark:text-slate-100
                 transition-colors
-                focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600
+                focus:outline-none focus:ring-2 focus:ring-white/30 dark:focus:ring-slate-600
               "
             >
               <div
                 className="
                   w-9 h-9
                   rounded-full
-                  bg-slate-200
+                  bg-white/20
                   dark:bg-slate-700
                   flex items-center justify-center
-                  text-slate-700 dark:text-slate-200
+                  text-white dark:text-slate-200
                   overflow-hidden
                 "
               >
@@ -687,7 +688,7 @@ const Header = ({ toggleSidebar }) => {
               </div>
 
               <div className="hidden md:block text-left">
-                <p className="text-md font-semibold text-slate-800 dark:text-slate-50 leading-none max-w-[140px] truncate">
+                <p className="text-md font-semibold text-white dark:text-slate-50 leading-none max-w-[140px] truncate">
                   {user?.first_name || user?.username || "Usuário"}
                 </p>
               </div>

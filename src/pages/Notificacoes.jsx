@@ -51,10 +51,10 @@ const typeMeta = {
 };
 
 const badgeTone = {
-  info: "bg-blue-50 text-blue-700 border-blue-200",
-  success: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  warning: "bg-amber-50 text-amber-700 border-amber-200",
-  error: "bg-red-50 text-red-700 border-red-200",
+  info: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+  success: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800",
+  warning: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800",
+  error: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
 };
 
 const parseDate = (raw) => {
@@ -443,31 +443,29 @@ export default function Notificacoes() {
       </Helmet>
 
       {/* Cabeçalho */}
-      <div className="ui-page-header">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-accent-blue" />
-            <div>
-              <h1 className="text-xl font-bold text-slate-800 dark:text-white">
-                Central de Notificações
-              </h1>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                {isLoading ? "Carregando..." : `Exibindo ${total} notificações`}
-              </p>
-            </div>
+      <div className="ui-page-header space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <Bell className="w-5 h-5 text-accent-blue" />
+              Central de Notificações
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {isLoading ? "Carregando..." : `Exibindo ${total} notificações`}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
             <Button
               onClick={markAllRead}
-              className={`h-8 gap-1 inline-flex items-center text-sm bg-emerald-600 text-white hover:bg-emerald-700`}
+              className="ui-btn-primary h-9 text-sm"
               title="Marcar todas como lidas"
             >
               <CheckCircle2 className="w-4 h-4" /> Marcar tudo como lido
             </Button>
             <Button
               onClick={handleRefresh}
-              className="h-8 px-3 rounded-lg border border-light-border dark:border-dark-border text-slate-600 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5"
+              className="ui-btn-outline h-9 px-3"
               title="Atualizar"
             >
               <RefreshCw className="w-4 h-4" />
@@ -476,32 +474,37 @@ export default function Notificacoes() {
         </div>
 
         {/* Busca + Filtros */}
-        <div className="space-y-4">
-          <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Pesquisar por título, mensagem ou tipo..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={`${inputCampo} w-full pl-10 pr-4`}
+                className={`${inputCampo} pl-10`}
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-light-text-secondary" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             </div>
-            <div className="grid gap-2">
+            <div className="flex gap-2 justify-start md:justify-end">
               <Button
-                className={`${inputCampo} w-4 h-8`}
+                className="ui-btn-outline !px-3 !py-2 flex items-center gap-2"
                 onClick={() => setShowFilters((s) => !s)}
               >
-                <Filter className="w-4 h-7" />
-                Filtros
-                {/* Selo só aparece quando SAIR do padrão */}
+                <Filter className="w-4 h-4" />
+                <span className="text-sm font-medium">Filtros</span>
                 {hasActiveFilters && (
-                  <span className="ml-1 px-2 py-1 bg-accent-blue/10 text-accent-blue border rounded-lg text-xs font-semibold">
-                    Ativos
-                  </span>
+                  <span className="ml-1 inline-block w-2 h-2 rounded-full bg-accent-blue" />
                 )}
               </Button>
+              {hasActiveFilters && (
+                <Button
+                  onClick={clearFilters}
+                  className="ui-btn-outline !px-3 !py-2 text-xs"
+                >
+                  Limpar
+                </Button>
+              )}
             </div>
           </div>
 
@@ -596,31 +599,20 @@ export default function Notificacoes() {
                   </div>
                 </div>
 
-                {/* Itens por página + Reset */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-600 dark:text-slate-300">Exibir</span>
-                    <select
-                      value={itemsPerPage}
-                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                      className={`${inputCampo} w-auto`}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </select>
-                    <span className="text-sm text-slate-600 dark:text-slate-300">por página</span>
-                  </div>
-
-                  <div>
-                    <Button
-                      onClick={clearFilters}
-                      className={`h-8 gap-1 inline-flex items-center text-sm border border-light-border dark:border-dark-border`}
-                    >
-                      Limpar filtros
-                    </Button>
-                  </div>
+                {/* Itens por página */}
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="text-sm text-slate-600 dark:text-slate-300">Exibir</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className={`${inputCampo} w-auto`}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <span className="text-sm text-slate-600 dark:text-slate-300">por página</span>
                 </div>
               </motion.div>
             )}

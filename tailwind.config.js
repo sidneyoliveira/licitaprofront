@@ -13,7 +13,7 @@ module.exports = {
         'dark-text-primary': '#f1f5f9',
         'dark-text-secondary': '#94a3b8',
         
-        'light-bg-primary': '#f1f5f9',
+        'light-bg-primary': '#eef2f7',
         'light-bg-secondary': '#ffffff',
         'light-border': '#e2e8f0',
         'light-text-primary': '#0f172a',

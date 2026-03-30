@@ -343,26 +343,32 @@ const Processos = () => {
             <ProcessosSkeleton />
           ) : processos.length > 0 ? (
             <div className="space-y-3">
-              {processos.map((proc) => (
-                <ProcessoCard
+              {processos.map((proc, idx) => (
+                <motion.div
                   key={proc.id}
-                  processo={proc}
-                  onEdit={() =>
-                    navigate(`/processos/editar/${proc.id}`)
-                  }
-                  onDelete={() =>
-                    setModals((m) => ({ ...m, delete: proc.id }))
-                  }
-                  onView={() =>
-                    window.open(
-                      `/processos/visualizar/${proc.id}`,
-                      "_blank"
-                    )
-                  }
-                  onPublish={() =>
-                    setModals((m) => ({ ...m, publish: proc }))
-                  }
-                />
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: Math.min(idx * 0.04, 0.3) }}
+                >
+                  <ProcessoCard
+                    processo={proc}
+                    onEdit={() =>
+                      navigate(`/processos/editar/${proc.id}`)
+                    }
+                    onDelete={() =>
+                      setModals((m) => ({ ...m, delete: proc.id }))
+                    }
+                    onView={() =>
+                      window.open(
+                        `/processos/visualizar/${proc.id}`,
+                        "_blank"
+                      )
+                    }
+                    onPublish={() =>
+                      setModals((m) => ({ ...m, publish: proc }))
+                    }
+                  />
+                </motion.div>
               ))}
             </div>
           ) : (
