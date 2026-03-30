@@ -1,7 +1,7 @@
 // src/components/ProcessoCard.jsx
 
 import React, { useMemo, useCallback } from 'react';
-import { Download, Eye, Trash2 } from 'lucide-react';
+import { Download, Eye, Trash2, Calendar, CalendarClock, ClipboardList, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   MODALIDADES,
@@ -89,16 +89,29 @@ const resolveLabel = (options, codeOrLabel, fallbackLabel) => {
   return fallbackLabel || "";
 };
 
+/** Cor do badge do certame de acordo com a modalidade */
+const getModalidadeColor = (modalidadeValue) => {
+  const v = String(modalidadeValue).toLowerCase();
+  if (v.includes("pregao"))          return { bg: "bg-emerald-50 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-300 dark:border-emerald-700" };
+  if (v.includes("concorrencia"))    return { bg: "bg-blue-50 dark:bg-blue-900/30",       text: "text-blue-700 dark:text-blue-300",       border: "border-blue-300 dark:border-blue-700" };
+  if (v.includes("dispensa"))        return { bg: "bg-amber-50 dark:bg-amber-900/30",     text: "text-amber-700 dark:text-amber-300",     border: "border-amber-300 dark:border-amber-700" };
+  if (v.includes("inexigibilidade")) return { bg: "bg-purple-50 dark:bg-purple-900/30",   text: "text-purple-700 dark:text-purple-300",   border: "border-purple-300 dark:border-purple-700" };
+  if (v.includes("credenciamento"))  return { bg: "bg-teal-50 dark:bg-teal-900/30",       text: "text-teal-700 dark:text-teal-300",       border: "border-teal-300 dark:border-teal-700" };
+  if (v.includes("leilao"))          return { bg: "bg-orange-50 dark:bg-orange-900/30",   text: "text-orange-700 dark:text-orange-300",   border: "border-orange-300 dark:border-orange-700" };
+  return { bg: "bg-slate-100 dark:bg-slate-800", text: "text-slate-600 dark:text-slate-300", border: "border-slate-300 dark:border-slate-600" };
+};
+
 // --- Subcomponentes ---
 
-const InfoPill = React.memo(({ label, value }) => (
+const InfoPill = React.memo(({ icon: Icon, iconColor = "text-slate-400", label, value, valueColor = "" }) => (
   <div className="flex flex-col" style={{ minWidth: 0 }}>
-    <span className="text-[13px] font-bold text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide">
+    <span className="text-[13px] font-bold text-slate-500 dark:text-dark-text-secondary uppercase tracking-wide flex items-center gap-1.5">
+      {Icon && <Icon size={14} className={iconColor} />}
       {label}
     </span>
     <Ellipsize
       lines={1}
-      className="text-[15px] font-semibold text-slate-800 dark:text-dark-text-primary"
+      className={`text-[15px] font-semibold ${valueColor || "text-slate-800 dark:text-dark-text-primary"}`}
       title={value}
     >
       {value || '–'}
@@ -162,7 +175,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
     [processo?.situacao]
   );
 
-  const { anoCertame, numeroCertame, siglaModalidade } = useMemo(() => {
+  const { anoCertame, numeroCertame, siglaModalidade, modalidadeColor } = useMemo(() => {
     const modalidadeValue = toCode(MODALIDADES, processo?.modalidade);
     const sigla = modalidadeSiglaMap[modalidadeValue] || "";
     
@@ -171,6 +184,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
       anoCertame: ano || new Date().getFullYear(),
       numeroCertame: num,
       siglaModalidade: sigla,
+      modalidadeColor: getModalidadeColor(modalidadeValue || ""),
     };
   }, [processo?.numero_certame, processo?.modalidade]);
 
@@ -301,7 +315,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
           </Ellipsize>
 
           {numeroCertame && (
-            <span className="text-sm font-bold px-3 py-1.5 rounded-md bg-slate-100 text-slate-700 dark:bg-dark-bg-secondary dark:text-dark-text-primary">
+            <span className={`text-sm font-bold px-3 py-1.5 rounded-md border ${modalidadeColor.bg} ${modalidadeColor.text} ${modalidadeColor.border}`}>
               {numeroCertame}/{anoCertame}
               {siglaModalidade ? `-${siglaModalidade}` : ''}
             </span>
@@ -318,10 +332,10 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
         </Ellipsize>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-6 gap-y-5 pt-4 border-t border-slate-200 dark:border-dark-border">
-          <InfoPill label="Data de Cadastro" value={cadastroFormatado} />
-          <InfoPill label="Data do Certame" value={aberturaFormatada} />
-          <InfoPill label="Registro de Preços" value={processo?.registro_precos ? 'Sim' : 'Não'} />
-          <InfoPill label="Valor de Referência" value={valorPrevisto || 'Não informado'} />
+          <InfoPill icon={Calendar} iconColor="text-rose-500" label="Data de Cadastro" value={cadastroFormatado} />
+          <InfoPill icon={CalendarClock} iconColor="text-blue-500" label="Data do Certame" value={aberturaFormatada} valueColor="text-blue-600 dark:text-blue-400" />
+          <InfoPill icon={ClipboardList} iconColor="text-purple-500" label="Registro de Preços" value={processo?.registro_precos ? 'Sim' : 'Não'} />
+          <InfoPill icon={Wallet} iconColor="text-emerald-500" label="Valor de Referência" value={valorPrevisto || 'Não informado'} valueColor="text-emerald-600 dark:text-emerald-400" />
           <SituacaoBadge situacao={situacaoLabel} />
         </div>
       </div>
