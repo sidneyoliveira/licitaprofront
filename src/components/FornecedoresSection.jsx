@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, TrashIcon } from "@heroicons/react/24/outline";
 import FornecedorTable from "./tables/FornecedorTable";
 
 export default function FornecedoresSection({
@@ -14,6 +14,7 @@ export default function FornecedoresSection({
   setIsFornecedorModalOpen,
   handleAskDelete,
   onEdit,
+  onBulkDelete,
 }) {
   // seleção local (apenas dos fornecedores visíveis)
   const [selectedFornecedores, setSelectedFornecedores] = useState(new Set());
@@ -56,17 +57,29 @@ export default function FornecedoresSection({
             {selectedFornecedores.size > 0 && ` ${selectedFornecedores.size} selecionado(s).`}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setFornecedorSelecionado(null);
-            setIsFornecedorModalOpen(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-accent-blue rounded-md shadow-sm hover:bg-accent-blue-hover"
-        >
-          <PlusIcon className="w-5 h-5" />
-          Adicionar Fornecedor
-        </button>
+        <div className="flex items-center gap-3">
+          {selectedFornecedores.size > 0 && (
+            <button
+              type="button"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-bold bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-md shadow-sm hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
+              onClick={() => onBulkDelete?.([...selectedFornecedores])}
+            >
+              <TrashIcon className="w-5 h-5" />
+              Excluir ({selectedFornecedores.size})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setFornecedorSelecionado(null);
+              setIsFornecedorModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-accent-blue rounded-md shadow-sm hover:bg-accent-blue-hover"
+          >
+            <PlusIcon className="w-5 h-5" />
+            Adicionar Fornecedor
+          </button>
+        </div>
       </div>
 
       <FornecedorTable

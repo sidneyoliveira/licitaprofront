@@ -4,6 +4,7 @@ import {
   ArrowDownTrayIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import ItensTable from "./tables/ItensTable";
 
@@ -23,6 +24,7 @@ export default function ItemsSection({
   setItemSelecionado,
   handleAskDelete,
   handleExportItems,
+  onBulkDelete,
 }) {
   return (
     <div className="space-y-6">
@@ -37,6 +39,16 @@ export default function ItemsSection({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {selectedItems.size > 0 && (
+            <button
+              type="button"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-bold bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-md shadow-sm hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
+              onClick={() => onBulkDelete?.([...selectedItems])}
+            >
+              <TrashIcon className="w-5 h-5" />
+              Excluir ({selectedItems.size})
+            </button>
+          )}
           <button
             type="button"
             className="flex items-center gap-2 px-3 py-2 text-sm font-bold bg-white dark:bg-dark-bg-secondary border border-slate-300 dark:border-slate-700 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-dark-bg-tertiary disabled:opacity-50"

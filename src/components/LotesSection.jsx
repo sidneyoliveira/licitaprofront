@@ -417,6 +417,21 @@ export default function LotesSection({
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedLotes.size === 0) return;
+    const ids = [...selectedLotes];
+    try {
+      await api.post(`/lotes/bulk-delete/`, { ids });
+      showToast?.(`${ids.length} lote(s) removido(s).`, "success");
+      setSelectedLotes(new Set());
+      await ensureLotes();
+      await ensureItens();
+    } catch (e) {
+      console.error(e);
+      showToast?.("Erro ao remover lotes em massa.", "error");
+    }
+  };
+
   /* ------------------------- Itens do Lote (modal) ------------------------ */
   const openItensModal = async (l) => {
     setLoteAlvo(l);
@@ -466,6 +481,16 @@ export default function LotesSection({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {selectedLotes.size > 0 && (
+            <button
+              type="button"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-bold bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-md shadow-sm hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
+              onClick={handleBulkDelete}
+            >
+              <TrashIcon className="w-5 h-5" />
+              Excluir ({selectedLotes.size})
+            </button>
+          )}
           <button
             type="button"
             onClick={openCreate}

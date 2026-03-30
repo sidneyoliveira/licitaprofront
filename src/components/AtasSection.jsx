@@ -816,6 +816,20 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
     }
   };
 
+  const handleBulkDeleteAtas = async () => {
+    if (selectedAtas.size === 0) return;
+    const ids = [...selectedAtas];
+    try {
+      await api.post('/atas-registro-precos/bulk-delete/', { ids });
+      showToast(`${ids.length} ata(s) removida(s).`, 'success');
+      setSelectedAtas(new Set());
+      await fetchAtas();
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao remover atas em massa.', 'error');
+    }
+  };
+
   const handlePublishAtaPncp = async (ata) => {
     if (!ata?.id) return;
     setSavingAtaId(ata.id);
@@ -904,14 +918,26 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenNewAta}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm shadow-blue-900/20"
-        >
-          <Plus className="w-4 h-4" />
-          Nova Ata
-        </button>
+        <div className="flex items-center gap-3">
+          {selectedAtas.size > 0 && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs md:text-sm font-semibold bg-rose-50 dark:bg-rose-900/20 border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 shadow-sm transition-colors"
+              onClick={handleBulkDeleteAtas}
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir ({selectedAtas.size})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleOpenNewAta}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 shadow-sm shadow-blue-900/20"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Ata
+          </button>
+        </div>
       </div>
 
       {/* Tabela de Atas */}

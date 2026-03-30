@@ -950,6 +950,31 @@ export default function PageProcess() {
     }
   };
 
+  // Exclusão em massa — Itens
+  const handleBulkDeleteItems = async (ids) => {
+    if (!ids?.length) return;
+    try {
+      await api.post('/itens/bulk-delete/', { ids });
+      showToast(`${ids.length} item(ns) removido(s).`, 'success');
+      setSelectedItems(new Set());
+      fetchItens(processoId);
+    } catch {
+      showToast('Erro ao remover itens em massa.', 'error');
+    }
+  };
+
+  // Exclusão em massa — Fornecedores do processo
+  const handleBulkDeleteFornecedores = async (ids) => {
+    if (!ids?.length) return;
+    try {
+      await api.post('/fornecedores-processo/bulk-delete/', { ids, processo_id: processoId });
+      showToast(`${ids.length} fornecedor(es) removido(s).`, 'success');
+      fetchFornecedoresDoProcesso(processoId);
+    } catch {
+      showToast('Erro ao remover fornecedores em massa.', 'error');
+    }
+  };
+
   /* ──────────────────────────────────────────────────────────────────────── */
   /* HANDLERS ESPECÍFICOS: ARQUIVOS (corrigidos)                              */
   /* - Upsert: se existe doc local -> PATCH /{id}/                            */
@@ -1276,6 +1301,7 @@ export default function PageProcess() {
                       setItemSelecionado={setItemSelecionado}
                       handleAskDelete={handleAskDelete}
                       handleExportItems={handleExportItems}
+                      onBulkDelete={handleBulkDeleteItems}
                     />
                   )}
 
@@ -1309,6 +1335,7 @@ export default function PageProcess() {
                         setFornecedorSelecionado(f);
                         setIsFornecedorModalOpen(true);
                       }}
+                      onBulkDelete={handleBulkDeleteFornecedores}
                     />
                   )}
 
