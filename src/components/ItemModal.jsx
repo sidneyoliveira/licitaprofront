@@ -35,6 +35,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
         unidade: '',
         quantidade: '',
         valor_estimado: '',
+    valor_homologado: '',
         natureza_despesa: '',
         situacao: 'em_andamento',
         tipo_beneficio: 'nao_se_aplica',
@@ -77,6 +78,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                     unidade: itemParaEditar.unidade || '',
                     quantidade: itemParaEditar.quantidade || '',
                     valor_estimado: itemParaEditar.valor_estimado || '',
+                    valor_homologado: itemParaEditar.valor_homologado || '',
                     
                     // CORREÇÃO CRÍTICA: O Backend devolve 'natureza', o Front usa 'natureza_despesa'
                     natureza_despesa: itemParaEditar.natureza || itemParaEditar.natureza_despesa || '',
@@ -98,6 +100,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                     unidade: '',
                     quantidade: '',
                     valor_estimado: '',
+                    valor_homologado: '',
                     natureza_despesa: '',
                     situacao: 1,
                     tipo_beneficio: 4,
@@ -137,6 +140,11 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
             return;
         }
 
+        if (formData.fornecedor && (formData.valor_homologado === '' || formData.valor_homologado === null)) {
+            showToast("Informe o valor homologado ao selecionar o fornecedor vencedor.", "warning");
+            return;
+        }
+
         setIsSaving(true);
         try {
             const ordemFinal = formData.numero_item ? parseInt(formData.numero_item) : (proximaOrdem || 1);
@@ -147,6 +155,10 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                 processo: processoId,
                 quantidade: parseFloat(formData.quantidade),
                 valor_estimado: parseFloat(formData.valor_estimado),
+                valor_homologado:
+                    formData.valor_homologado !== '' && formData.valor_homologado !== null
+                        ? parseFloat(formData.valor_homologado)
+                        : null,
                 ordem: ordemFinal,
                 // Mapeamentos
                 natureza: formData.natureza_despesa,
@@ -351,7 +363,7 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
 
                                 {/* 3. SITUAÇÃO E FORNECEDOR */}
                                 <div className={`${SECTION_STYLE} bg-slate-50 dark:bg-dark-bg-primary mb-0`}>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
                                             <label className={LABEL_STYLE}>Situação</label>
                                             <select
@@ -391,6 +403,19 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                                     <option key={f.id} value={f.id}>{f.razao_social} ({f.cnpj})</option>
                                                 ))}
                                             </select>
+                                        </div>
+                                        <div>
+                                            <label className={LABEL_STYLE}>Valor Homologado (Unitário)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                name="valor_homologado"
+                                                value={formData.valor_homologado}
+                                                onChange={handleChange}
+                                                className={INPUT_STYLE}
+                                                placeholder="Ex: 5.90"
+                                            />
                                         </div>
                                     </div>
                                 </div>
