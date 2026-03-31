@@ -31,8 +31,12 @@ export default function DadosGeraisForm({
     situacoes_processo: [],
     tipos_organizacao: [],
     
-    // Mapa de dependência vindo do Backend
+    // Mapas de dependência vindos do Backend
     mapa_modalidade_amparo: {},
+    mapa_modalidade_categoria_item: {},
+    mapa_modalidade_modo_disputa: {},
+    mapa_modalidade_instrumento: {},
+    mapa_modalidade_criterio_julgamento: {},
     
     classificacoes: [
         { id: "Compras", label: "Compras" },
@@ -107,6 +111,33 @@ export default function DadosGeraisForm({
     );
   }, [formData?.modalidade, sysOptions]);
 
+  // Modo de Disputa filtrado por Modalidade
+  const modosDisputaFiltrados = useMemo(() => {
+    const modalidadeId = formData?.modalidade;
+    const mapa = sysOptions.mapa_modalidade_modo_disputa;
+    if (!modalidadeId || !mapa || !mapa[modalidadeId]) return sysOptions.modos_disputa;
+    const idsPermitidos = mapa[modalidadeId] || [];
+    return sysOptions.modos_disputa.filter(m => idsPermitidos.includes(m.id));
+  }, [formData?.modalidade, sysOptions]);
+
+  // Instrumento Convocatório filtrado por Modalidade
+  const instrumentosFiltrados = useMemo(() => {
+    const modalidadeId = formData?.modalidade;
+    const mapa = sysOptions.mapa_modalidade_instrumento;
+    if (!modalidadeId || !mapa || !mapa[modalidadeId]) return sysOptions.instrumentos_convocatorios;
+    const idsPermitidos = mapa[modalidadeId] || [];
+    return sysOptions.instrumentos_convocatorios.filter(i => idsPermitidos.includes(i.id));
+  }, [formData?.modalidade, sysOptions]);
+
+  // Critério de Julgamento filtrado por Modalidade
+  const criteriosFiltrados = useMemo(() => {
+    const modalidadeId = formData?.modalidade;
+    const mapa = sysOptions.mapa_modalidade_criterio_julgamento;
+    if (!modalidadeId || !mapa || !mapa[modalidadeId]) return sysOptions.criterios_julgamento;
+    const idsPermitidos = mapa[modalidadeId] || [];
+    return sysOptions.criterios_julgamento.filter(c => idsPermitidos.includes(c.id));
+  }, [formData?.modalidade, sysOptions]);
+
 
   // =========================================================
   // HANDLERS
@@ -127,10 +158,13 @@ export default function DadosGeraisForm({
       return;
     }
 
-    // Modalidade -> Limpa Amparo
+    // Modalidade -> Limpa campos dependentes (Amparo, Modo Disputa, Instrumento, Critério)
     if (name === "modalidade") {
         onChange(e); 
         onChange({ target: { name: "amparo_legal", value: "" } }); 
+        onChange({ target: { name: "modo_disputa", value: "" } }); 
+        onChange({ target: { name: "instrumento_convocatorio", value: "" } }); 
+        onChange({ target: { name: "criterio_julgamento", value: "" } }); 
         return;
     }
 
@@ -310,9 +344,12 @@ export default function DadosGeraisForm({
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
+            disabled={!formData?.modalidade}
           >
-            <option value="">Selecione...</option>
-            {sysOptions.modos_disputa.map((m) => (
+            <option value="">
+              {!formData?.modalidade ? "Selecione a Modalidade" : "Selecione..."}
+            </option>
+            {modosDisputaFiltrados.map((m) => (
               <option key={m.id} value={m.id}>{m.label}</option>
             ))}
           </select>
@@ -327,9 +364,12 @@ export default function DadosGeraisForm({
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
+            disabled={!formData?.modalidade}
           >
-            <option value="">Selecione...</option>
-            {sysOptions.criterios_julgamento.map((c) => (
+            <option value="">
+              {!formData?.modalidade ? "Selecione a Modalidade" : "Selecione..."}
+            </option>
+            {criteriosFiltrados.map((c) => (
               <option key={c.id} value={c.id}>{c.label}</option>
             ))}
           </select>
@@ -344,9 +384,12 @@ export default function DadosGeraisForm({
             onChange={handleChangeLocal}
             className={INPUT_STYLE}
             required
+            disabled={!formData?.modalidade}
             >
-            <option value="">Selecione...</option>
-            {sysOptions.instrumentos_convocatorios.map((f) => (
+            <option value="">
+              {!formData?.modalidade ? "Selecione a Modalidade" : "Selecione..."}
+            </option>
+            {instrumentosFiltrados.map((f) => (
                 <option key={f.id} value={f.id}>{f.label}</option>
             ))}
             </select>

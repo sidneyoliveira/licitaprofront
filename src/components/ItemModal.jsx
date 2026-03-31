@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
@@ -18,7 +18,8 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
         naturezas_despesa: [],
         situacoes_item: [],
         tipos_beneficio: [],
-        categorias_item: []
+        categorias_item: [],
+        mapa_modalidade_categoria_item: {}
     });
     const [fornecedores, setFornecedores] = useState([]);
     
@@ -81,10 +82,10 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                     natureza_despesa: itemParaEditar.natureza || itemParaEditar.natureza_despesa || '',
                     
                     situacao: itemParaEditar.situacao_item || itemParaEditar.situacao || 'em_andamento',
-                    tipo_beneficio: itemParaEditar.tipo_beneficio || 'nao_se_aplica',
+                    tipo_beneficio: itemParaEditar.tipo_beneficio || 4,
                     
                     // CORREÇÃO CRÍTICA: O Backend devolve 'categoria_item', o Front usa 'categoria'
-                    categoria: itemParaEditar.categoria_item || itemParaEditar.categoria || 'material'
+                    categoria: itemParaEditar.categoria_item || itemParaEditar.categoria || 1
                 });
             } else {
                 // MODO NOVO
@@ -98,13 +99,24 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                     quantidade: '',
                     valor_estimado: '',
                     natureza_despesa: '',
-                    situacao: 'em_andamento',
-                    tipo_beneficio: 'nao_se_aplica',
-                    categoria: 'material'
+                    situacao: 1,
+                    tipo_beneficio: 4,
+                    categoria: 1
                 });
             }
         }
     }, [isOpen, itemParaEditar, processo, proximaOrdem]);
+
+    // Filtra categorias de item com base na modalidade do processo
+    const categoriasFiltradas = useMemo(() => {
+        const modalidadeId = processo?.modalidade;
+        const mapa = sysOptions.mapa_modalidade_categoria_item;
+        if (!modalidadeId || !mapa || !mapa[modalidadeId]) {
+            return sysOptions.categorias_item || [];
+        }
+        const idsPermitidos = mapa[modalidadeId] || [];
+        return (sysOptions.categorias_item || []).filter(c => idsPermitidos.includes(c.id));
+    }, [processo?.modalidade, sysOptions]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -229,7 +241,8 @@ const ItemModal = ({ isOpen, onClose, onItemSaved, processo, itemParaEditar, pro
                                                 className={INPUT_STYLE}
                                                 required
                                             >
-                                                {sysOptions.categorias_item?.map(cat => (
+                                                <option value="">Selecione a Categoria...</option>
+                                                {categoriasFiltradas.map(cat => (
                                                     <option key={cat.id} value={cat.id}>{cat.label}</option>
                                                 ))}
                                             </select>
