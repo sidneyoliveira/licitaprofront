@@ -203,6 +203,12 @@ textarea,
   max-width: 100% !important;
 }
 
+/* Esconde o wrapper invisível do iframe Google que gera barra no mobile */
+#googleSignInDiv .L5Fo6c-sM5MNb,
+#googleSignInDiv [id$="-wrapper"] {
+  display: none !important;
+}
+
 /* ── Responsividade global para dispositivos móveis ── */
 html, body, #root {
   overflow-x: hidden;

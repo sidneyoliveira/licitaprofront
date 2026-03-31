@@ -45,7 +45,7 @@ const Sidebar = ({ isOpen, isMobile, onClose }) => {
       {/* Sidebar principal */}
       <aside
         className={`
-          fixed z-30 top-0 left-0 h-full flex flex-col
+          fixed z-50 top-0 left-0 h-full flex flex-col
           bg-white dark:bg-[#141c2e]
           border-r border-slate-200/80 dark:border-slate-700/60
           transform transition-all duration-300 ease-in-out
