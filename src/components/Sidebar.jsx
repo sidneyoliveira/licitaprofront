@@ -9,33 +9,37 @@ import {
   Scale,
   UserCircle,
 } from "lucide-react";
-
-/* Seções de navegação */
-const NAV_SECTIONS = [
-  {
-    label: "PRINCIPAL",
-    items: [
-      { to: "/", icon: LayoutDashboard, label: "Início" },
-      { to: "/processos", icon: FileText, label: "Processos" },
-    ],
-  },
-  {
-    label: "CADASTROS",
-    items: [
-      { to: "/entidades", icon: Building2, label: "Entidades" },
-      { to: "/fornecedores", icon: UserCheck, label: "Fornecedores" },
-      { to: "/usuarios", icon: Users, label: "Usuários" },
-    ],
-  },
-  {
-    label: "CONTA",
-    items: [
-      { to: "/perfil", icon: UserCircle, label: "Meu Perfil" },
-    ],
-  },
-];
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = ({ isOpen, isMobile, onClose }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.is_staff || user?.is_superuser;
+
+  /* Seções de navegação — montadas dinamicamente */
+  const NAV_SECTIONS = [
+    {
+      label: "PRINCIPAL",
+      items: [
+        { to: "/", icon: LayoutDashboard, label: "Início" },
+        { to: "/processos", icon: FileText, label: "Processos" },
+      ],
+    },
+    {
+      label: "CADASTROS",
+      items: [
+        { to: "/entidades", icon: Building2, label: "Entidades" },
+        { to: "/fornecedores", icon: UserCheck, label: "Fornecedores" },
+        // Usuários aparece SOMENTE para admin/staff
+        ...(isAdmin ? [{ to: "/usuarios", icon: Users, label: "Usuários" }] : []),
+      ],
+    },
+    {
+      label: "CONTA",
+      items: [
+        { to: "/perfil", icon: UserCircle, label: "Meu Perfil" },
+      ],
+    },
+  ];
   return (
     <>
       {/* Sidebar principal */}

@@ -418,7 +418,8 @@ export default function LotesSection({
   };
 
   const handleBulkDelete = async () => {
-    if (selectedLotes.size === 0) return;
+    if (selectedLotes.size === 0) re96026695s+
+    turn;
     const ids = [...selectedLotes];
     try {
       await api.post(`/lotes/bulk-delete/`, { ids });
