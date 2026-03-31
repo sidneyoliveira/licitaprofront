@@ -22,7 +22,10 @@ function formatMB(bytes) {
 
 const ENDPOINTS = {
   status: (id) => `/processos/${id}/status-pncp/`,
+  validate: (id) => `/processos/${id}/validar-envio-pncp/`,
+  send: (id) => `/processos/${id}/enviar-pncp/`,
   publish: (id) => `/processos/${id}/publicar-pncp/`,
+  sync: (id) => `/processos/${id}/sincronizar-pncp/`,
   rectifyDoc: (id) => `/processos/${id}/retificar-pncp/`,
 };
 
@@ -37,6 +40,9 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
   const [pncpInfo, setPncpInfo] = useState(null);
 
   const [operation, setOperation] = useState("publish");
+  const [syncNow, setSyncNow] = useState(true);
+  const [validation, setValidation] = useState(null);
+  const [validationLoading, setValidationLoading] = useState(false);
 
   const [file, setFile] = useState(null);
   const [justificativa, setJustificativa] = useState("");
@@ -70,7 +76,36 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
       }
     })();
     return () => { isMountedRef.current = false; };
-  }, [processo?.id]);
+  }, [processo?.id, api]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadValidation = async () => {
+      if (!processo?.id) return;
+      if (operation !== "publish") {
+        setValidation(null);
+        return;
+      }
+
+      setValidationLoading(true);
+      try {
+        const { data } = await api.get(ENDPOINTS.validate(processo.id), {
+          params: { sincronizar_resultados: syncNow ? 1 : 0 },
+        });
+        if (!cancelled) setValidation(data || null);
+      } catch (error) {
+        const data = error?.response?.data;
+        if (!cancelled) setValidation(data || null);
+      } finally {
+        if (!cancelled) setValidationLoading(false);
+      }
+    };
+
+    loadValidation();
+    return () => {
+      cancelled = true;
+    };
+  }, [processo?.id, operation, syncNow, api]);
 
   const handleFileChange = (e) => {
     setErrorMsg("");
@@ -101,18 +136,20 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
 
     try {
       const form = new FormData();
-      form.append("arquivo", file);
 
       if (operation === "publish") {
+        form.append("arquivo", file);
         form.append("titulo_documento", `Edital - ${processo.numero_processo || ""}`);
+        form.append("sincronizar_resultados", syncNow ? "true" : "false");
       } else {
+        form.append("arquivo", file);
         form.append("justificativa", justificativa.trim());
         form.append("titulo_documento", `Retificacao - ${processo.numero_processo || ""}`);
       }
 
       const endpoint =
         operation === "publish"
-          ? ENDPOINTS.publish(processo.id)
+          ? ENDPOINTS.send(processo.id)
           : ENDPOINTS.rectifyDoc(processo.id);
 
       await api.post(endpoint, form, {
@@ -126,7 +163,9 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
       setSuccess(true);
       showToast(
         operation === "publish"
-          ? "Processo publicado no PNCP com sucesso!"
+          ? (syncNow
+              ? "Processo enviado ao PNCP e sincronização iniciada com sucesso!"
+              : "Processo enviado ao PNCP com sucesso!")
           : "Retificacao enviada ao PNCP com sucesso!",
         "success"
       );
@@ -138,6 +177,15 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
           setHasPncp(Boolean(st?.publicado || st?.sequencial_pncp));
         }
       } catch { /* ignora */ }
+
+      if (operation === "publish") {
+        try {
+          const { data: val } = await api.get(ENDPOINTS.validate(processo.id), {
+            params: { sincronizar_resultados: syncNow ? 1 : 0 },
+          });
+          if (isMountedRef.current) setValidation(val || null);
+        } catch { /* ignora */ }
+      }
 
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -219,7 +267,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
               }`}
             >
               <Send className="w-4 h-4" />
-              Publicar
+              Enviar Processo
             </button>
 
             <button
@@ -237,6 +285,69 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
               Retificar
             </button>
           </div>
+
+          {operation === "publish" && (
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-slate-50/70 dark:bg-slate-900/30">
+              <label className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={syncNow}
+                  onChange={(e) => setSyncNow(e.target.checked)}
+                  disabled={loading}
+                />
+                <span>
+                  Sincronizar fornecedores homologados logo após a publicação.
+                  <span className="block text-xs text-slate-500 mt-1">
+                    Se desmarcar, você poderá sincronizar depois.
+                  </span>
+                </span>
+              </label>
+            </div>
+          )}
+
+          {operation === "publish" && (
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-900/20">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Validação pré-envio
+                </h4>
+                {validationLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />}
+              </div>
+
+              {!validation && !validationLoading && (
+                <p className="text-xs text-slate-500">Não foi possível carregar validações.</p>
+              )}
+
+              {validation?.resumo && (
+                <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">
+                  Itens: {validation.resumo.total_itens || 0} • Erros: {validation.resumo.total_erros || 0} • Avisos: {validation.resumo.total_avisos || 0}
+                </p>
+              )}
+
+              {!!validation?.erros?.length && (
+                <div className="mb-2">
+                  <p className="text-xs font-semibold text-red-600 mb-1">Erros bloqueantes:</p>
+                  <ul className="list-disc ml-4 space-y-0.5 text-xs text-red-600">
+                    {validation.erros.slice(0, 8).map((msg, idx) => (
+                      <li key={`err-${idx}`}>{msg}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!!validation?.avisos?.length && (
+                <div>
+                  <p className="text-xs font-semibold text-amber-600 mb-1">Avisos:</p>
+                  <ul className="list-disc ml-4 space-y-0.5 text-xs text-amber-700 dark:text-amber-300">
+                    {validation.avisos.slice(0, 8).map((msg, idx) => (
+                      <li key={`warn-${idx}`}>{msg}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Dica contextual */}
           <div className={`rounded-lg p-3 border text-xs leading-relaxed ${
@@ -367,7 +478,12 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
 
               <button
                 type="submit"
-                disabled={loading || !file || (operation === "rectify" && !hasPncp)}
+                disabled={
+                  loading ||
+                  !file ||
+                  (operation === "rectify" && !hasPncp) ||
+                  (operation === "publish" && !!validation?.erros?.length)
+                }
                 className="px-5 py-2 bg-accent-blue text-white text-sm font-bold rounded-lg hover:bg-accent-blue/90 flex items-center gap-2 shadow-sm shadow-blue-900/20 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -380,7 +496,7 @@ const ModalEnvioPNCP = ({ processo, onClose, onSuccess }) => {
                 {loading
                   ? "Processando..."
                   : operation === "publish"
-                  ? "Publicar no PNCP"
+                  ? (syncNow ? "Enviar e Sincronizar" : "Enviar PNCP")
                   : "Enviar Retificacao"}
               </button>
             </div>
