@@ -448,11 +448,11 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                             value={form.username}
                             onChange={handleChange}
                             placeholder="usuario.sistema"
-                            disabled={isEdit}
+                            disabled={isEdit && !isAdmin}
                             error={errors.username}
                             icon={User}
                           />
-                          {isEdit && <p className="text-xs text-slate-400 mt-1">O nome de usuário não pode ser alterado.</p>}
+                          {isEdit && !isAdmin && <p className="text-xs text-slate-400 mt-1">O nome de usuário não pode ser alterado.</p>}
                         </div>
 
                         <div className="p-5 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-800/30 rounded-xl space-y-4">

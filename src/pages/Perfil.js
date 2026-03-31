@@ -14,7 +14,6 @@ import {
   Download,
   Plus,
   Trash2,
-  StickyNote,
   Paperclip,
   X,
   UploadCloud,
@@ -28,6 +27,7 @@ import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
 import UsuarioEditModal from "../components/UsuarioEditModal";
+import SharedNotesBoard from "../components/SharedNotesBoard";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. UI HELPERS & STYLES                                                    */
@@ -245,10 +245,6 @@ const Perfil = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [attachModalOpen, setAttachModalOpen] = useState(false);
 
-  // Estado das notas (agora inicia vazio)
-  const [notes, setNotes] = useState([]); 
-  const [newNote, setNewNote] = useState("");
-
   const [documents, setDocuments] = useState([]);
 
   const fetchUser = async () => {
@@ -267,18 +263,16 @@ const Perfil = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 1. Carregar Usuário, Notas e Documentos
+  // 1. Carregar Usuário e Documentos
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [userRes, notesRes, docsRes] = await Promise.all([
+      const [userRes, docsRes] = await Promise.all([
         api.get("/me/"),
-        api.get("/anotacoes/"),
         api.get("/arquivos-user/"),
       ]);
       
       setUser(userRes.data);
-      setNotes(notesRes.data);
       setDocuments(docsRes.data?.results || docsRes.data || []);
       
     } catch (err) {
@@ -294,38 +288,7 @@ const Perfil = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2. Criar Nota (POST)
-  const handleAddNote = async () => {
-    if (!newNote.trim()) return;
-
-    try {
-      const response = await api.post("/anotacoes/", { 
-        text: newNote 
-      });
-
-      // Adiciona a nota retornada pelo backend (que já tem ID e Data reais) à lista
-      setNotes([response.data, ...notes]);
-      setNewNote("");
-      showToast("Anotação salva.", "success");
-    } catch (error) {
-      console.error(error);
-      showToast("Erro ao salvar anotação.", "error");
-    }
-  };
-
-  // 3. Deletar Nota (DELETE)
-  const handleDeleteNote = async (id) => {
-    try {
-      await api.delete(`/anotacoes/${id}/`);
-      setNotes(notes.filter((n) => n.id !== id));
-      showToast("Anotação removida.", "success");
-    } catch (error) {
-      console.error(error);
-      showToast("Erro ao remover anotação.", "error");
-    }
-  };
-
-  // 4. Upload Arquivo (POST multipart)
+  // 2. Upload Arquivo (POST multipart)
   const handleUploadDocument = async ({ file, description }) => {
     try {
       const formData = new FormData();
@@ -343,7 +306,7 @@ const Perfil = () => {
     }
   };
 
-  // 5. Deletar Arquivo (DELETE)
+  // 3. Deletar Arquivo (DELETE)
   const handleDeleteDocument = async (id) => {
     try {
       await api.delete(`/arquivos-user/${id}/`);
@@ -568,72 +531,13 @@ const Perfil = () => {
              </div>
           </div>
 
-          {/* COLUNA DIREITA: Sidebar de Notas */}
+      {/* COLUNA DIREITA: Sidebar de Anotações/Tarefas */}
           <div className="lg:col-span-1 space-y-8">
-             
-             {/* Bloco de Notas */}
-             <div className="bg-amber-50 dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl border border-amber-100 dark:border-slate-700 h-auto lg:h-[500px] flex flex-col relative overflow-hidden">
-
-                <div className="flex items-center justify-between mb-6 relative z-10 ">
-                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500">
-                        <StickyNote size={20} />
-                        <h3 className="font-bold text-sm uppercase tracking-wide">Anotações</h3>
-                    </div>
-                    <span className="text-xs font-medium bg-white/60 dark:bg-slate-800 px-2 py-1 rounded-md text-amber-800 dark:text-amber-400">{notes.length} notas</span>
-                </div>
-
-                {/* Input de Nota */}
-                <div className="relative mb-4 z-10">
-                    <input
-                        value={newNote}
-                        onChange={(e) => setNewNote(e.target.value)}
-                        placeholder="Digite uma anotação rápida..."
-                        className="w-full pl-4 pr-10 py-3 bg-white dark:bg-dark-bg-primary border border-amber-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/50 placeholder:text-slate-400"
-                        onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
-                    />
-                    <button 
-                        onClick={handleAddNote}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors"
-                    >
-                        <Plus size={16} />
-                    </button>
-                </div>
-
-                {/* Lista de Notas */}
-                <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar relative z-10">
-                    {notes.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-amber-800/40">
-                            <StickyNote size={40} strokeWidth={1.5} className="mb-2 opacity-50" />
-                            <p className="text-sm font-medium">Sem anotações</p>
-                        </div>
-                    ) : (
-                        notes.map(note => (
-                            <motion.div 
-                                layout
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                key={note.id} 
-                                className="bg-white dark:bg-dark-bg-primary p-4 rounded-lg border border-amber-100 dark:border-slate-700 transition-colors relative"
-                            >
-                                <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed pr-6">
-                                    {note.text}
-                                </p>
-                                <span className="text-[10px] font-bold text-slate-400 mt-2 block uppercase tracking-wide">
-                                    {new Date(note.date).toLocaleDateString()}
-                                </span>
-                                
-                                <button 
-                                    onClick={() => handleDeleteNote(note.id)}
-                                    className="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                            </motion.div>
-                        ))
-                    )}
-                </div>
-             </div>
+      <SharedNotesBoard
+        title="Anotações Pessoais"
+        showPreferences
+        onPreferencesSaved={fetchUser}
+      />
 
           </div>
 

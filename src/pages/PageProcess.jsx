@@ -18,7 +18,8 @@ import {
   Eye,
   Download,
   Edit,
-  AlertCircle
+  AlertCircle,
+  StickyNote
 } from 'lucide-react';
 
 // --- COMPONENTES & SEÇÕES ---
@@ -39,6 +40,7 @@ import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
 
 import AtasSection from '../components/AtasSection';
+import SharedNotesBoard from '../components/SharedNotesBoard';
 
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -185,6 +187,7 @@ const TAB_COLORS = {
   fornecedores: { active: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-600 dark:border-emerald-400', inactive: 'text-slate-400' },
   atas:         { active: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-600 dark:border-amber-400',  inactive: 'text-slate-400' },
   arquivos:     { active: 'text-rose-600 dark:text-rose-400',    border: 'border-rose-600 dark:border-rose-400',    inactive: 'text-slate-400' },
+  anotacoes:    { active: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-600 dark:border-amber-400',  inactive: 'text-slate-400' },
 };
 
 const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => {
@@ -1279,6 +1282,13 @@ export default function PageProcess() {
                 isActive={activeTab === 'arquivos'}
                 onClick={() => setActiveTab('arquivos')}
               />
+              <TabButton
+                id="anotacoes"
+                label="Anotações"
+                icon={StickyNote}
+                isActive={activeTab === 'anotacoes'}
+                onClick={() => setActiveTab('anotacoes')}
+              />
 
             </div>
 
@@ -1368,6 +1378,13 @@ export default function PageProcess() {
                           : null,
                         objeto: formData.objeto,
                       }}
+                    />
+                  )}
+
+                  {activeTab === 'anotacoes' && (
+                    <SharedNotesBoard
+                      title="Anotações do Processo"
+                      processoId={processoId}
                     />
                   )}
 
