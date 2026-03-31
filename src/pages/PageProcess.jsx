@@ -1385,6 +1385,7 @@ export default function PageProcess() {
                     <SharedNotesBoard
                       title="Anotações do Processo"
                       processoId={processoId}
+                      columnLayout
                     />
                   )}
 

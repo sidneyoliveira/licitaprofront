@@ -30,6 +30,7 @@ import {
   Home,
   EyeOff,
   CheckCircle2,
+  StickyNote,
 } from "lucide-react";
 
 /* =========================================================================
@@ -119,6 +120,7 @@ const typeMeta = {
   usuario: { icon: UserPlus, color: "text-emerald-600", label: "Usuário" },
   entidade: { icon: Building2, color: "text-indigo-600", label: "Entidade" },
   orgao: { icon: Home, color: "text-amber-600", label: "Órgão" },
+  anotacao: { icon: StickyNote, color: "text-amber-600", label: "Anotação" },
   alerta: { icon: AlertTriangle, color: "text-red-600", label: "Alerta" },
   sistema: { icon: Info, color: "text-slate-600", label: "Sistema" },
 };
@@ -153,6 +155,7 @@ const Header = ({ toggleSidebar }) => {
   const [usuarios, setUsuarios] = useState([]);
   const [entidades, setEntidades] = useState([]);
   const [orgaos, setOrgaos] = useState([]);
+  const [notifsApi, setNotifsApi] = useState([]);
   const [notifs, setNotifs] = useState([]);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
 
@@ -189,16 +192,18 @@ const Header = ({ toggleSidebar }) => {
   const fetchAll = useCallback(async () => {
     setLoadingNotifs(true);
     try {
-      const [procs, users, ents, orgs] = await Promise.all([
+      const [procs, users, ents, orgs, notifRows] = await Promise.all([
         fetchArray("/processos/", { ordering: "-updated_at" }),
         fetchArray("/usuarios/", { ordering: "-date_joined" }),
         fetchArray("/entidades/", { ordering: "-id" }),
         fetchArray("/orgaos/", { ordering: "-id" }),
+        fetchArray("/notificacoes/", { ordering: "-criado_em" }),
       ]);
       setProcessos(procs);
       setUsuarios(users);
       setEntidades(ents);
       setOrgaos(orgs);
+      setNotifsApi(notifRows);
     } finally {
       setLoadingNotifs(false);
     }
@@ -325,6 +330,24 @@ const Header = ({ toggleSidebar }) => {
       });
     });
 
+    // Notificações de anotações (backend)
+    notifsApi.forEach((n) => {
+      const tipoAcao = n.tipo_acao || "update";
+      const severity = tipoAcao === "delete" ? "warning" : tipoAcao === "check" ? "success" : "info";
+      const href = n.processo ? `/processos/visualizar/${n.processo}` : "/perfil";
+      list.push({
+        id: `note-${n.id}`,
+        notificationId: n.id,
+        tipo: "anotacao",
+        titulo: n.titulo || "Atualização de anotação",
+        mensagem: n.mensagem || "Você recebeu uma atualização de anotação.",
+        data: n.criado_em || new Date().toISOString(),
+        severity,
+        href,
+        lida: !!n.lida,
+      });
+    });
+
     // Ordena por data desc
     const sorted = [...list].sort((a, b) => {
       const A = parseDate(a.data)?.getTime() ?? 0;
@@ -333,12 +356,15 @@ const Header = ({ toggleSidebar }) => {
     });
 
     setNotifs(sorted);
-  }, [processos, usuarios, entidades, orgaos]);
+  }, [processos, usuarios, entidades, orgaos, notifsApi]);
 
   /* -----------------------------------------------------------------------
    * Derivados: não lidas
    * --------------------------------------------------------------------- */
-  const unread = notifs.filter((n) => !readMap[n.id]);
+  const unread = notifs.filter((n) => {
+    const isRead = n.notificationId ? !!n.lida : !!readMap[n.id];
+    return !isRead;
+  });
   const unreadCount = unread.length;
 
   /* -----------------------------------------------------------------------
@@ -352,16 +378,53 @@ const Header = ({ toggleSidebar }) => {
     setNotifOpen((v) => !v);
   };
 
-  const markRead = (id, value = true) => {
-    setReadMap((m) => ({ ...m, [id]: value }));
+  const markRead = async (notif, value = true) => {
+    if (notif.notificationId) {
+      try {
+        await api.patch(`/notificacoes/${notif.notificationId}/`, { lida: value });
+        setNotifsApi((prev) =>
+          prev.map((n) =>
+            n.id === notif.notificationId
+              ? { ...n, lida: value }
+              : n
+          )
+        );
+      } catch (error) {
+        console.error(error);
+      }
+      return;
+    }
+
+    setReadMap((m) => ({ ...m, [notif.id]: value }));
   };
 
-  const markAllRead = () => {
-    const all = {};
-    unread.forEach((n) => {
-      all[n.id] = true;
-    });
-    setReadMap((m) => ({ ...m, ...all }));
+  const markAllRead = async () => {
+    const serverTargets = unread.filter((n) => n.notificationId);
+    const localTargets = unread.filter((n) => !n.notificationId);
+
+    if (serverTargets.length > 0) {
+      try {
+        await Promise.all(
+          serverTargets.map((n) =>
+            api.patch(`/notificacoes/${n.notificationId}/`, { lida: true })
+          )
+        );
+        const ids = new Set(serverTargets.map((n) => n.notificationId));
+        setNotifsApi((prev) =>
+          prev.map((n) => (ids.has(n.id) ? { ...n, lida: true } : n))
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (localTargets.length > 0) {
+      const all = {};
+      localTargets.forEach((n) => {
+        all[n.id] = true;
+      });
+      setReadMap((m) => ({ ...m, ...all }));
+    }
   };
 
   /* -----------------------------------------------------------------------
@@ -592,7 +655,7 @@ const Header = ({ toggleSidebar }) => {
                                       <Link
                                         to={n.href}
                                         onClick={() => {
-                                          markRead(n.id);
+                                          markRead(n);
                                           setNotifOpen(false);
                                         }}
                                         className="
@@ -605,7 +668,7 @@ const Header = ({ toggleSidebar }) => {
                                       </Link>
                                     )}
                                     <button
-                                      onClick={() => markRead(n.id)}
+                                      onClick={() => markRead(n)}
                                       className="
                                         text-[11px] font-medium
                                         text-slate-400 hover:text-slate-600

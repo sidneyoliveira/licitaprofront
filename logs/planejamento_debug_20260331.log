@@ -1,0 +1,14 @@
+2026-03-31 00:42:24 | Planejamento | INFO     | logger.py:105 | Logging iniciado para Planejamento
+2026-03-31 00:42:26 | Planejamento | INFO     | logger.py:105 | Logging iniciado para Planejamento
+2026-03-31 00:42:26 | Planejamento | DEBUG    | app_launcher.py:34 | Diretório verificado: D:\LICITAPRO\licita_pro\frontend\logs
+2026-03-31 00:42:26 | Planejamento | DEBUG    | app_launcher.py:34 | Diretório verificado: D:\LICITAPRO\licita_pro\frontend\output
+2026-03-31 00:42:26 | Planejamento | DEBUG    | app_launcher.py:34 | Diretório verificado: D:\LICITAPRO\licita_pro\frontend\backups
+2026-03-31 00:42:26 | Planejamento | DEBUG    | app_launcher.py:34 | Diretório verificado: D:\LICITAPRO\licita_pro\frontend\cache
+2026-03-31 00:42:26 | Planejamento | INFO     | app_launcher.py:46 | ================================================================================
+2026-03-31 00:42:26 | Planejamento | INFO     | app_launcher.py:47 | Iniciando Planejamento v2.0
+2026-03-31 00:42:26 | Planejamento | INFO     | app_launcher.py:48 | ================================================================================
+2026-03-31 00:42:26 | Planejamento | INFO     | app_launcher.py:55 | [OK] Todas as dependencias verificadas
+2026-03-31 00:42:26 | Planejamento | INFO     | app_launcher.py:63 | Inicializando interface grafica...
+2026-03-31 00:42:26 | Planejamento.MainWindow | INFO     | main_window.py:59 | Aplicacao iniciada
+2026-03-31 00:42:28 | Planejamento | INFO     | app_launcher.py:65 | Aplicacao iniciada com sucesso
+2026-03-31 00:42:31 | Planejamento | INFO     | app_launcher.py:70 | Aplicacao fechada

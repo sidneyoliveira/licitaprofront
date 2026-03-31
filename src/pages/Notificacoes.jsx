@@ -21,6 +21,7 @@ import {
   Building2,
   Home,
   CalendarClock,
+  StickyNote,
 } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -46,6 +47,7 @@ const typeMeta = {
   usuario: { icon: UserPlus, color: "text-green-600", label: "Usuário" },
   entidade: { icon: Building2, color: "text-indigo-600", label: "Entidade" },
   orgao: { icon: Home, color: "text-amber-600", label: "Órgão" },
+  anotacao: { icon: StickyNote, color: "text-amber-600", label: "Anotação" },
   alerta: { icon: AlertTriangle, color: "text-red-600", label: "Alerta" },
   sistema: { icon: Info, color: "text-slate-600", label: "Sistema" },
 };
@@ -123,6 +125,7 @@ export default function Notificacoes() {
   const [usuarios, setUsuarios] = useState([]);
   const [entidades, setEntidades] = useState([]);
   const [orgaos, setOrgaos] = useState([]);
+  const [notifsApi, setNotifsApi] = useState([]);
 
   // Notificações agregadas
   const [notifs, setNotifs] = useState([]);
@@ -169,17 +172,19 @@ export default function Notificacoes() {
   const fetchAll = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [procs, users, ents, orgs] = await Promise.all([
+      const [procs, users, ents, orgs, notifRows] = await Promise.all([
         fetchArray("/processos/", { ordering: "-updated_at" }),
         fetchArray("/usuarios/", { ordering: "-date_joined" }),
         fetchArray("/entidades/", { ordering: "-id" }),
         fetchArray("/orgaos/", { ordering: "-id" }),
+        fetchArray("/notificacoes/", { ordering: "-criado_em" }),
       ]);
 
       setProcessos(procs);
       setUsuarios(users);
       setEntidades(ents);
       setOrgaos(orgs);
+  setNotifsApi(notifRows);
     } catch (e) {
       showToast("Não foi possível carregar as notificações.", "error");
     } finally {
@@ -311,7 +316,25 @@ export default function Notificacoes() {
     });
 
     setNotifs(sorted);
-  }, [processos, usuarios, entidades, orgaos]);
+    // Notificações de anotações (backend)
+    notifsApi.forEach((n) => {
+      const tipoAcao = n.tipo_acao || "update";
+      const severity = tipoAcao === "delete" ? "warning" : tipoAcao === "check" ? "success" : "info";
+      const href = n.processo ? `/processos/visualizar/${n.processo}` : "/perfil";
+      list.push({
+        id: `note-${n.id}`,
+        notificationId: n.id,
+        tipo: "anotacao",
+        titulo: n.titulo || "Atualização de anotação",
+        mensagem: n.mensagem || "Você recebeu uma atualização de anotação.",
+        data: n.criado_em || new Date().toISOString(),
+        severity,
+        href,
+        lida: !!n.lida,
+      });
+    });
+
+  }, [processos, usuarios, entidades, orgaos, notifsApi]);
 
   useEffect(() => {
     localStorage.setItem("notifications_read_map", JSON.stringify(readMap));
@@ -347,7 +370,7 @@ export default function Notificacoes() {
 
       const matchType = typeFilter ? n.tipo === typeFilter : true;
 
-      const isRead = !!readMap[n.id];
+      const isRead = n.notificationId ? !!n.lida : !!readMap[n.id];
       const matchStatus =
         statusFilter === "lida" ? isRead : statusFilter === "nao_lida" ? !isRead : true;
 
@@ -405,16 +428,57 @@ export default function Notificacoes() {
     });
   };
 
-  const markRead = (id, value = true) => {
-    setReadMap((m) => ({ ...m, [id]: value }));
+  const markRead = async (notif, value = true) => {
+    if (notif.notificationId) {
+      try {
+        await api.patch(`/notificacoes/${notif.notificationId}/`, { lida: value });
+        setNotifsApi((prev) =>
+          prev.map((n) =>
+            n.id === notif.notificationId
+              ? { ...n, lida: value }
+              : n
+          )
+        );
+      } catch (error) {
+        console.error(error);
+        showToast("Erro ao atualizar status da notificação.", "error");
+      }
+      return;
+    }
+
+    // fallback para notificações agregadas localmente
+    setReadMap((m) => ({ ...m, [notif.id]: value }));
   };
 
-  const markAllRead = () => {
-    const all = {};
-    filtered.forEach((n) => {
-      all[n.id] = true;
-    });
-    setReadMap((m) => ({ ...m, ...all }));
+  const markAllRead = async () => {
+    const serverTargets = filtered.filter((n) => n.notificationId && !n.lida);
+    const localTargets = filtered.filter((n) => !n.notificationId);
+
+    if (serverTargets.length > 0) {
+      try {
+        await Promise.all(
+          serverTargets.map((n) =>
+            api.patch(`/notificacoes/${n.notificationId}/`, { lida: true })
+          )
+        );
+
+        const ids = new Set(serverTargets.map((n) => n.notificationId));
+        setNotifsApi((prev) =>
+          prev.map((n) => (ids.has(n.id) ? { ...n, lida: true } : n))
+        );
+      } catch (error) {
+        console.error(error);
+        showToast("Erro ao marcar notificações como lidas.", "error");
+      }
+    }
+
+    if (localTargets.length > 0) {
+      const all = {};
+      localTargets.forEach((n) => {
+        all[n.id] = true;
+      });
+      setReadMap((m) => ({ ...m, ...all }));
+    }
   };
 
   const clearFilters = () => {
@@ -643,7 +707,7 @@ export default function Notificacoes() {
                 const meta = typeMeta[n.tipo] || typeMeta.sistema;
                 const Icon = meta.icon;
                 const tone = badgeTone[n.severity] || badgeTone.info;
-                const isRead = !!readMap[n.id];
+                const isRead = n.notificationId ? !!n.lida : !!readMap[n.id];
 
                 return (
                   <li key={n.id}>
@@ -708,7 +772,7 @@ export default function Notificacoes() {
                           </Link>
                         ) : null}
                         <button
-                          onClick={() => markRead(n.id, !isRead)}
+                          onClick={() => markRead(n, !isRead)}
                           className={`px-2 py-1 rounded-md border text-xs ${
                             isRead
                               ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
