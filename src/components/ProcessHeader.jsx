@@ -13,6 +13,8 @@ import {
   AlertCircle,
   Globe,
   UploadCloud,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import {
   MODALIDADES,
@@ -28,6 +30,8 @@ import {
 
 // Importa o Modal PNCP (Certifique-se de que o caminho está correto)
 import ModalEnvioPNCP from './ModalEnvioPNCP'; 
+import useAxios from '../hooks/useAxios';
+import { useToast } from '../context/ToastContext';
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. UTILS & HELPERS                                                        */
@@ -181,6 +185,29 @@ export default function ProcessHeader({
 }) {
   // Estado local para controlar o Modal PNCP
   const [isPncpModalOpen, setIsPncpModalOpen] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
+
+  const api = useAxios();
+  const { showToast } = useToast();
+
+  const handleSyncPncp = async () => {
+    const id = processoId || formData?.id;
+    if (!id) return;
+    setSyncLoading(true);
+    try {
+      const { data } = await api.post(`/processos/${id}/sincronizar-pncp/`);
+      showToast(data?.detail || 'Resultados sincronizados com sucesso!', 'success');
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      const msg =
+        error?.response?.data?.detail ||
+        error?.message ||
+        'Erro ao sincronizar resultados com o PNCP.';
+      showToast(msg, 'error');
+    } finally {
+      setSyncLoading(false);
+    }
+  };
 
   // --- PREPARAÇÃO DE DADOS ---
   
@@ -283,6 +310,17 @@ export default function ProcessHeader({
             >
                 <Globe size={16} />
                 <span>PNCP</span>
+            </button>
+
+            {/* Botão Sincronizar Resultados PNCP */}
+            <button
+                onClick={handleSyncPncp}
+                disabled={syncLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-900/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Sincronizar resultados dos itens (fornecedores) com o PNCP"
+            >
+                {syncLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                <span>{syncLoading ? 'Sincronizando...' : 'Sincronizar'}</span>
             </button>
 
             
