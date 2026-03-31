@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 import UsuarioEditModal from "../components/UsuarioEditModal";
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -234,6 +235,8 @@ const AttachFileModal = ({ open, onClose, onUpload }) => {
 const Perfil = () => {
   const api = useAxios();
   const { showToast } = useToast();
+  const { user: authUser } = useAuth();
+  const isAdmin = authUser?.is_staff || authUser?.is_superuser;
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -413,21 +416,27 @@ const Perfil = () => {
                         <span className="truncate">{user.email}</span>
                     </p>
                     
-                    {/* Entidade vinculada */}
-                    {user.entidade_nome && (
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1.5">
-                        <Building2 size={13} className="text-slate-400" />
-                        {user.entidade_nome}
-                      </p>
+                    {/* Entidades vinculadas */}
+                    {user.entidades_nomes && user.entidades_nomes.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                        <Building2 size={13} className="text-slate-400 flex-shrink-0" />
+                        {user.entidades_nomes.map((ent, idx) => (
+                          <span key={ent.id} className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                            {ent.nome}{idx < user.entidades_nomes.length - 1 ? "," : ""}
+                          </span>
+                        ))}
+                      </div>
                     )}
                     
                     {/* Badges */}
                     <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
+                        {isAdmin && (
                         <InfoBadge
                             label={user.is_active ? "Conta Ativa" : "Conta Inativa"}
                             active={user.is_active}
                             icon={user.is_active ? CheckCircle : Shield}
                         />
+                        )}
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-dark-bg-primary text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             <Clock size={14} className="text-slate-400" />
                             Membro desde {new Date(user.date_joined).getFullYear()}
@@ -470,6 +479,7 @@ const Perfil = () => {
                       <Label>Data de Nascimento</Label>
                       <ReadOnlyInput icon={Calendar} value={user.data_nascimento ? new Date(user.data_nascimento).toLocaleDateString('pt-BR') : null} />
                    </div>
+                   {isAdmin && (
                    <div>
                       <Label>Nível de Acesso</Label>
                       <div className="h-[46px] flex items-center px-4 bg-slate-50 dark:bg-dark-bg-primary border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -477,6 +487,7 @@ const Perfil = () => {
                           {user.is_superuser ? "Administrador Total" : user.is_staff ? "Membro da Equipe" : "Usuário Padrão"}
                       </div>
                    </div>
+                   )}
                 </div>
              </div>
 

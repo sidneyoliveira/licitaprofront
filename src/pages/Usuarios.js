@@ -505,9 +505,9 @@ export default function Usuarios() {
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           @{u.username}
                         </div>
-                        {u.entidade_nome && (
+                        {u.entidades_nomes && u.entidades_nomes.length > 0 && (
                           <div className="text-[10px] font-medium text-blue-600 dark:text-blue-400 mt-0.5">
-                            {u.entidade_nome}
+                            {u.entidades_nomes.map(e => e.nome).join(", ")}
                           </div>
                         )}
                       </td>

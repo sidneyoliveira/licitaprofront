@@ -17,10 +17,14 @@ import {
   Calendar,
   CreditCard,
   Building2,
+  Check,
+  ChevronDown,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 🎨 UI COMPONENTS INTERNOS                                                  */
@@ -99,6 +103,8 @@ const formatPhone = (v = "") => {
 export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
   const api = useAxios();
   const { showToast } = useToast();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.is_staff || currentUser?.is_superuser;
   const isEdit = Boolean(user?.id);
   const fileRef = useRef(null);
 
@@ -108,17 +114,31 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
   const [loadingData, setLoadingData] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [entidades, setEntidades] = useState([]);
+  const [entidadeSearch, setEntidadeSearch] = useState("");
+  const [entidadeDropdownOpen, setEntidadeDropdownOpen] = useState(false);
+  const entidadeDropdownRef = useRef(null);
 
   // -- Form State --
   const [form, setForm] = useState({
     username: "", first_name: "", last_name: "", email: "", cpf: "",
     data_nascimento: "", phone: "", is_active: true, is_staff: false,
-    password: "", confirm_password: "", entidade: "",
+    password: "", confirm_password: "", entidades: [],
   });
 
   const [errors, setErrors] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (entidadeDropdownRef.current && !entidadeDropdownRef.current.contains(e.target)) {
+        setEntidadeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // -- Effects --
   useEffect(() => {
@@ -127,14 +147,16 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
     setForm({
       username: "", first_name: "", last_name: "", email: "", cpf: "",
       data_nascimento: "", phone: "", is_active: true, is_staff: false,
-      password: "", confirm_password: "", entidade: "",
+      password: "", confirm_password: "", entidades: [],
     });
     setErrors({});
     setSelectedFile(null);
     setPreview(null);
     setActiveTab("geral");
+    setEntidadeSearch("");
+    setEntidadeDropdownOpen(false);
 
-    fetchEntidades();
+    if (isAdmin) fetchEntidades();
     if (isEdit) fetchDetails();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);
@@ -151,7 +173,8 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
   const fetchDetails = async () => {
     setLoadingData(true);
     try {
-      const { data } = await api.get(`/usuarios/${user.id}/`);
+      const detailsUrl = isAdmin ? `/usuarios/${user.id}/` : "/me/";
+      const { data } = await api.get(detailsUrl);
       setForm((prev) => ({
         ...prev,
         username: data.username || "",
@@ -163,7 +186,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
         phone: data.phone || "",
         is_active: data.is_active ?? true,
         is_staff: data.is_staff ?? false,
-        entidade: data.entidade || "",
+        entidades: data.entidades || [],
       }));
       setPreview(data.profile_image);
     } catch (e) {
@@ -227,17 +250,33 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
     try {
       const formData = new FormData();
       
-      const fields = ["username", "first_name", "last_name", "email", "cpf", "data_nascimento", "phone", "is_active", "is_staff", "entidade"];
+      const fields = ["username", "first_name", "last_name", "email", "cpf", "data_nascimento", "phone"];
       fields.forEach(f => {
         const val = form[f];
         formData.append(f, val === null || val === undefined ? "" : val);
       });
 
+      // Campos administrativos: só envia se for admin
+      if (isAdmin) {
+        formData.append("is_active", form.is_active);
+        formData.append("is_staff", form.is_staff);
+        // Entidades M2M - enviar cada ID separadamente
+        if (form.entidades && form.entidades.length > 0) {
+          form.entidades.forEach(id => formData.append("entidades", id));
+        } else {
+          formData.append("entidades", ""); // Limpar entidades
+        }
+      }
+
       if (form.password) formData.append("password", form.password);
       if (selectedFile) formData.append("profile_image", selectedFile);
 
-      const url = isEdit ? `/usuarios/${user.id}/` : `/usuarios/`;
-      const method = isEdit ? api.patch : api.post;
+      const url = isAdmin
+        ? (isEdit ? `/usuarios/${user.id}/` : `/usuarios/`)
+        : "/me/";
+      const method = isAdmin
+        ? (isEdit ? api.patch : api.post)
+        : api.patch;
 
       await method(url, formData, { headers: { "Content-Type": "multipart/form-data" } });
 
@@ -331,7 +370,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                   {[
                     { id: "geral", label: "Dados Pessoais", icon: User },
                     { id: "seguranca", label: "Segurança e Login", icon: Lock },
-                    { id: "permissoes", label: "Permissões", icon: Shield },
+                    ...(isAdmin ? [{ id: "permissoes", label: "Permissões", icon: Shield }] : []),
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -454,8 +493,8 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                       </motion.div>
                     )}
 
-                    {/* PERMISSÕES */}
-                    {activeTab === "permissoes" && (
+                    {/* PERMISSÕES (Admin Only) */}
+                    {activeTab === "permissoes" && isAdmin && (
                       <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
                         <div className="flex items-center gap-2 mb-6 pb-2 border-b border-slate-200 dark:border-slate-700">
                           <Shield className="w-5 h-5 text-accent-blue" />
@@ -463,23 +502,121 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                         </div>
 
                         <div className="space-y-4">
-                          {/* Entidade vinculada */}
+                          {/* Entidades vinculadas - Multi-select */}
                           <div className="p-4 bg-slate-50 dark:bg-dark-bg-primary rounded-xl border border-slate-200 dark:border-slate-700">
-                            <Label>Entidade Vinculada</Label>
-                            <p className="text-xs text-slate-500 mb-2">Define quais dados este usuário pode acessar.</p>
-                            <select
-                              name="entidade"
-                              value={form.entidade || ""}
-                              onChange={handleChange}
-                              className="w-full bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-white rounded-xl border border-gray-200 dark:border-dark-border px-3 py-2.5 text-sm transition-all outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/10"
-                            >
-                              <option value="">— Sem entidade (acesso global) —</option>
-                              {entidades.map((ent) => (
-                                <option key={ent.id} value={ent.id}>
-                                  {ent.nome} {ent.cnpj ? `(${ent.cnpj})` : ""}
-                                </option>
-                              ))}
-                            </select>
+                            <Label>Entidades Vinculadas</Label>
+                            <p className="text-xs text-slate-500 mb-3">Define quais dados este usuário pode acessar. Sem entidade = sem acesso a dados.</p>
+                            
+                            {/* Tags das entidades selecionadas */}
+                            {form.entidades.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-3">
+                                {form.entidades.map((entId) => {
+                                  const ent = entidades.find(e => e.id === entId);
+                                  return ent ? (
+                                    <span key={entId} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-lg border border-blue-200 dark:border-blue-800">
+                                      <Building2 className="w-3 h-3" />
+                                      {ent.nome}
+                                      <button
+                                        type="button"
+                                        onClick={() => setForm(prev => ({ ...prev, entidades: prev.entidades.filter(id => id !== entId) }))}
+                                        className="ml-1 text-blue-400 hover:text-red-500 transition-colors"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </span>
+                                  ) : null;
+                                })}
+                              </div>
+                            )}
+
+                            {/* Dropdown de seleção */}
+                            <div className="relative" ref={entidadeDropdownRef}>
+                              <div
+                                onClick={() => setEntidadeDropdownOpen(!entidadeDropdownOpen)}
+                                className="w-full bg-white dark:bg-dark-bg-secondary text-gray-900 dark:text-white rounded-xl border border-gray-200 dark:border-dark-border px-3 py-2.5 text-sm cursor-pointer flex items-center justify-between transition-all hover:border-gray-300 dark:hover:border-gray-600"
+                              >
+                                <span className="text-slate-400">
+                                  {form.entidades.length === 0 
+                                    ? "Selecione entidades..." 
+                                    : `${form.entidades.length} entidade(s) selecionada(s)`}
+                                </span>
+                                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${entidadeDropdownOpen ? 'rotate-180' : ''}`} />
+                              </div>
+
+                              <AnimatePresence>
+                                {entidadeDropdownOpen && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -5 }}
+                                    className="absolute z-50 mt-1 w-full bg-white dark:bg-dark-bg-secondary rounded-xl border border-gray-200 dark:border-dark-border shadow-lg overflow-hidden"
+                                  >
+                                    {/* Barra de busca */}
+                                    <div className="p-2 border-b border-gray-100 dark:border-dark-border">
+                                      <div className="relative">
+                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input
+                                          type="text"
+                                          value={entidadeSearch}
+                                          onChange={(e) => setEntidadeSearch(e.target.value)}
+                                          placeholder="Buscar entidade..."
+                                          className="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-dark-bg-primary border border-gray-200 dark:border-dark-border rounded-lg outline-none focus:border-accent-blue"
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Lista de entidades */}
+                                    <div className="max-h-48 overflow-y-auto">
+                                      {entidades
+                                        .filter(ent => ent.nome.toLowerCase().includes(entidadeSearch.toLowerCase()))
+                                        .map((ent) => {
+                                          const isSelected = form.entidades.includes(ent.id);
+                                          return (
+                                            <button
+                                              key={ent.id}
+                                              type="button"
+                                              onClick={() => {
+                                                setForm(prev => ({
+                                                  ...prev,
+                                                  entidades: isSelected
+                                                    ? prev.entidades.filter(id => id !== ent.id)
+                                                    : [...prev.entidades, ent.id],
+                                                }));
+                                              }}
+                                              className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors text-left ${
+                                                isSelected 
+                                                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                                                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                              }`}
+                                            >
+                                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                                                isSelected 
+                                                  ? 'bg-accent-blue border-accent-blue text-white' 
+                                                  : 'border-gray-300 dark:border-gray-600'
+                                              }`}>
+                                                {isSelected && <Check className="w-3 h-3" />}
+                                              </div>
+                                              <span className="truncate">{ent.nome}</span>
+                                              {ent.cnpj && <span className="text-xs text-slate-400 ml-auto flex-shrink-0">({ent.cnpj})</span>}
+                                            </button>
+                                          );
+                                        })}
+                                      {entidades.filter(ent => ent.nome.toLowerCase().includes(entidadeSearch.toLowerCase())).length === 0 && (
+                                        <p className="text-center text-sm text-slate-400 py-4">Nenhuma entidade encontrada</p>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+
+                            {form.entidades.length === 0 && (
+                              <div className="flex items-start gap-2 mt-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg text-xs text-amber-700 dark:text-amber-400">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <span>Sem entidade vinculada, o usuário <strong>não terá acesso a nenhum dado</strong> do sistema.</span>
+                              </div>
+                            )}
                           </div>
 
                           <Switch 
