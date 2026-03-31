@@ -473,7 +473,7 @@ const Header = ({ toggleSidebar }) => {
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.1 }}
                   className="
-                    absolute right-0 mt-3 w-80 md:w-96
+                    absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 md:w-96
                     bg-white dark:bg-dark-bg-secondary
                     border border-slate-200 dark:border-slate-700
                     rounded-xl shadow-lg
@@ -482,7 +482,7 @@ const Header = ({ toggleSidebar }) => {
                   "
                 >
                   {/* Cabeçalho notificações */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary">
+                  <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-slate-700 dark:text-slate-100">
                         Notificações

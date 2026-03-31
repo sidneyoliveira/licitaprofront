@@ -42,7 +42,7 @@ const ModalPublicacao = ({ processo, closeModal, onPublished }) => {
 
     return (
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
-            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary p-6 rounded-xl w-full max-w-md relative">
+            <div className="bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl w-full max-w-md relative">
                 <button onClick={closeModal} className="absolute top-4 right-4"><XMarkIcon className="w-6 h-6" /></button>
                 <h2 className="text-xl font-bold mb-4">Dados da Publicação</h2>
                 <p className="text-sm mb-4 text-light-text-secondary dark:text-dark-text-secondary">

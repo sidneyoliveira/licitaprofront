@@ -28,7 +28,7 @@ const Layout = () => {
   }, [location.pathname, isMobile]);
 
   return (
-    <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex">
+    <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary text-light-text-primary dark:text-dark-text-primary flex overflow-x-hidden">
       <AnimatePresence>
         {(sidebarOpen || !isMobile) && (
           <>
@@ -52,7 +52,7 @@ const Layout = () => {
       </AnimatePresence>
 
       <div
-        className={`flex-1 flex flex-col relative ${
+        className={`flex-1 flex flex-col relative min-w-0 ${
           !isMobile ? (sidebarOpen ? 'lg:ml-64' : 'lg:ml-20') : ''
         }`}
       >
@@ -60,7 +60,7 @@ const Layout = () => {
 
         <main
           key={location.pathname}
-          className="p-2 md:p-4"
+          className="p-2 sm:p-3 md:p-4 overflow-x-hidden"
         >
           <Outlet />
         </main>

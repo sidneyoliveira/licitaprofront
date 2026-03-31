@@ -5,7 +5,7 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 const ConfirmDeleteModal = ({ onConfirm, onCancel, message }) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-md">
+      <div className="bg-white dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-md">
         <div className="flex items-start gap-4">
           <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50 sm:mx-0 sm:h-10 sm:w-10">
             <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />

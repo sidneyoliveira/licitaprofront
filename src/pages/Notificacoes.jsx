@@ -516,7 +516,7 @@ export default function Notificacoes() {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2">
                   {/* Tipo */}
                   <select
                     className={`${inputCampo}`}

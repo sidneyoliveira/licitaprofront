@@ -166,7 +166,7 @@ export const EntidadeOrgaoModal = ({
         className="bg-white dark:bg-dark-bg-secondary rounded-xl shadow-lg w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700"
       >
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary">
             <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-accent-blue/10 dark:bg-accent-blue/20 text-accent-blue dark:text-blue-400 flex items-center justify-center">
                     <Icon size={20} strokeWidth={2.5} />
@@ -192,7 +192,7 @@ export const EntidadeOrgaoModal = ({
         </div>
 
         {/* Corpo do Formulário */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
             
             {isEntidade ? (
                 /* --- CAMPOS DE ENTIDADE --- */

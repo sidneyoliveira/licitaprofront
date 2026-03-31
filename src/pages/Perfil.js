@@ -363,7 +363,7 @@ const Perfil = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 space-y-4">
         
         {/* MODAIS */}
         <UsuarioEditModal
@@ -455,9 +455,9 @@ const Perfil = () => {
           <div className="lg:col-span-2 space-y-4">
              
              {/* Card Dados Pessoais */}
-             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+             <div className="bg-white dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                 <SectionHeader title="Dados Pessoais" icon={User} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                    <div>
                       <Label>Nome Completo</Label>
                       <ReadOnlyInput icon={User} value={`${user.first_name} ${user.last_name}`} />
@@ -481,9 +481,9 @@ const Perfil = () => {
              </div>
 
              {/* Card Contato */}
-             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+             <div className="bg-white dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                 <SectionHeader title="Informações de Contato" icon={Phone} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                    <div>
                       <Label>E-mail Principal</Label>
                       <ReadOnlyInput icon={Mail} value={user.email} />
@@ -496,7 +496,7 @@ const Perfil = () => {
              </div>
 
              {/* Card Documentos */}
-             <div className="bg-white dark:bg-dark-bg-secondary p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+             <div className="bg-white dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                 <SectionHeader 
                     title="Documentos" 
                     icon={FileText} 
@@ -561,7 +561,7 @@ const Perfil = () => {
           <div className="lg:col-span-1 space-y-8">
              
              {/* Bloco de Notas */}
-             <div className="bg-amber-50 dark:bg-dark-bg-secondary p-6 rounded-xl border border-amber-100 dark:border-slate-700 h-[500px] flex flex-col relative overflow-hidden">
+             <div className="bg-amber-50 dark:bg-dark-bg-secondary p-4 sm:p-6 rounded-xl border border-amber-100 dark:border-slate-700 h-auto lg:h-[500px] flex flex-col relative overflow-hidden">
 
                 <div className="flex items-center justify-between mb-6 relative z-10 ">
                     <div className="flex items-center gap-2 text-amber-700 dark:text-amber-500">

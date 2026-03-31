@@ -252,7 +252,7 @@ const Inicio = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="ui-card flex flex-col md:flex-row md:items-center justify-between px-6 py-6 gap-4"
+          className="ui-card flex flex-col md:flex-row md:items-center justify-between px-4 sm:px-6 py-5 sm:py-6 gap-4"
         >
           <div className="flex items-center gap-5">
             <img
@@ -281,7 +281,7 @@ const Inicio = () => {
           {isLoading ? (
             <DashboardSkeleton />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {kpiData.map((kpi, idx) => (
                 <StatCard
                   key={idx}
@@ -335,7 +335,7 @@ const Inicio = () => {
 
             <div className="ui-card overflow-hidden min-h-[300px]">
               {isLoading ? (
-                <div className="p-6 space-y-6">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
@@ -350,7 +350,7 @@ const Inicio = () => {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-[375px] text-center px-6">
+                <div className="flex flex-col items-center justify-center h-[375px] text-center px-4 sm:px-6">
                   <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                     <FileText
                       size={32}

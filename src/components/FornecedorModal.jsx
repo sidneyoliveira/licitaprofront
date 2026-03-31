@@ -196,7 +196,7 @@ const FornecedorModal = ({
                         className="bg-white dark:bg-dark-bg-secondary w-full max-w-4xl max-h-[90vh] rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg flex flex-col overflow-hidden"
                     >
                         {/* HEADER */}
-                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary flex justify-between items-center">
+                        <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary flex justify-between items-center">
                             <div>
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                                     {isEditing ? 'Editar Fornecedor' : 'Gerenciar Fornecedores'}
@@ -224,7 +224,7 @@ const FornecedorModal = ({
                         </div>
 
                         {/* BODY */}
-                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
                             
                             {/* MODO BUSCA (CATÁLOGO) */}
                             {mode === 'search' && !isEditing && (
@@ -461,7 +461,7 @@ const FornecedorModal = ({
                         </div>
 
                         {/* FOOTER */}
-                        <div className="px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+                        <div className="px-4 sm:px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={onClose}

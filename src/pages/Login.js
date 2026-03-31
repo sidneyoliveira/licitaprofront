@@ -69,11 +69,14 @@ const Login = () => {
             buttonDiv.style.display = "flex";
             buttonDiv.style.justifyContent = "center";
             
+            // Calcula a largura dinamicamente para caber no container
+            const containerWidth = Math.min(buttonDiv.offsetWidth || 350, 400);
+
             window.google.accounts.id.renderButton(buttonDiv, {
               theme: "outline",
               size: "large",
               shape: "pill",
-              width: 400,
+              width: containerWidth,
             });
 
           } catch (error) {
@@ -107,24 +110,24 @@ const Login = () => {
   }, [handleGoogleCallback]);
   
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex flex-col md:flex-row min-h-screen md:h-screen bg-white overflow-x-hidden">
       {/* ==== COLUNA ESQUERDA ==== */}
-      <div className="flex flex-col justify-center mx-10 md:mx-36 px-6 lg:px-16 w-full md:w-[50%] max-w-[600px]">
-        <h1 className="text-3xl font-bold text-accent-blue mb-2">
+      <div className="flex flex-col justify-center px-5 sm:px-8 md:px-12 lg:px-16 py-8 md:py-0 w-full md:w-1/2 max-w-[600px] mx-auto md:mx-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-accent-blue mb-2">
           Acesse sua conta
         </h1>
-        <p className="text-gray-600 mb-8">
+        <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
           Faça login para gerenciar seus processos licitatórios.
         </p>
 
         {/* ====== GOOGLE LOGIN ====== */}
         <div
           id="googleSignInDiv"
-          className="flex justify-center w-full"
+          className="flex justify-center w-full max-w-full"
           style={{ minHeight: "48px" }}
         ></div>
 
-        <div className="my-6 flex items-center gap-2">
+        <div className="my-4 sm:my-6 flex items-center gap-2">
           <span className="flex-grow border-t border-gray-300"></span>
           <span className="text-gray-400 text-sm">ou</span>
           <span className="flex-grow border-t border-gray-300"></span>
@@ -187,7 +190,7 @@ const Login = () => {
 
       {/* ==== COLUNA DIREITA ==== */}
       <div className="hidden md:flex flex-1 items-center justify-center bg-gradient-to-b from-accent-blue to-[#0d3977] text-white">
-        <div className="text-center px-6">
+        <div className="text-center px-6 max-w-md">
           <img
             src={LogoBranco}
             alt="L3 Solutions Logo"

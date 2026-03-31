@@ -126,6 +126,12 @@ textarea,
 
   .ui-tab-list {
     @apply flex items-center gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary px-3;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ui-tab-list::-webkit-scrollbar {
+    display: none;
   }
 
   .ui-tab-btn {
@@ -160,16 +166,18 @@ textarea,
 
 
 /* Estilo do botão invisível do Google personalizado */
-#googleSignInButton div[role="button"] {
-  font-family: 'Rubik', sans-serif !important; /* ✅ Fonte Rubik */
+#googleSignInButton div[role="button"],
+#googleSignInDiv div[role="button"] {
+  font-family: 'Rubik', sans-serif !important;
   font-weight: 500 !important;
   font-size: 15px !important;
   height: 48px !important;
   border-radius: 12px !important;
   width: 100% !important;
-  background: #f9fafb !important; /* bg-gray-50 */
-  color: #4b5563 !important; /* text-gray-700 */
-  border: 1px solid #d1d5db !important; /* border-gray-300 */
+  max-width: 100% !important;
+  background: #f9fafb !important;
+  color: #4b5563 !important;
+  border: 1px solid #d1d5db !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
   display: flex !important;
   align-items: center !important;
@@ -177,13 +185,40 @@ textarea,
 }
 
 /* Hover state */
-#googleSignInButton div[role="button"]:hover {
-  background: #f3f4f6 !important; /* hover:bg-gray-100 */
+#googleSignInButton div[role="button"]:hover,
+#googleSignInDiv div[role="button"]:hover {
+  background: #f3f4f6 !important;
   cursor: pointer !important;
 }
 
-#googleSignInButton img {
+#googleSignInButton img,
+#googleSignInDiv img {
   width: 22px !important;
   height: 22px !important;
   margin-right: 10px !important;
+}
+
+/* Impede overflow horizontal em iPhones */
+#googleSignInDiv iframe {
+  max-width: 100% !important;
+}
+
+/* ── Responsividade global para dispositivos móveis ── */
+html, body, #root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Esconde scrollbar nos tab lists em mobile */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tabelas: garante scroll horizontal sem quebrar layout */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }

@@ -1204,7 +1204,7 @@ export default function PageProcess() {
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl w-full px-2 md:px-4 lg:px-0 py-4 space-y-6">
+      <div className="max-w-7xl w-full px-2 sm:px-3 md:px-4 lg:px-0 py-4 space-y-4 sm:space-y-6">
         {!isEditing && (
           <ProcessHeader
             formData={formData}
@@ -1216,9 +1216,9 @@ export default function PageProcess() {
         )}
 
         {isEditing && (
-          <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-slate-100 dark:border-slate-800 pb-4 gap-3">
+              <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <LayoutDashboard className="text-accent-blue" />
                 {isNewProcess ? 'Novo Processo' : 'Editar Dados Gerais'}
               </h2>
@@ -1238,8 +1238,8 @@ export default function PageProcess() {
         )}
 
         {processoId && !isEditing && (
-          <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[480px]">
-            <div className="ui-tab-list" role="tablist" aria-label="Abas do processo">
+          <div className="bg-white dark:bg-dark-bg-secondary rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden min-h-[480px]">
+            <div className="ui-tab-list overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch" role="tablist" aria-label="Abas do processo">
               <TabButton
                 id="itens"
                 label="Itens do Processo"
@@ -1282,7 +1282,7 @@ export default function PageProcess() {
 
             </div>
 
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-900/20 min-h-[380px]">
+            <div className="p-3 sm:p-4 md:p-6 bg-slate-50/50 dark:bg-slate-900/20 min-h-[380px]">
               <div>
                   {activeTab === 'itens' && (
                     <ItemsSection

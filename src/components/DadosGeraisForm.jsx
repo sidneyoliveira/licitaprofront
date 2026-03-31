@@ -149,7 +149,7 @@ export default function DadosGeraisForm({
   }, [entidadeSel, orgaosList]);
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-4 sm:space-y-6">
       
       {/* LINHA 1: Objeto e Dados Cadastrais Básicos */}
       <div className="grid lg:grid-cols-2 gap-4">
@@ -163,7 +163,7 @@ export default function DadosGeraisForm({
             required
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={LABEL_STYLE}>Nº do Processo *</label>
             <input
@@ -208,7 +208,7 @@ export default function DadosGeraisForm({
       </div>
 
       {/* LINHA 2: Modalidade, Amparo, Classificação, SRP */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {/* Modalidade */}
         <div>
           <label className={LABEL_STYLE}>Modalidade (PNCP) *</label>
@@ -283,7 +283,7 @@ export default function DadosGeraisForm({
       </div>
 
       {/* LINHA 3: Organização, Disputa, Critério, Instrumento */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {/* Organização */}
         <div>
             <label className={LABEL_STYLE}>Organização *</label>
@@ -354,7 +354,7 @@ export default function DadosGeraisForm({
       </div>
 
       {/* LINHA 4: Entidade, Órgão, Valor, Vigência, Situação */}
-      <div className="grid md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Entidade */}
         <div>
           <label className={LABEL_STYLE}>Entidade *</label>

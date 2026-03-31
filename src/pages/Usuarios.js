@@ -366,7 +366,7 @@ export default function Usuarios() {
               className="overflow-hidden"
             >
               <div className="pt-4 mt-2 border-t border-gray-100 dark:border-dark-border">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   {[
                     { key: "nome", label: "Nome" },
                     { key: "email", label: "E-mail" },
@@ -408,7 +408,7 @@ export default function Usuarios() {
       {/* Tabela de Dados */}
       <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {isLoading ? (
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <TableSkeleton />
           </div>
         ) : processedData.length === 0 ? (
@@ -564,7 +564,7 @@ export default function Usuarios() {
             </div>
 
             {/* Paginação */}
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
               <span className="text-sm text-slate-500 dark:text-slate-400">
                 Mostrando{" "}
                 <strong>

@@ -105,7 +105,7 @@ const CompleteProfile = () => {
         className="w-full max-w-lg bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
       >
         {/* Cabeçalho Visual */}
-  <div className="bg-accent-blue p-8 text-center relative overflow-hidden">
+  <div className="bg-accent-blue p-5 sm:p-8 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-8 -mb-8 blur-2xl"></div>
             
@@ -123,10 +123,10 @@ const CompleteProfile = () => {
         </div>
 
         {/* Formulário */}
-        <div className="p-8">
+        <div className="p-5 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1">
                     <Label htmlFor="first_name">Nome</Label>
                     <InputField

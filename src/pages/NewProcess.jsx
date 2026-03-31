@@ -885,7 +885,7 @@ export default function NewProcess() {
         {/* CONTEÚDO PRINCIPAL */}
         <section className="bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 px-4 md:px-5 pt-3 pb-5 shadow-sm">
           {/* TABS */}
-          <nav className="flex gap-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 rounded-t-2xl px-2">
+          <nav className="flex gap-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 rounded-t-2xl px-2 overflow-x-auto scrollbar-none">
             <TabButton
               label="Visão Geral"
               isActive={activeTab === "dadosGerais"}

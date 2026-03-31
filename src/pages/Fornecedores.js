@@ -341,7 +341,7 @@ export default function Fornecedores() {
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-2">
                     <button
                       type="button"
                       onClick={() => toggleSort("razao_social")}
@@ -450,7 +450,7 @@ export default function Fornecedores() {
                         </div>
                       </th>
                       <th
-                        className="p-4 cursor-pointer hover:text-accent-blue transition-colors"
+                        className="p-4 hidden md:table-cell cursor-pointer hover:text-accent-blue transition-colors"
                         onClick={() => toggleSort("email")}
                       >
                         <div className="flex items-center gap-1">
@@ -459,7 +459,7 @@ export default function Fornecedores() {
                         </div>
                       </th>
                       <th
-                        className="p-4 cursor-pointer hover:text-accent-blue transition-colors"
+                        className="p-4 hidden lg:table-cell cursor-pointer hover:text-accent-blue transition-colors"
                         onClick={() => toggleSort("municipio")}
                       >
                         <div className="flex items-center gap-1">
@@ -468,7 +468,7 @@ export default function Fornecedores() {
                         </div>
                       </th>
                       <th
-                        className="p-4 cursor-pointer hover:text-accent-blue transition-colors"
+                        className="p-4 hidden lg:table-cell cursor-pointer hover:text-accent-blue transition-colors"
                         onClick={() => toggleSort("uf")}
                       >
                         <div className="flex items-center gap-1">
@@ -496,7 +496,7 @@ export default function Fornecedores() {
                           )}
                         </td>
                         <td className="p-4 text-sm">{maskCNPJ(f?.cnpj)}</td>
-                        <td className="p-4 text-sm">
+                        <td className="p-4 text-sm hidden md:table-cell">
                           <div className="flex flex-col gap-1">
                             <span className="text-slate-800 dark:text-dark-text-primary">
                               {safe(f?.email)}
@@ -508,8 +508,8 @@ export default function Fornecedores() {
                             )}
                           </div>
                         </td>
-                        <td className="p-4 text-sm">{safe(f?.municipio)}</td>
-                        <td className="p-4 text-sm">{safe(f?.uf)}</td>
+                        <td className="p-4 text-sm hidden lg:table-cell">{safe(f?.municipio)}</td>
+                        <td className="p-4 text-sm hidden lg:table-cell">{safe(f?.uf)}</td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-1">
                             {/* EDITAR */}

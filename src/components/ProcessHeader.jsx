@@ -238,10 +238,10 @@ export default function ProcessHeader({
         <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6 overflow-hidden transition-all hover:shadow-md">
         
         {/* --- CABEÇALHO (TOPO) --- */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/80 dark:bg-slate-800/40">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/80 dark:bg-slate-800/40">
             
             {/* Identificação da Entidade */}
-            <div className="flex flex-col md:flex-row md:items-center gap-3 md:flex-1 min-w-0">
+            <div className="flex flex-wrap md:flex-row md:items-center gap-2 md:gap-3 md:flex-1 min-w-0">
             {entidadeNomeFinal && (
                 <Ellipsize
                 as="span"
@@ -263,7 +263,7 @@ export default function ProcessHeader({
             </div>
 
             {/* Botões de Ação */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
             {/* Botão Importar (Opcional) */}
             {onImport && (
                 <button
@@ -299,14 +299,14 @@ export default function ProcessHeader({
         </div>
 
         {/* --- CORPO (DETALHES) --- */}
-        <div className="px-6 py-5 space-y-6">
+        <div className="px-4 sm:px-6 py-5 space-y-6">
             
             {/* Título Principal e Objeto */}
             <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <SituacaoBadge situacao={labels.situacao} />
                 
-                <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white flex flex-wrap items-center gap-2">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white flex flex-wrap items-center gap-2">
                     {labels.modalidade}
                     {(numeroCertame || formData?.numero_processo) && (
                     <span className={`text-sm font-bold px-3 py-1 rounded-md border ${modalidadeColor.bg} ${modalidadeColor.text} ${modalidadeColor.border} ml-1`}>
@@ -330,8 +330,8 @@ export default function ProcessHeader({
             </div>
 
             {/* LINHA 1: Dados Legais e Administrativos */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pt-2 border-b border-slate-100 dark:border-slate-700/50 pb-5">
-            <InfoItem icon={Scale} iconColor="text-indigo-500" label="Amparo Legal" value={labels.amparo} className="col-span-2 lg:col-span-1" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 pt-2 border-b border-slate-100 dark:border-slate-700/50 pb-5">
+            <InfoItem icon={Scale} iconColor="text-indigo-500" label="Amparo Legal" value={labels.amparo} className="sm:col-span-2 lg:col-span-1" />
             <InfoItem icon={Tag} iconColor="text-cyan-500" label="Classificação" value={labels.classificacao} />
             <InfoItem icon={Layers} iconColor="text-violet-500" label="Organização" value={labels.organizacao} />
             <InfoItem icon={Clock} iconColor="text-orange-500" label="Vigência" value={formatted.vigencia} />
@@ -339,7 +339,7 @@ export default function ProcessHeader({
             </div>
 
             {/* LINHA 2: Dados do Certame (Valores e Disputa) */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 pt-2">
             <InfoItem icon={Gavel} iconColor="text-blue-500" label="Modo de Disputa" value={labels.modoDisputa} />
             <InfoItem icon={Scale} iconColor="text-teal-500" label="Julgamento" value={labels.criterio} />
             <InfoItem icon={Calendar} iconColor="text-blue-500" label="Abertura da Sessão" value={formatted.abertura} valueColor="text-blue-600 dark:text-blue-400" />

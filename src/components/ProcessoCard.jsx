@@ -259,8 +259,8 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
   return (
     <div className="flex flex-col bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary">
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:flex-1 md:w-20 sm:w-12" style={{ minWidth: 0 }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-dark-bg-primary">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           {processo?.entidade_nome && (
             <Ellipsize
               lines={1}
@@ -284,7 +284,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
         </div>
 
         {/* Botões */}
-        <div className="flex items-center gap-1 flex-wrap md:flex-nowrap md:flex-shrink-0">
+        <div className="flex items-center gap-1 flex-wrap sm:flex-nowrap flex-shrink-0">
           <button
             type="button"
             onClick={handleView}
@@ -303,12 +303,12 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
       </div>
 
       {/* Corpo */}
-      <div className="px-6 py-5 space-y-4">
+      <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2" style={{ minWidth: 0 }}>
           <Ellipsize
             lines={1}
             as="h3"
-            className="text-xl font-bold text-slate-900 dark:text-dark-text-primary"
+            className="text-base sm:text-xl font-bold text-slate-900 dark:text-dark-text-primary"
             title={modalidadeLabel}
           >
             {modalidadeLabel || 'Modalidade não informada'}
@@ -331,7 +331,7 @@ const ProcessoCard = ({ processo = {}, onEdit, onDelete, onView, onExport }) => 
           {processo?.objeto || 'Nenhum objeto informado para este processo.'}
         </Ellipsize>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-6 gap-y-5 pt-4 border-t border-slate-200 dark:border-dark-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-4 sm:gap-y-5 pt-4 border-t border-slate-200 dark:border-dark-border">
           <InfoPill icon={Calendar} iconColor="text-rose-500" label="Data de Cadastro" value={cadastroFormatado} />
           <InfoPill icon={CalendarClock} iconColor="text-blue-500" label="Data do Certame" value={aberturaFormatada} valueColor="text-blue-600 dark:text-blue-400" />
           <InfoPill icon={ClipboardList} iconColor="text-purple-500" label="Registro de Preços" value={processo?.registro_precos ? 'Sim' : 'Não'} />

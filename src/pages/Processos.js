@@ -169,7 +169,7 @@ const Processos = () => {
   return (
     <div className="min-h-screen pb-20 flex justify-center items-start">
       <Helmet>
-        <title>Meus Processos | Licitapro</title>
+        <title>Meus Processos</title>
       </Helmet>
 
       {/* Modais */}
@@ -289,7 +289,7 @@ const Processos = () => {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden pt-4"
               >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <select
                     className={inputClass}
                     name="modalidade"
@@ -372,7 +372,7 @@ const Processos = () => {
               ))}
             </div>
           ) : (
-            <div className="mt-4 bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 py-12 px-6 text-center">
+            <div className="mt-4 bg-white dark:bg-dark-bg-secondary rounded-2xl border border-slate-200 dark:border-slate-800 py-12 px-4 sm:px-6 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                 <FileText className="w-8 h-8 text-slate-300 dark:text-slate-600" />
               </div>

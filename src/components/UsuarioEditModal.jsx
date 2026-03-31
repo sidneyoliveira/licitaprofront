@@ -275,7 +275,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             className="relative w-full max-w-5xl bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden flex flex-col max-h-[90vh]"
           >
             {/* ─ HEADER (CORRIGIDO: Sem sticky) ─ */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary flex-shrink-0">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary flex-shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                   {isEdit ? "Editar Perfil" : "Novo Membro"}
@@ -293,7 +293,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             <div className="flex flex-1 overflow-hidden flex-col md:flex-row min-h-0">
               
               {/* Sidebar */}
-              <div className="w-full md:w-72 bg-slate-50 dark:bg-dark-bg-primary border-r border-slate-200 dark:border-slate-700 p-6 flex flex-col gap-6 overflow-y-auto flex-shrink-0">
+              <div className="w-full md:w-72 bg-slate-50 dark:bg-dark-bg-primary border-r border-slate-200 dark:border-slate-700 p-4 sm:p-6 flex flex-col gap-4 sm:gap-6 overflow-y-auto flex-shrink-0">
                 
                 {/* Avatar */}
                 <div className="flex flex-col items-center text-center">
@@ -350,7 +350,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
               </div>
 
               {/* Conteúdo (Scrollable) */}
-              <div className="flex-1 overflow-y-auto bg-white dark:bg-dark-bg-secondary p-6 md:p-10">
+              <div className="flex-1 overflow-y-auto bg-white dark:bg-dark-bg-secondary p-4 sm:p-6 md:p-10">
                 {loadingData ? (
                   <div className="h-full flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-blue"></div>
@@ -366,7 +366,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
                           <h3 className="text-lg font-bold text-slate-800 dark:text-white">Informações Básicas</h3>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                           <div>
                             <Label required>Nome</Label>
                             <Input name="first_name" value={form.first_name} onChange={handleChange} placeholder="Ex: João" error={errors.first_name} />
@@ -516,7 +516,7 @@ export default function UsuarioEditModal({ open, user, onClose, onSaved }) {
             </div>
 
             {/* ─ FOOTER (Fixed) ─ */}
-            <div className="px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
+            <div className="px-4 sm:px-6 py-4 bg-slate-50 dark:bg-dark-bg-primary border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
               <button 
                 type="button" 
                 onClick={onClose} 
