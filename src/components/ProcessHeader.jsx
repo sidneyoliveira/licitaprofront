@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Globe,
   UploadCloud,
+  Eye,
 } from "lucide-react";
 import {
   MODALIDADES,
@@ -222,6 +223,19 @@ export default function ProcessHeader({
     };
   }, [formData?.numero_certame, formData?.modalidade]);
 
+  const isPublicadoPncp = useMemo(() => {
+    return (
+      String(formData?.situacao || '').toLowerCase() === 'publicado' ||
+      !!formData?.pncp_sequencial_compra
+    );
+  }, [formData?.situacao, formData?.pncp_sequencial_compra]);
+
+  const handleOpenPncpRegistro = () => {
+    const url = formData?.pncp_url;
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <>
         {/* Renderização do Modal PNCP Interno */}
@@ -284,6 +298,17 @@ export default function ProcessHeader({
                 <Globe size={16} />
         <span>Enviar PNCP</span>
             </button>
+
+            {isPublicadoPncp && !!formData?.pncp_url && (
+              <button
+                type="button"
+                onClick={handleOpenPncpRegistro}
+                className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                title="Visualizar registro no PNCP"
+              >
+                <Eye size={18} />
+              </button>
+            )}
 
             
             {/* Editar */}

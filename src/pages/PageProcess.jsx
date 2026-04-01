@@ -14,14 +14,9 @@ import {
   UploadCloud,
   CheckCircle,
   Trash2,
-  MoreVertical,
-  Eye,
-  Download,
   Edit,
   AlertCircle,
   StickyNote,
-  ArrowUp,
-  ArrowDown,
   Plus
 } from 'lucide-react';
 
@@ -51,6 +46,7 @@ import SharedNotesBoard from '../components/SharedNotesBoard';
 /* ────────────────────────────────────────────────────────────────────────── */
 
 const DOCUMENT_TYPES = [
+  { id: 16, nome: 'Outros Documentos' },
   { id: 1, nome: 'Aviso de Contratação Direta' },
   { id: 2, nome: 'Edital' },
   { id: 3, nome: 'Minuta do Contrato' },
@@ -58,20 +54,25 @@ const DOCUMENT_TYPES = [
   { id: 5, nome: 'Anteprojeto' },
   { id: 6, nome: 'Projeto Básico' },
   { id: 7, nome: 'Estudo Técnico Preliminar' },
+  { id: 8, nome: 'Projeto Executivo' },
   { id: 9, nome: 'Mapa de Riscos' },
   { id: 10, nome: 'DFD' },
   { id: 19, nome: 'Minuta de Ata de Registro de Preços' },
   { id: 20, nome: 'Ato que autoriza a Contratação Direta' },
 ];
 
-const buildDefaultDocumentRows = () =>
-  DOCUMENT_TYPES.map((doc, index) => ({
-    key: `base-${doc.id}`,
-    tipo_documento_id: doc.id,
-    nome: doc.nome,
-    ordem: index + 1,
-    custom: false,
-  }));
+const DEFAULT_DOCUMENT_TEMPLATES = [
+  { nome: 'Edital', tipo_documento_id: 2 },
+  { nome: 'Documento de Formalização de Demanda', tipo_documento_id: 16 },
+  { nome: 'Estudo Técnico Preliminar', tipo_documento_id: 7 },
+  { nome: 'Termo de referência', tipo_documento_id: 4 },
+  { nome: 'Termo de Autuação', tipo_documento_id: 16 },
+  { nome: 'Anexo I Termo de Referencia', tipo_documento_id: 16 },
+  { nome: 'Anexo II Minuta de contrato', tipo_documento_id: 3 },
+  { nome: 'Anexo III Minuta da Ata de Registro de Preços', tipo_documento_id: 16 },
+  { nome: 'Termo de adjudicação', tipo_documento_id: 16 },
+  { nome: 'Termo de homologação', tipo_documento_id: 16 },
+];
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* SUBCOMPONENTE: Modal de Envio ao PNCP (Edital Rápido)                     */
@@ -266,27 +267,27 @@ const ArquivosSection = ({
   documentTypeOptions,
   localDocs,
   pncpRemoteDocs,
+  onAddDocument,
   onFileUpsert,
   onPublishPncp,
   onRemovePncp,
   onDeleteLocal,
-  onMoveRow,
-  onDeleteRow,
-  onAddCustomRow,
+  onBulkDeleteDocuments,
   onView,
-  onDownload,
   sendingKey,
 }) => {
-  const [activeMenu, setActiveMenu] = useState(null);
-  const [selectedDocTypes, setSelectedDocTypes] = useState(new Set());
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newDocNome, setNewDocNome] = useState('');
   const [newDocTipoId, setNewDocTipoId] = useState('');
+  const [newDocFile, setNewDocFile] = useState(null);
+  const [addingDoc, setAddingDoc] = useState(false);
 
   const allDocTypesSelected =
-    documentRows.length > 0 && documentRows.every((d) => selectedDocTypes.has(d.tipo_documento_id));
+    documentRows.length > 0 && documentRows.every((d) => selectedRows.has(d.id));
 
   const toggleSelectDocType = (id) => {
-    setSelectedDocTypes((prev) => {
+    setSelectedRows((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -294,92 +295,170 @@ const ArquivosSection = ({
   };
 
   const toggleSelectAllDocTypes = () => {
-    setSelectedDocTypes((prev) => {
+    setSelectedRows((prev) => {
       const next = new Set(prev);
       if (allDocTypesSelected) {
-        documentRows.forEach((d) => next.delete(d.tipo_documento_id));
+        documentRows.forEach((d) => next.delete(d.id));
       } else {
-        documentRows.forEach((d) => next.add(d.tipo_documento_id));
+        documentRows.forEach((d) => next.add(d.id));
       }
       return next;
     });
   };
 
-  const findByTipo = (list, tipoId) =>
-    (list || []).find((d) => Number(d.tipo_documento_id ?? d.tipoDocumentoId) === Number(tipoId));
+  const findLocalByLinha = (row) => {
+    const byLinha = (localDocs || []).find(
+      (d) => Number(d.linha_documento) === Number(row.id)
+    );
+    if (byLinha) return byLinha;
+
+    return (localDocs || []).find(
+      (d) =>
+        Number(d.tipo_documento_id) === Number(row.tipo_documento_id) &&
+        String(d.titulo || '').trim().toLowerCase() === String(row.nome || '').trim().toLowerCase()
+    );
+  };
+
+  const findPncpByLinha = (row, localDoc) => {
+    if (localDoc?.pncp_sequencial_documento) {
+      const bySeq = (pncpRemoteDocs || []).find(
+        (d) => Number(d.pncp_sequencial_documento || d.sequencial_documento) === Number(localDoc.pncp_sequencial_documento)
+      );
+      if (bySeq) return bySeq;
+    }
+    return (pncpRemoteDocs || []).find((d) => Number(d.tipo_documento_id ?? d.tipoDocumentoId) === Number(row.tipo_documento_id));
+  };
 
   const getFileUrl = (doc) => doc?.arquivo_url || doc?.arquivo || null;
   const getFileName = (doc) =>
     doc?.arquivo_nome || doc?.arquivo_nome_original || doc?.titulo || 'arquivo';
 
-  const handleAddCustom = () => {
+  const handleAddDocumentSubmit = async (e) => {
+    e.preventDefault();
     const nome = newDocNome.trim();
     const tipo_documento_id = Number(newDocTipoId || 0);
-    if (!nome || !tipo_documento_id) return;
-    onAddCustomRow({ nome, tipo_documento_id });
+    if (!nome || !tipo_documento_id || !newDocFile) return;
+
+    setAddingDoc(true);
+    await onAddDocument({ nome, tipo_documento_id, arquivo: newDocFile });
+    setAddingDoc(false);
     setNewDocNome('');
     setNewDocTipoId('');
+    setNewDocFile(null);
+    setIsAddModalOpen(false);
   };
 
-  const canAddCustom = !!newDocNome.trim() && !!Number(newDocTipoId || 0);
+  const canAddDocument = !!newDocNome.trim() && !!Number(newDocTipoId || 0) && !!newDocFile;
+
+  const handleBulkDelete = async () => {
+    if (!selectedRows.size) return;
+    await onBulkDeleteDocuments([...selectedRows]);
+    setSelectedRows(new Set());
+  };
 
   return (
-    <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-5">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+    <div className="space-y-6">
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-secondary shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Adicionar documento</h3>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1.5 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleAddDocumentSubmit} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Nome do documento</label>
+                <input
+                  type="text"
+                  value={newDocNome}
+                  onChange={(e) => setNewDocNome(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-primary text-sm"
+                  placeholder="Ex.: Documento complementar"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Tipo do documento</label>
+                <select
+                  value={newDocTipoId}
+                  onChange={(e) => setNewDocTipoId(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-primary text-sm"
+                >
+                  <option value="">Selecione</option>
+                  {documentTypeOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.nome}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Arquivo</label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
+                  onChange={(e) => setNewDocFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm file:mr-3 file:px-3 file:py-2 file:rounded-md file:border-0 file:bg-emerald-50 file:text-emerald-700"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-lg text-sm border border-slate-200 text-slate-600 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={!canAddDocument || addingDoc}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {addingDoc ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  Adicionar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-accent-blue" />
-            Documentos da Contratação
-          </h3>
-          {selectedDocTypes.size > 0 && (
-            <p className="text-xs text-accent-blue mt-1 font-semibold">
-              {selectedDocTypes.size} tipo(s) de documento selecionado(s).
+          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Documentos da Contratação</h2>
+          {selectedRows.size > 0 && (
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              {selectedRows.size} documento(s) selecionado(s).
             </p>
           )}
         </div>
-      </div>
 
-      <div className="mb-3 grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-2 items-end">
-        <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
-            Nome do Documento
-          </label>
-          <input
-            type="text"
-            value={newDocNome}
-            onChange={(e) => setNewDocNome(e.target.value)}
-            placeholder="Ex.: Comprovante de visita técnica"
-            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-primary text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
-            Tipo PNCP
-          </label>
-          <select
-            value={newDocTipoId}
-            onChange={(e) => setNewDocTipoId(e.target.value)}
-            className="w-full h-9 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-primary text-sm"
+        <div className="flex items-center gap-2">
+          {selectedRows.size > 0 && (
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-md border border-red-300 bg-red-50 text-red-600 hover:bg-red-100"
+            >
+              <Trash2 size={16} />
+              Excluir ({selectedRows.size})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700"
           >
-            <option value="">Selecione</option>
-            {documentTypeOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.nome}
-              </option>
-            ))}
-          </select>
+            <Plus size={16} />
+            Adicionar documento
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={handleAddCustom}
-          disabled={!canAddCustom}
-          className="h-9 inline-flex items-center justify-center gap-2 px-3 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Plus size={14} />
-          Adicionar linha
-        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -390,6 +469,7 @@ const ArquivosSection = ({
                 <StyledCheckbox checked={allDocTypesSelected} onChange={toggleSelectAllDocTypes} />
               </th>
               <th className="p-2 md:p-3 w-14">Ordem</th>
+              <th className="p-2 md:p-3">Nome do Documento</th>
               <th className="p-2 md:p-3">Tipo de Documento</th>
               <th className="p-2 md:p-3">Arquivo Local</th>
               <th className="p-2 md:p-3 hidden md:table-cell">Status PNCP</th>
@@ -399,8 +479,8 @@ const ArquivosSection = ({
 
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {documentRows.map((dt, index) => {
-              const local = findByTipo(localDocs, dt.tipo_documento_id);
-              const pncp = findByTipo(pncpRemoteDocs, dt.tipo_documento_id);
+              const local = findLocalByLinha(dt);
+              const pncp = findPncpByLinha(dt, local);
 
               const hasLocal = !!local;
               const fileUrl = getFileUrl(local);
@@ -422,44 +502,30 @@ const ArquivosSection = ({
                 pncp?.publicado_em ||
                 null;
 
-              const rowSending = sendingKey === `tipo:${dt.tipo_documento_id}`;
-              const isSelected = selectedDocTypes.has(dt.tipo_documento_id);
+              const rowSending = sendingKey === `linha:${dt.id}`;
+              const isSelected = selectedRows.has(dt.id);
 
               return (
                 <tr
-                  key={dt.key || dt.tipo_documento_id}
+                  key={dt.id || dt.key || `${dt.tipo_documento_id}-${index}`}
                   className={`text-xs md:text-sm group transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/20'}`}
                 >
                   <td className="py-1 px-3 align-middle text-center">
-                    <StyledCheckbox checked={isSelected} onChange={() => toggleSelectDocType(dt.tipo_documento_id)} />
+                    <StyledCheckbox checked={isSelected} onChange={() => toggleSelectDocType(dt.id)} />
                   </td>
                   <td className="py-1 px-3 text-slate-500 dark:text-slate-400 align-middle">
-                    <div className="inline-flex items-center gap-1">
-                      <span className="w-6 text-center">{index + 1}</span>
-                      <button
-                        type="button"
-                        className="p-1 rounded hover:bg-slate-100 disabled:opacity-30"
-                        onClick={() => onMoveRow(index, 'up')}
-                        disabled={index === 0}
-                        title="Mover para cima"
-                      >
-                        <ArrowUp size={12} />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-1 rounded hover:bg-slate-100 disabled:opacity-30"
-                        onClick={() => onMoveRow(index, 'down')}
-                        disabled={index === documentRows.length - 1}
-                        title="Mover para baixo"
-                      >
-                        <ArrowDown size={12} />
-                      </button>
+                    <span className="inline-block w-6 text-center whitespace-nowrap">{index + 1}</span>
+                  </td>
+
+                  <td className="py-1 px-3 align-middle max-w-[280px]">
+                    <div className="font-normal text-slate-800 dark:text-slate-100 truncate whitespace-nowrap" title={dt.nome}>
+                      {dt.nome}
                     </div>
                   </td>
 
-                  <td className="py-1 px-3 align-middle">
-                    <div className="font-medium text-slate-800 dark:text-slate-100">
-                      {dt.nome}
+                  <td className="py-1 px-3 align-middle max-w-[220px]">
+                    <div className="font-normal text-slate-600 dark:text-slate-300 truncate whitespace-nowrap" title={documentTypeOptions.find((d) => Number(d.id) === Number(dt.tipo_documento_id))?.nome || `Tipo ${dt.tipo_documento_id}`}>
+                      {documentTypeOptions.find((d) => Number(d.id) === Number(dt.tipo_documento_id))?.nome || `Tipo ${dt.tipo_documento_id}`}
                     </div>
 
                     {/* Badges mobile */}
@@ -482,20 +548,41 @@ const ArquivosSection = ({
                   </td>
 
                   {/* Arquivo Local */}
-                  <td className="p-2 md:p-3 align-middle">
+                  <td className="py-1 px-3 align-middle max-w-[320px]">
                     {hasLocal ? (
-                      <button
-                        type="button"
-                        onClick={() => onView(fileUrl)}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 w-full md:w-auto hover:border-accent-blue transition-colors"
-                        title="Visualizar"
-                      >
-                        <FileText className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="truncate max-w-[180px] md:max-w-[260px] text-md text-slate-600 dark:text-slate-300 font-medium">
-                          {fileName}
-                        </span>
-                        <Eye className="w-3.5 h-3.5 text-slate-400 group-hover:text-accent-blue" />
-                      </button>
+                      <div className="inline-flex w-full items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onView(fileUrl)}
+                          className="min-w-0 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 hover:border-emerald-300 transition-colors"
+                          title="Visualizar arquivo"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="truncate max-w-[180px] md:max-w-[220px] text-sm text-slate-700 dark:text-slate-200 font-medium whitespace-nowrap" title={fileName}>
+                            {fileName}
+                          </span>
+                        </button>
+
+                        <label className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-amber-300 text-amber-600 bg-amber-50 hover:bg-amber-100 cursor-pointer" title="Alterar arquivo local">
+                          <Edit size={14} />
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
+                            className="hidden"
+                            disabled={rowSending}
+                            onChange={(e) => onFileUpsert(dt, e.target.files?.[0] || null)}
+                          />
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={() => onDeleteLocal(local.id)}
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-red-300 text-red-600 bg-red-50 hover:bg-red-100"
+                          title="Excluir arquivo local"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     ) : (
                       <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg-secondary cursor-pointer hover:border-accent-blue hover:bg-slate-50 transition-colors w-full md:w-auto">
                         <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
@@ -507,7 +594,7 @@ const ArquivosSection = ({
                           accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
                           className="hidden"
                           disabled={rowSending}
-                          onChange={(e) => onFileUpsert(dt.tipo_documento_id, e.target.files?.[0] || null, dt.nome)}
+                          onChange={(e) => onFileUpsert(dt, e.target.files?.[0] || null)}
                         />
                       </label>
                     )}
@@ -516,7 +603,7 @@ const ArquivosSection = ({
                   {/* Status PNCP */}
                   <td className="py-1 px-3 align-middle hidden md:table-cell">
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-md font-semibold border ${
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-normal border whitespace-nowrap ${
                         isPublished
                           ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800'
                           : 'bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-700'
@@ -531,25 +618,12 @@ const ArquivosSection = ({
                   {/* Ações */}
                   <td className="py-1 px-3 align-middle text-right relative">
                     <div className="flex flex-nowrap justify-end items-center gap-2">
-                      {/* Visualizar (rápido) */}
-                      {hasLocal && (
-                        <button
-                          type="button"
-                          onClick={() => onView(fileUrl)}
-                          className="p-1.5 text-slate-500 hover:text-blue-600 bg-slate-100 dark:bg-slate-800 rounded transition-colors"
-                          title="Visualizar"
-                        >
-                          <Eye size={14} />
-                        </button>
-                      )}
-
-                      {/* Publicar PNCP / Remover PNCP (com texto) */}
                       {hasLocal && !isPublished && (
                         <button
                           type="button"
-                          onClick={() => onPublishPncp(local.id, dt.tipo_documento_id)}
+                          onClick={() => onPublishPncp(local.id, dt.id)}
                           disabled={rowSending}
-                          className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 disabled:opacity-50 transition-colors shadow-sm shadow-blue-900/20"
+                          className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-normal bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
                           title="Publicar no PNCP"
                         >
                           {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
@@ -560,82 +634,15 @@ const ArquivosSection = ({
                       {hasLocal && isPublished && (
                         <button
                           type="button"
-                          onClick={() => onRemovePncp(dt.tipo_documento_id, pncpSeq)}
+                          onClick={() => onRemovePncp(dt.id, pncpSeq, local?.id)}
                           disabled={rowSending || !pncpSeq}
-                          className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors shadow-sm"
+                          className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-normal bg-red-50 border border-red-300 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
                           title="Remover do PNCP"
                         >
                           {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                           Remover PNCP
                         </button>
                       )}
-
-                      <button
-                        type="button"
-                        onClick={() => onDeleteRow(dt)}
-                        className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                        title="Excluir linha da tabela"
-                      >
-                        <Trash2 size={14} />
-                        Excluir linha
-                      </button>
-
-                      {/* Menu ⋮ (sem Visualizar) */}
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setActiveMenu(activeMenu === dt.tipo_documento_id ? null : dt.tipo_documento_id)}
-                          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                          title="Mais ações"
-                        >
-                          <MoreVertical size={16} />
-                        </button>
-
-                        {activeMenu === dt.tipo_documento_id && (
-                          <>
-                            <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                            <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-20 overflow-hidden text-left">
-                              {hasLocal && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    onDownload(fileUrl, fileName);
-                                    setActiveMenu(null);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                                >
-                                  <Download size={12} /> Baixar arquivo
-                                </button>
-                              )}
-
-                              <label className="w-full flex items-center gap-2 px-4 py-2 text-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
-                                <Edit size={12} /> {hasLocal ? 'Alterar arquivo' : 'Anexar arquivo'}
-                                <input
-                                  type="file"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    onFileUpsert(dt.tipo_documento_id, e.target.files?.[0] || null, dt.nome);
-                                    setActiveMenu(null);
-                                  }}
-                                />
-                              </label>
-
-                              {hasLocal && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    onDeleteLocal(local.id);
-                                    setActiveMenu(null);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                >
-                                  <Trash2 size={12} /> Deletar arquivo local
-                                </button>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
                     </div>
                   </td>
                 </tr>
@@ -700,55 +707,10 @@ export default function PageProcess() {
   // --- ARQUIVOS: separar local x PNCP (CORREÇÃO DO FLUXO) ---
   const [localDocs, setLocalDocs] = useState([]);
   const [pncpRemoteDocs, setPncpRemoteDocs] = useState([]);
-  const [documentRows, setDocumentRows] = useState(buildDefaultDocumentRows());
+  const [documentRows, setDocumentRows] = useState([]);
 
   // controle spinner por tipo
   const [sendingKey, setSendingKey] = useState(null);
-
-  const saveDocumentRows = useCallback((pid, rows) => {
-    if (!pid) return;
-    try {
-      localStorage.setItem(`doc-rows:${pid}`, JSON.stringify(rows));
-    } catch {
-      // noop
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!processoId) return;
-
-    const baseRows = buildDefaultDocumentRows();
-    let savedRows = [];
-    try {
-      const raw = localStorage.getItem(`doc-rows:${processoId}`);
-      savedRows = raw ? JSON.parse(raw) : [];
-    } catch {
-      savedRows = [];
-    }
-
-    const merged = [...(Array.isArray(savedRows) && savedRows.length ? savedRows : baseRows)];
-    const existingTipos = new Set(merged.map((r) => Number(r.tipo_documento_id)));
-
-    [...(localDocs || []), ...(pncpRemoteDocs || [])].forEach((doc) => {
-      const tipo = Number(doc.tipo_documento_id ?? doc.tipoDocumentoId);
-      if (!tipo || existingTipos.has(tipo)) return;
-      merged.push({
-        key: `auto-${tipo}`,
-        tipo_documento_id: tipo,
-        nome: doc.titulo || doc.tipo_documento_nome || `Tipo ${tipo}`,
-        ordem: merged.length + 1,
-        custom: true,
-      });
-      existingTipos.add(tipo);
-    });
-
-    const normalized = merged
-      .filter((row, idx, arr) => arr.findIndex((r) => Number(r.tipo_documento_id) === Number(row.tipo_documento_id)) === idx)
-      .map((row, idx) => ({ ...row, ordem: idx + 1 }));
-
-    setDocumentRows(normalized);
-    saveDocumentRows(processoId, normalized);
-  }, [processoId, localDocs, pncpRemoteDocs, saveDocumentRows]);
 
   // --- MODAIS ---
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -907,6 +869,47 @@ export default function PageProcess() {
     [api, showToast]
   );
 
+  const fetchDocumentRows = useCallback(
+    async (pid) => {
+      if (!pid) return;
+      try {
+        const { data } = await api.get('/processo-documento-linhas/', {
+          params: { processo: pid },
+        });
+        const rows = Array.isArray(data) ? data : data?.results || [];
+
+        if (rows.length > 0) {
+          setDocumentRows(rows.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)));
+          return;
+        }
+
+        const defaults = DEFAULT_DOCUMENT_TEMPLATES;
+        await Promise.all(
+          defaults.map((row, index) =>
+            api.post('/processo-documento-linhas/', {
+              processo: pid,
+              nome: row.nome,
+              tipo_documento_id: row.tipo_documento_id,
+              ordem: index + 1,
+              custom: false,
+            })
+          )
+        );
+
+        const reload = await api.get('/processo-documento-linhas/', {
+          params: { processo: pid },
+        });
+        const seeded = Array.isArray(reload.data) ? reload.data : reload.data?.results || [];
+        setDocumentRows(seeded.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)));
+      } catch (error) {
+        console.error(error);
+  showToast('Erro ao carregar documentos.', 'error');
+        setDocumentRows([]);
+      }
+    },
+    [api, showToast]
+  );
+
   const loadOrgaosForEntidade = useCallback(
     async (entidadeId) => {
       if (!entidadeId) {
@@ -947,6 +950,7 @@ export default function PageProcess() {
       // IMPORTANTÍSSIMO: carregar local e PNCP em estados separados
       fetchLocalDocs(id);
       fetchPncpDocs(id);
+      fetchDocumentRows(id);
     }
   }, [
     id,
@@ -958,6 +962,7 @@ export default function PageProcess() {
     fetchLotes,
     fetchLocalDocs,
     fetchPncpDocs,
+    fetchDocumentRows,
   ]);
 
   // Carrega Órgãos ao mudar Entidade (no load inicial)
@@ -1135,32 +1140,40 @@ export default function PageProcess() {
   /* - Remover Local: DELETE /documentos-pncp/{id}/                           */
   /* ──────────────────────────────────────────────────────────────────────── */
 
-  const findLocalByTipo = (tipoId) =>
-    (localDocs || []).find((d) => Number(d.tipo_documento_id) === Number(tipoId));
+  const findLocalByRow = useCallback(
+    (row) => {
+      const byLinha = (localDocs || []).find(
+        (d) => Number(d.linha_documento) === Number(row.id)
+      );
+      if (byLinha) return byLinha;
+      return (localDocs || []).find(
+        (d) =>
+          Number(d.tipo_documento_id) === Number(row.tipo_documento_id) &&
+          String(d.titulo || '').trim().toLowerCase() === String(row.nome || '').trim().toLowerCase()
+      );
+    },
+    [localDocs]
+  );
 
-  const handleUpsertDocFile = async (tipoId, file, tituloOverride = null) => {
-    if (!file || !processoId) return;
+  const handleUpsertDocFile = async (row, file) => {
+    if (!file || !processoId || !row?.id) return;
 
-    setSendingKey(`tipo:${tipoId}`);
+    setSendingKey(`linha:${row.id}`);
     try {
-      const docTypeObj = DOCUMENT_TYPES.find((d) => d.id === tipoId);
-      const titulo = tituloOverride || docTypeObj?.nome || `Documento ${tipoId}`;
-
       const fd = new FormData();
       fd.append("arquivo", file);
-      fd.append("tipo_documento_id", tipoId);
-      fd.append("titulo", titulo);
+      fd.append("linha_documento", row.id);
+      fd.append("tipo_documento_id", row.tipo_documento_id);
+      fd.append("titulo", row.nome);
       fd.append("processo", processoId);
 
-      const existing = findLocalByTipo(tipoId);
+      const existing = findLocalByRow(row);
 
       if (existing?.id) {
-        // PATCH: evita criar novo registro
         await api.patch(`/documentos-pncp/${existing.id}/`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        // POST: cria novo
         await api.post(`/documentos-pncp/`, fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -1176,8 +1189,8 @@ export default function PageProcess() {
     }
   };
 
-  const handlePublishDocPncp = async (idLocalNoBanco, tipoId) => {
-    setSendingKey(`tipo:${tipoId}`);
+  const handlePublishDocPncp = async (idLocalNoBanco, rowId) => {
+    setSendingKey(`linha:${rowId}`);
     try {
       await api.post(`/documentos-pncp/${idLocalNoBanco}/enviar-ao-pncp/`);
       showToast("Documento publicado no PNCP com sucesso!", "success");
@@ -1193,7 +1206,7 @@ export default function PageProcess() {
     }
   };
 
-  const handleDeleteDocPncp = async (tipoId, sequencialDocumento) => {
+  const handleDeleteDocPncp = async (rowId, sequencialDocumento, localDocId = null) => {
     if (!processoId) return;
 
     if (!sequencialDocumento) {
@@ -1202,7 +1215,7 @@ export default function PageProcess() {
     }
 
     try {
-      setSendingKey(`tipo:${tipoId}`);
+      setSendingKey(`linha:${rowId}`);
 
       // 1) Exclui do PNCP
       await api.delete(`/processos/${processoId}/pncp/arquivos/${sequencialDocumento}/`, {
@@ -1211,9 +1224,9 @@ export default function PageProcess() {
 
       // 2) Atualiza o registro LOCAL para voltar a ser rascunho
       //    (a UI vai voltar a mostrar o botão "Publicar PNCP")
-      const localDoc = (localDocs || []).find(
-        (d) => Number(d.tipo_documento_id) === Number(tipoId)
-      );
+      const localDoc = localDocId
+        ? (localDocs || []).find((d) => Number(d.id) === Number(localDocId))
+        : null;
 
       if (localDoc?.id) {
         const fd = new FormData();
@@ -1252,85 +1265,55 @@ export default function PageProcess() {
     }
   };
 
-  const handleMoveDocumentRow = (index, direction) => {
-    setDocumentRows((prev) => {
-      const next = [...prev];
-      const to = direction === 'up' ? index - 1 : index + 1;
-      if (to < 0 || to >= next.length) return prev;
-      [next[index], next[to]] = [next[to], next[index]];
-      const normalized = next.map((row, idx) => ({ ...row, ordem: idx + 1 }));
-      saveDocumentRows(processoId, normalized);
-      return normalized;
-    });
-  };
-
-  const handleDeleteDocumentRow = async (row) => {
-    const localDoc = (localDocs || []).find(
-      (d) => Number(d.tipo_documento_id) === Number(row.tipo_documento_id)
-    );
-
-    if (localDoc?.id) {
-      await handleDeleteLocalDoc(localDoc.id);
-    }
-
-    setDocumentRows((prev) => {
-      const normalized = prev
-        .filter((r) => Number(r.tipo_documento_id) !== Number(row.tipo_documento_id))
-        .map((r, idx) => ({ ...r, ordem: idx + 1 }));
-      saveDocumentRows(processoId, normalized);
-      return normalized;
-    });
-  };
-
-  const handleAddCustomDocumentRow = ({ nome, tipo_documento_id }) => {
+  const handleAddDocument = async ({ nome, tipo_documento_id, arquivo }) => {
     const tipo = Number(tipo_documento_id);
-    if (!tipo || !nome) return;
+    if (!tipo || !nome || !arquivo || !processoId) return;
 
-    setDocumentRows((prev) => {
-      if (prev.some((r) => Number(r.tipo_documento_id) === tipo)) {
-        showToast('Já existe uma linha para esse tipo de documento.', 'warning');
-        return prev;
+    try {
+      const { data: created } = await api.post('/processo-documento-linhas/', {
+        processo: processoId,
+        nome,
+        tipo_documento_id: tipo,
+        ordem: (documentRows?.length || 0) + 1,
+        custom: true,
+      });
+
+      await handleUpsertDocFile(created, arquivo);
+      await fetchDocumentRows(processoId);
+      showToast('Documento adicionado com sucesso.', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao adicionar documento.', 'error');
+    }
+  };
+
+  const handleBulkDeleteDocuments = async (documentIds) => {
+    if (!Array.isArray(documentIds) || !documentIds.length) return;
+
+    try {
+      for (const docId of documentIds) {
+        const docRef = (documentRows || []).find((d) => Number(d.id) === Number(docId));
+        if (!docRef) continue;
+
+        const localDoc = findLocalByRow(docRef);
+        if (localDoc?.id) {
+          await api.delete(`/documentos-pncp/${localDoc.id}/`);
+        }
+
+        await api.delete(`/processo-documento-linhas/${docRef.id}/`);
       }
 
-      const next = [
-        ...prev,
-        {
-          key: `custom-${tipo}-${Date.now()}`,
-          tipo_documento_id: tipo,
-          nome,
-          ordem: prev.length + 1,
-          custom: true,
-        },
-      ];
-      saveDocumentRows(processoId, next);
-      return next;
-    });
+      await Promise.all([fetchLocalDocs(processoId), fetchDocumentRows(processoId)]);
+      showToast('Documento(s) excluído(s) com sucesso.', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao excluir documento(s).', 'error');
+    }
   };
 
   const handleViewFile = (url) => {
     if (!url) return showToast("Arquivo não disponível para visualização.", "warning");
     window.open(url, "_blank", "noopener,noreferrer");
-  };
-
-  const handleDownloadFile = async (url, name) => {
-    try {
-      if (!url) return showToast("Arquivo não disponível para download.", "warning");
-
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) throw new Error("Falha ao baixar arquivo.");
-
-      const blob = await res.blob();
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.download = name || "arquivo";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(link.href);
-    } catch (error) {
-      console.error(error);
-      showToast("Erro ao baixar arquivo.", "error");
-    }
   };
 
   /* ──────────────────────────────────────────────────────────────────────── */
@@ -1414,10 +1397,16 @@ export default function PageProcess() {
         {!isEditing && (
           <ProcessHeader
             formData={formData}
+            processoId={processoId}
             entidadeNome={entidadeNome}
             orgaoNome={orgaoNome}
             onEdit={() => setIsEditing(true)}
             onExportCSV={() => showToast('Exportando dados...', 'info')}
+            onSuccess={() => {
+              fetchDadosDoProcesso(processoId);
+              fetchLocalDocs(processoId);
+              fetchPncpDocs(processoId);
+            }}
           />
         )}
 
@@ -1558,15 +1547,13 @@ export default function PageProcess() {
                       documentTypeOptions={DOCUMENT_TYPES}
                       localDocs={localDocs}
                       pncpRemoteDocs={pncpRemoteDocs}
+                      onAddDocument={handleAddDocument}
                       onFileUpsert={handleUpsertDocFile}
                       onPublishPncp={handlePublishDocPncp}
                       onRemovePncp={handleDeleteDocPncp}
                       onDeleteLocal={handleDeleteLocalDoc}
-                      onMoveRow={handleMoveDocumentRow}
-                      onDeleteRow={handleDeleteDocumentRow}
-                      onAddCustomRow={handleAddCustomDocumentRow}
+                      onBulkDeleteDocuments={handleBulkDeleteDocuments}
                       onView={handleViewFile}
-                      onDownload={handleDownloadFile}
                       sendingKey={sendingKey}
                     />
                   )}
