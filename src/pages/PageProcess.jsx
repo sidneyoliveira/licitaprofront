@@ -26,6 +26,7 @@ import DadosGeraisForm from '../components/DadosGeraisForm';
 import ItemsSection from '../components/ItemsSection';
 import LotesSection from '../components/LotesSection';
 import FornecedoresSection from '../components/FornecedoresSection';
+import ContratosSection from '../components/ContratosSection';
 
 // --- MODAIS ---
 import ItemModal from '../components/ItemModal';
@@ -198,6 +199,7 @@ const TAB_COLORS = {
   itens:        { active: 'text-blue-600 dark:text-blue-400',    border: 'border-blue-600 dark:border-blue-400',    inactive: 'text-slate-400' },
   lotes:        { active: 'text-violet-600 dark:text-violet-400', border: 'border-violet-600 dark:border-violet-400', inactive: 'text-slate-400' },
   fornecedores: { active: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-600 dark:border-emerald-400', inactive: 'text-slate-400' },
+  contratos:    { active: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-600 dark:border-cyan-400', inactive: 'text-slate-400' },
   atas:         { active: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-600 dark:border-amber-400',  inactive: 'text-slate-400' },
   arquivos:     { active: 'text-rose-600 dark:text-rose-400',    border: 'border-rose-600 dark:border-rose-400',    inactive: 'text-slate-400' },
   anotacoes:    { active: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-600 dark:border-amber-400',  inactive: 'text-slate-400' },
@@ -1458,6 +1460,13 @@ export default function PageProcess() {
                 isActive={activeTab === 'fornecedores'}
                 onClick={() => setActiveTab('fornecedores')}
               />
+              <TabButton
+                id="contratos"
+                label="Contratos"
+                icon={FileText}
+                isActive={activeTab === 'contratos'}
+                onClick={() => setActiveTab('contratos')}
+              />
               {formData.registro_precos && (
                 <TabButton
                   id="atas"
@@ -1555,6 +1564,14 @@ export default function PageProcess() {
                       onBulkDeleteDocuments={handleBulkDeleteDocuments}
                       onView={handleViewFile}
                       sendingKey={sendingKey}
+                    />
+                  )}
+
+                  {activeTab === 'contratos' && (
+                    <ContratosSection
+                      processoId={processoId}
+                      api={api}
+                      showToast={showToast}
                     />
                   )}
 

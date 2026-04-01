@@ -51,7 +51,7 @@ const StyledCheckbox = ({ checked, onChange, className = '' }) => (
 
 const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) => {
   const [form, setForm] = useState({
-    numero_ata_registro_preco: '',
+  numero_ata: '',
     ano_ata: new Date().getFullYear(),
     data_assinatura: '',
     data_vigencia_inicio: '',
@@ -64,7 +64,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
     if (open) {
       setForm((prev) => ({
         ...prev,
-        numero_ata_registro_preco: initialData?.numero_ata_registro_preco || '',
+  numero_ata: initialData?.numero_ata || '',
         ano_ata: initialData?.ano_ata || new Date().getFullYear(),
         data_assinatura: initialData?.data_assinatura || '',
         data_vigencia_inicio: initialData?.data_vigencia_inicio || '',
@@ -153,8 +153,8 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
               </label>
               <input
                 type="text"
-                name="numero_ata_registro_preco"
-                value={form.numero_ata_registro_preco}
+                name="numero_ata"
+                value={form.numero_ata}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-blue/60"
                 placeholder="Ex: 72/2025"
@@ -367,7 +367,7 @@ const AtaDocumentosModal = ({
     setSendingKey(`doc:${doc.id}`);
 
     try {
-      await api.post(`/documentos-atas/${doc.id}/remover-do-pncp/`, {
+  await api.post(`/documentos-atas/${doc.id}/excluir-do-pncp/`, {
         justificativa: 'Exclusão de documento de Ata solicitada pelo sistema de origem.',
       });
       showToast('Documento removido do PNCP com sucesso.', 'success');
@@ -442,7 +442,7 @@ const AtaDocumentosModal = ({
           <div>
             <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <FileText className="w-4 h-4 text-accent-blue" />
-              Documentos da Ata {ata.numero_ata_registro_preco || ata.id}
+              Documentos da Ata {ata.numero_ata || ata.id}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Vigência:{' '}
@@ -834,7 +834,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
     if (!ata?.id) return;
     setSavingAtaId(ata.id);
     try {
-      await api.post(`/atas-registro-precos/${ata.id}/enviar-ao-pncp/`);
+  await api.post(`/atas-registro-precos/${ata.id}/publicar-no-pncp/`);
       showToast('Ata publicada no PNCP com sucesso!', 'success');
       await fetchAtas();
     } catch (error) {
@@ -850,7 +850,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
     if (!ata?.id) return;
     setSavingAtaId(ata.id);
     try {
-      await api.post(`/atas-registro-precos/${ata.id}/remover-do-pncp/`, {
+  await api.post(`/atas-registro-precos/${ata.id}/excluir-do-pncp/`, {
         justificativa: 'Remoção de Ata de Registro de Preços solicitada pelo sistema de origem.',
       });
       showToast('Ata removida do PNCP com sucesso.', 'success');
@@ -993,7 +993,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
 
                     <td className="p-2 align-middle">
                       <div className="font-semibold text-slate-800 dark:text-slate-100">
-                        {ata.numero_ata_registro_preco || 'Ata'}{' '}
+                        {ata.numero_ata || 'Ata'}{' '}
                         {ata.ano_ata ? `- ${ata.ano_ata}` : ''}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">

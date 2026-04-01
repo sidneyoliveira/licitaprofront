@@ -231,10 +231,23 @@ export default function ProcessHeader({
   }, [formData?.situacao, formData?.pncp_sequencial_compra]);
 
   const handleOpenPncpRegistro = () => {
-    const url = formData?.pncp_url;
+    const url =
+      formData?.pncp_link ||
+      formData?.pncp_url ||
+      formData?.pncp_ultimo_retorno?.compraUri ||
+      null;
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  const pncpRegistroUrl = useMemo(
+    () =>
+      formData?.pncp_link ||
+      formData?.pncp_url ||
+      formData?.pncp_ultimo_retorno?.compraUri ||
+      null,
+    [formData?.pncp_link, formData?.pncp_url, formData?.pncp_ultimo_retorno]
+  );
 
   return (
     <>
@@ -299,7 +312,7 @@ export default function ProcessHeader({
         <span>Enviar PNCP</span>
             </button>
 
-            {isPublicadoPncp && !!formData?.pncp_url && (
+            {isPublicadoPncp && !!pncpRegistroUrl && (
               <button
                 type="button"
                 onClick={handleOpenPncpRegistro}
