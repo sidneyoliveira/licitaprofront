@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FileText, Plus, Loader2, Trash2, Edit, X } from 'lucide-react';
+import { Plus, Loader2, Trash2, Edit, X } from 'lucide-react';
 
 const TIPOS_CONTRATO = [
   { id: 1, nome: 'Contrato' },

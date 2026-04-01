@@ -104,6 +104,61 @@ const formatCurrency = (value) => {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 };
 
+const normalizeDigits = (value) => String(value || "").replace(/\D/g, "");
+
+const extractHostFromUrl = (urlLike) => {
+  if (!urlLike) return null;
+  try {
+    const url = new URL(urlLike);
+    return url.origin;
+  } catch {
+    return null;
+  }
+};
+
+const extractAnoSequencialFromPath = (urlLike) => {
+  if (!urlLike || typeof urlLike !== "string") return { ano: null, sequencial: null };
+  const m = urlLike.match(/\/compras\/(\d{4})\/(\d+)/i);
+  return {
+    ano: m?.[1] || null,
+    sequencial: m?.[2] || null,
+  };
+};
+
+const buildPncpEditalUrl = (formData) => {
+  const rawUrl =
+    formData?.pncp_link ||
+    formData?.pncp_url ||
+    formData?.pncp_ultimo_retorno?.compraUri ||
+    null;
+
+  if (rawUrl && /\/app\/editais\//i.test(rawUrl)) return rawUrl;
+
+  const host =
+    extractHostFromUrl(rawUrl) ||
+    extractHostFromUrl(formData?.pncp_ultimo_retorno?.compraUri) ||
+    "https://treina.pncp.gov.br";
+
+  const cnpj = normalizeDigits(
+    formData?.entidade_obj?.cnpj ||
+    formData?.entidade_cnpj ||
+    formData?.entidade?.cnpj ||
+    formData?.pncp_ultimo_retorno?.orgaoEntidade?.cnpj ||
+    formData?.pncp_ultimo_retorno?.cnpj ||
+    ""
+  );
+
+  const parsed = extractAnoSequencialFromPath(rawUrl || formData?.pncp_ultimo_retorno?.compraUri);
+  const ano = String(formData?.pncp_ano_compra || parsed.ano || "").trim();
+  const sequencial = String(formData?.pncp_sequencial_compra || parsed.sequencial || "").trim();
+
+  if (cnpj && ano && sequencial) {
+    return `${host}/app/editais/${cnpj}/${ano}/${sequencial}`;
+  }
+
+  return rawUrl;
+};
+
 /**
  * Define a cor do badge de situação baseada no texto
  */
@@ -230,24 +285,12 @@ export default function ProcessHeader({
     );
   }, [formData?.situacao, formData?.pncp_sequencial_compra]);
 
-  const handleOpenPncpRegistro = () => {
-    const url =
-      formData?.pncp_link ||
-      formData?.pncp_url ||
-      formData?.pncp_ultimo_retorno?.compraUri ||
-      null;
-    if (!url) return;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
+  const pncpRegistroUrl = useMemo(() => buildPncpEditalUrl(formData), [formData]);
 
-  const pncpRegistroUrl = useMemo(
-    () =>
-      formData?.pncp_link ||
-      formData?.pncp_url ||
-      formData?.pncp_ultimo_retorno?.compraUri ||
-      null,
-    [formData?.pncp_link, formData?.pncp_url, formData?.pncp_ultimo_retorno]
-  );
+  const handleOpenPncpRegistro = () => {
+    if (!pncpRegistroUrl) return;
+    window.open(pncpRegistroUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <>
