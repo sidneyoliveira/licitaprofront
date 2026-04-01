@@ -19,7 +19,10 @@ import {
   Download,
   Edit,
   AlertCircle,
-  StickyNote
+  StickyNote,
+  ArrowUp,
+  ArrowDown,
+  Plus
 } from 'lucide-react';
 
 // --- COMPONENTES & SEÇÕES ---
@@ -60,6 +63,15 @@ const DOCUMENT_TYPES = [
   { id: 19, nome: 'Minuta de Ata de Registro de Preços' },
   { id: 20, nome: 'Ato que autoriza a Contratação Direta' },
 ];
+
+const buildDefaultDocumentRows = () =>
+  DOCUMENT_TYPES.map((doc, index) => ({
+    key: `base-${doc.id}`,
+    tipo_documento_id: doc.id,
+    nome: doc.nome,
+    ordem: index + 1,
+    custom: false,
+  }));
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* SUBCOMPONENTE: Modal de Envio ao PNCP (Edital Rápido)                     */
@@ -250,22 +262,28 @@ const StyledCheckbox = ({ checked, onChange, className = '' }) => (
 /* - Remove "Visualizar" do menu ⋮                                           */
 /* ────────────────────────────────────────────────────────────────────────── */
 const ArquivosSection = ({
-  documentTypes,
+  documentRows,
+  documentTypeOptions,
   localDocs,
   pncpRemoteDocs,
   onFileUpsert,
   onPublishPncp,
   onRemovePncp,
   onDeleteLocal,
+  onMoveRow,
+  onDeleteRow,
+  onAddCustomRow,
   onView,
   onDownload,
   sendingKey,
 }) => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [selectedDocTypes, setSelectedDocTypes] = useState(new Set());
+  const [newDocNome, setNewDocNome] = useState('');
+  const [newDocTipoId, setNewDocTipoId] = useState('');
 
   const allDocTypesSelected =
-    documentTypes.length > 0 && documentTypes.every((d) => selectedDocTypes.has(d.id));
+    documentRows.length > 0 && documentRows.every((d) => selectedDocTypes.has(d.tipo_documento_id));
 
   const toggleSelectDocType = (id) => {
     setSelectedDocTypes((prev) => {
@@ -279,9 +297,9 @@ const ArquivosSection = ({
     setSelectedDocTypes((prev) => {
       const next = new Set(prev);
       if (allDocTypesSelected) {
-        documentTypes.forEach((d) => next.delete(d.id));
+        documentRows.forEach((d) => next.delete(d.tipo_documento_id));
       } else {
-        documentTypes.forEach((d) => next.add(d.id));
+        documentRows.forEach((d) => next.add(d.tipo_documento_id));
       }
       return next;
     });
@@ -293,6 +311,17 @@ const ArquivosSection = ({
   const getFileUrl = (doc) => doc?.arquivo_url || doc?.arquivo || null;
   const getFileName = (doc) =>
     doc?.arquivo_nome || doc?.arquivo_nome_original || doc?.titulo || 'arquivo';
+
+  const handleAddCustom = () => {
+    const nome = newDocNome.trim();
+    const tipo_documento_id = Number(newDocTipoId || 0);
+    if (!nome || !tipo_documento_id) return;
+    onAddCustomRow({ nome, tipo_documento_id });
+    setNewDocNome('');
+    setNewDocTipoId('');
+  };
+
+  const canAddCustom = !!newDocNome.trim() && !!Number(newDocTipoId || 0);
 
   return (
     <div className="bg-white dark:bg-dark-bg-secondary rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-5">
@@ -308,6 +337,49 @@ const ArquivosSection = ({
             </p>
           )}
         </div>
+      </div>
+
+      <div className="mb-3 grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-2 items-end">
+        <div>
+          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
+            Nome do Documento
+          </label>
+          <input
+            type="text"
+            value={newDocNome}
+            onChange={(e) => setNewDocNome(e.target.value)}
+            placeholder="Ex.: Comprovante de visita técnica"
+            className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-primary text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
+            Tipo PNCP
+          </label>
+          <select
+            value={newDocTipoId}
+            onChange={(e) => setNewDocTipoId(e.target.value)}
+            className="w-full h-9 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-bg-primary text-sm"
+          >
+            <option value="">Selecione</option>
+            {documentTypeOptions.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleAddCustom}
+          disabled={!canAddCustom}
+          className="h-9 inline-flex items-center justify-center gap-2 px-3 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Plus size={14} />
+          Adicionar linha
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -326,9 +398,9 @@ const ArquivosSection = ({
           </thead>
 
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {documentTypes.map((dt) => {
-              const local = findByTipo(localDocs, dt.id);
-              const pncp = findByTipo(pncpRemoteDocs, dt.id);
+            {documentRows.map((dt, index) => {
+              const local = findByTipo(localDocs, dt.tipo_documento_id);
+              const pncp = findByTipo(pncpRemoteDocs, dt.tipo_documento_id);
 
               const hasLocal = !!local;
               const fileUrl = getFileUrl(local);
@@ -350,22 +422,42 @@ const ArquivosSection = ({
                 pncp?.publicado_em ||
                 null;
 
-              const rowSending = sendingKey === `tipo:${dt.id}`;
-              const isSelected = selectedDocTypes.has(dt.id);
+              const rowSending = sendingKey === `tipo:${dt.tipo_documento_id}`;
+              const isSelected = selectedDocTypes.has(dt.tipo_documento_id);
 
               return (
                 <tr
-                  key={dt.id}
+                  key={dt.key || dt.tipo_documento_id}
                   className={`text-xs md:text-sm group transition-colors ${isSelected ? 'bg-blue-50/70 dark:bg-blue-900/20' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/20'}`}
                 >
-                  <td className="p-2 md:p-3 align-middle text-center">
-                    <StyledCheckbox checked={isSelected} onChange={() => toggleSelectDocType(dt.id)} />
+                  <td className="py-1 px-3 align-middle text-center">
+                    <StyledCheckbox checked={isSelected} onChange={() => toggleSelectDocType(dt.tipo_documento_id)} />
                   </td>
-                  <td className="p-2 md:p-3 text-slate-500 dark:text-slate-400 align-middle">
-                    {dt.id}
+                  <td className="py-1 px-3 text-slate-500 dark:text-slate-400 align-middle">
+                    <div className="inline-flex items-center gap-1">
+                      <span className="w-6 text-center">{index + 1}</span>
+                      <button
+                        type="button"
+                        className="p-1 rounded hover:bg-slate-100 disabled:opacity-30"
+                        onClick={() => onMoveRow(index, 'up')}
+                        disabled={index === 0}
+                        title="Mover para cima"
+                      >
+                        <ArrowUp size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-1 rounded hover:bg-slate-100 disabled:opacity-30"
+                        onClick={() => onMoveRow(index, 'down')}
+                        disabled={index === documentRows.length - 1}
+                        title="Mover para baixo"
+                      >
+                        <ArrowDown size={12} />
+                      </button>
+                    </div>
                   </td>
 
-                  <td className="p-2 md:p-3 align-middle">
+                  <td className="py-1 px-3 align-middle">
                     <div className="font-medium text-slate-800 dark:text-slate-100">
                       {dt.nome}
                     </div>
@@ -415,30 +507,30 @@ const ArquivosSection = ({
                           accept=".pdf,.doc,.docx,.odt,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
                           className="hidden"
                           disabled={rowSending}
-                          onChange={(e) => onFileUpsert(dt.id, e.target.files?.[0] || null)}
+                          onChange={(e) => onFileUpsert(dt.tipo_documento_id, e.target.files?.[0] || null, dt.nome)}
                         />
                       </label>
                     )}
                   </td>
 
                   {/* Status PNCP */}
-                  <td className="p-2 md:p-3 align-middle hidden md:table-cell">
-                    {isPublished ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-md font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
-                        <CheckCircle className="w-3 h-3" />
-                        Publicado{pncpDate ? ` em ${new Date(pncpDate).toLocaleDateString('pt-BR')}` : ''}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-md bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700">
-                        <AlertCircle className="w-3 h-3" />
-                        Não publicado
-                      </span>
-                    )}
+                  <td className="py-1 px-3 align-middle hidden md:table-cell">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-md font-semibold border ${
+                        isPublished
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800'
+                          : 'bg-slate-50 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-700'
+                      }`}
+                      title={pncpDate ? `Publicado em ${new Date(pncpDate).toLocaleString('pt-BR')}` : ''}
+                    >
+                      {isPublished ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                      {isPublished ? 'Publicado' : 'Não publicado'}
+                    </span>
                   </td>
 
                   {/* Ações */}
-                  <td className="p-2 md:p-3 align-middle text-right relative">
-                    <div className="flex justify-end items-center gap-2">
+                  <td className="py-1 px-3 align-middle text-right relative">
+                    <div className="flex flex-nowrap justify-end items-center gap-2">
                       {/* Visualizar (rápido) */}
                       {hasLocal && (
                         <button
@@ -455,9 +547,9 @@ const ArquivosSection = ({
                       {hasLocal && !isPublished && (
                         <button
                           type="button"
-                          onClick={() => onPublishPncp(local.id, dt.id)}
+                          onClick={() => onPublishPncp(local.id, dt.tipo_documento_id)}
                           disabled={rowSending}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 disabled:opacity-50 transition-colors shadow-sm shadow-blue-900/20"
+                          className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-accent-blue text-white hover:bg-accent-blue/90 disabled:opacity-50 transition-colors shadow-sm shadow-blue-900/20"
                           title="Publicar no PNCP"
                         >
                           {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
@@ -468,9 +560,9 @@ const ArquivosSection = ({
                       {hasLocal && isPublished && (
                         <button
                           type="button"
-                          onClick={() => onRemovePncp(dt.id, pncpSeq)}
+                          onClick={() => onRemovePncp(dt.tipo_documento_id, pncpSeq)}
                           disabled={rowSending || !pncpSeq}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors shadow-sm"
+                          className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-colors shadow-sm"
                           title="Remover do PNCP"
                         >
                           {rowSending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -478,18 +570,28 @@ const ArquivosSection = ({
                         </button>
                       )}
 
+                      <button
+                        type="button"
+                        onClick={() => onDeleteRow(dt)}
+                        className="whitespace-nowrap inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-md font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                        title="Excluir linha da tabela"
+                      >
+                        <Trash2 size={14} />
+                        Excluir linha
+                      </button>
+
                       {/* Menu ⋮ (sem Visualizar) */}
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setActiveMenu(activeMenu === dt.id ? null : dt.id)}
+                          onClick={() => setActiveMenu(activeMenu === dt.tipo_documento_id ? null : dt.tipo_documento_id)}
                           className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           title="Mais ações"
                         >
                           <MoreVertical size={16} />
                         </button>
 
-                        {activeMenu === dt.id && (
+                        {activeMenu === dt.tipo_documento_id && (
                           <>
                             <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
                             <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-20 overflow-hidden text-left">
@@ -512,7 +614,7 @@ const ArquivosSection = ({
                                   type="file"
                                   className="hidden"
                                   onChange={(e) => {
-                                    onFileUpsert(dt.id, e.target.files?.[0] || null);
+                                    onFileUpsert(dt.tipo_documento_id, e.target.files?.[0] || null, dt.nome);
                                     setActiveMenu(null);
                                   }}
                                 />
@@ -598,9 +700,55 @@ export default function PageProcess() {
   // --- ARQUIVOS: separar local x PNCP (CORREÇÃO DO FLUXO) ---
   const [localDocs, setLocalDocs] = useState([]);
   const [pncpRemoteDocs, setPncpRemoteDocs] = useState([]);
+  const [documentRows, setDocumentRows] = useState(buildDefaultDocumentRows());
 
   // controle spinner por tipo
   const [sendingKey, setSendingKey] = useState(null);
+
+  const saveDocumentRows = useCallback((pid, rows) => {
+    if (!pid) return;
+    try {
+      localStorage.setItem(`doc-rows:${pid}`, JSON.stringify(rows));
+    } catch {
+      // noop
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!processoId) return;
+
+    const baseRows = buildDefaultDocumentRows();
+    let savedRows = [];
+    try {
+      const raw = localStorage.getItem(`doc-rows:${processoId}`);
+      savedRows = raw ? JSON.parse(raw) : [];
+    } catch {
+      savedRows = [];
+    }
+
+    const merged = [...(Array.isArray(savedRows) && savedRows.length ? savedRows : baseRows)];
+    const existingTipos = new Set(merged.map((r) => Number(r.tipo_documento_id)));
+
+    [...(localDocs || []), ...(pncpRemoteDocs || [])].forEach((doc) => {
+      const tipo = Number(doc.tipo_documento_id ?? doc.tipoDocumentoId);
+      if (!tipo || existingTipos.has(tipo)) return;
+      merged.push({
+        key: `auto-${tipo}`,
+        tipo_documento_id: tipo,
+        nome: doc.titulo || doc.tipo_documento_nome || `Tipo ${tipo}`,
+        ordem: merged.length + 1,
+        custom: true,
+      });
+      existingTipos.add(tipo);
+    });
+
+    const normalized = merged
+      .filter((row, idx, arr) => arr.findIndex((r) => Number(r.tipo_documento_id) === Number(row.tipo_documento_id)) === idx)
+      .map((row, idx) => ({ ...row, ordem: idx + 1 }));
+
+    setDocumentRows(normalized);
+    saveDocumentRows(processoId, normalized);
+  }, [processoId, localDocs, pncpRemoteDocs, saveDocumentRows]);
 
   // --- MODAIS ---
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -990,13 +1138,13 @@ export default function PageProcess() {
   const findLocalByTipo = (tipoId) =>
     (localDocs || []).find((d) => Number(d.tipo_documento_id) === Number(tipoId));
 
-  const handleUpsertDocFile = async (tipoId, file) => {
+  const handleUpsertDocFile = async (tipoId, file, tituloOverride = null) => {
     if (!file || !processoId) return;
 
     setSendingKey(`tipo:${tipoId}`);
     try {
       const docTypeObj = DOCUMENT_TYPES.find((d) => d.id === tipoId);
-      const titulo = docTypeObj ? docTypeObj.nome : `Documento ${tipoId}`;
+      const titulo = tituloOverride || docTypeObj?.nome || `Documento ${tipoId}`;
 
       const fd = new FormData();
       fd.append("arquivo", file);
@@ -1102,6 +1250,61 @@ export default function PageProcess() {
       console.error(error);
       showToast("Erro ao remover rascunho local.", "error");
     }
+  };
+
+  const handleMoveDocumentRow = (index, direction) => {
+    setDocumentRows((prev) => {
+      const next = [...prev];
+      const to = direction === 'up' ? index - 1 : index + 1;
+      if (to < 0 || to >= next.length) return prev;
+      [next[index], next[to]] = [next[to], next[index]];
+      const normalized = next.map((row, idx) => ({ ...row, ordem: idx + 1 }));
+      saveDocumentRows(processoId, normalized);
+      return normalized;
+    });
+  };
+
+  const handleDeleteDocumentRow = async (row) => {
+    const localDoc = (localDocs || []).find(
+      (d) => Number(d.tipo_documento_id) === Number(row.tipo_documento_id)
+    );
+
+    if (localDoc?.id) {
+      await handleDeleteLocalDoc(localDoc.id);
+    }
+
+    setDocumentRows((prev) => {
+      const normalized = prev
+        .filter((r) => Number(r.tipo_documento_id) !== Number(row.tipo_documento_id))
+        .map((r, idx) => ({ ...r, ordem: idx + 1 }));
+      saveDocumentRows(processoId, normalized);
+      return normalized;
+    });
+  };
+
+  const handleAddCustomDocumentRow = ({ nome, tipo_documento_id }) => {
+    const tipo = Number(tipo_documento_id);
+    if (!tipo || !nome) return;
+
+    setDocumentRows((prev) => {
+      if (prev.some((r) => Number(r.tipo_documento_id) === tipo)) {
+        showToast('Já existe uma linha para esse tipo de documento.', 'warning');
+        return prev;
+      }
+
+      const next = [
+        ...prev,
+        {
+          key: `custom-${tipo}-${Date.now()}`,
+          tipo_documento_id: tipo,
+          nome,
+          ordem: prev.length + 1,
+          custom: true,
+        },
+      ];
+      saveDocumentRows(processoId, next);
+      return next;
+    });
   };
 
   const handleViewFile = (url) => {
@@ -1351,13 +1554,17 @@ export default function PageProcess() {
 
                   {activeTab === 'arquivos' && (
                     <ArquivosSection
-                      documentTypes={DOCUMENT_TYPES}
+                      documentRows={documentRows}
+                      documentTypeOptions={DOCUMENT_TYPES}
                       localDocs={localDocs}
                       pncpRemoteDocs={pncpRemoteDocs}
                       onFileUpsert={handleUpsertDocFile}
                       onPublishPncp={handlePublishDocPncp}
                       onRemovePncp={handleDeleteDocPncp}
                       onDeleteLocal={handleDeleteLocalDoc}
+                      onMoveRow={handleMoveDocumentRow}
+                      onDeleteRow={handleDeleteDocumentRow}
+                      onAddCustomRow={handleAddCustomDocumentRow}
                       onView={handleViewFile}
                       onDownload={handleDownloadFile}
                       sendingKey={sendingKey}

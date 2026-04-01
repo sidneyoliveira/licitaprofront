@@ -155,7 +155,8 @@ textarea,
   }
 
   .ui-process-table td {
-    @apply py-3 px-4 text-sm;
+    @apply text-sm;
+    padding: 0.2rem 1rem;
   }
 
   /* Page header padronizado */
