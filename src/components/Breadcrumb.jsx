@@ -60,7 +60,10 @@ const Breadcrumb = () => {
                     return;
                 }
 
-                const base = numeroCertame.replace(/[\\/]+/g, "_");
+                const base = numeroCertame
+                    .replace(/\\+/g, "/")
+                    .replace(/\s+/g, "")
+                    .trim();
                 const sigla = modalidadeSigla(data?.modalidade);
                 setProcessoLabel(sigla ? `${base}-${sigla}` : base);
             } catch {
