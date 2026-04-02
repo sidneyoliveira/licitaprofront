@@ -15,6 +15,7 @@ import {
 
 import useAxios from "../hooks/useAxios";
 import AuthContext from "../context/AuthContext";
+import { extractResults } from "../services/api";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* 1. UTILS & HELPERS                                                        */
@@ -198,7 +199,7 @@ const Inicio = () => {
       ]);
 
       setStats(statsRes.data);
-      setRecentProcesses(recentRes.data.results || []);
+      setRecentProcesses(extractResults(recentRes.data));
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
     } finally {

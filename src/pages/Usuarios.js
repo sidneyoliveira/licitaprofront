@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults } from "../services/api";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import UsuarioEditModal from "../components/UsuarioEditModal";
 import { motion, AnimatePresence } from "framer-motion";
@@ -165,7 +166,7 @@ export default function Usuarios() {
     setIsLoading(true);
     try {
       const res = await api.get("/usuarios/");
-      setUsuarios(Array.isArray(res.data) ? res.data : []);
+      setUsuarios(extractResults(res.data));
     } catch (error) {
       console.error(error);
       showToast("Não foi possível carregar a lista de usuários.", "error");

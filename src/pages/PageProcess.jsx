@@ -37,6 +37,7 @@ import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 // --- INFRA ---
 import useAxios from '../hooks/useAxios';
 import { useToast } from '../context/ToastContext';
+import { extractResults } from '../services/api';
 
 import AtasSection from '../components/AtasSection';
 import SharedNotesBoard from '../components/SharedNotesBoard';
@@ -843,7 +844,7 @@ export default function PageProcess() {
       if (!pid) return;
       try {
         const { data } = await api.get(`/processos/${pid}/pncp/arquivos/`);
-        const docs = Array.isArray(data) ? data : data?.documentos || [];
+        const docs = extractResults(data.documentos || data);
         setPncpRemoteDocs(docs);
       } catch (error) {
         console.error(error);
@@ -860,7 +861,7 @@ export default function PageProcess() {
       if (!pid) return;
       try {
         const { data } = await api.get(`/documentos-pncp/`, { params: { processo: pid } });
-        const docs = Array.isArray(data) ? data : (data.results || []);
+        const docs = extractResults(data);
         setLocalDocs(docs);
       } catch (error) {
         console.error(error);
@@ -878,7 +879,7 @@ export default function PageProcess() {
         const { data } = await api.get('/processo-documento-linhas/', {
           params: { processo: pid },
         });
-        const rows = Array.isArray(data) ? data : data?.results || [];
+        const rows = extractResults(data);
 
         if (rows.length > 0) {
           setDocumentRows(rows.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)));
@@ -901,7 +902,7 @@ export default function PageProcess() {
         const reload = await api.get('/processo-documento-linhas/', {
           params: { processo: pid },
         });
-        const seeded = Array.isArray(reload.data) ? reload.data : reload.data?.results || [];
+        const seeded = extractResults(reload.data);
         setDocumentRows(seeded.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)));
       } catch (error) {
         console.error(error);
@@ -921,7 +922,7 @@ export default function PageProcess() {
       }
       try {
         const res = await api.get('/orgaos/', { params: { entidade: entidadeId } });
-        setOrgaos(Array.isArray(res.data) ? res.data : []);
+        setOrgaos(extractResults(res.data));
       } catch {
         showToast('Erro ao carregar órgãos.', 'error');
       }

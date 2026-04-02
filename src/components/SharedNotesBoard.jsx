@@ -15,6 +15,7 @@ import {
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
+import { extractResults } from "../services/api";
 
 export default function SharedNotesBoard({
   processoId = null,
@@ -57,7 +58,7 @@ export default function SharedNotesBoard({
       const params = {};
       if (processoId) params.processo = processoId;
       const { data } = await api.get("/anotacoes/", { params });
-      setNotes(Array.isArray(data) ? data : data?.results || []);
+      setNotes(extractResults(data));
     } catch (error) {
       console.error(error);
       showToast("Erro ao carregar anotações.", "error");
@@ -85,7 +86,7 @@ export default function SharedNotesBoard({
         const params = { q: term.trim() };
         if (processoId) params.processo = processoId;
         const { data } = await api.get("/usuarios-lookup/", { params });
-        setter(Array.isArray(data) ? data : []);
+        setter(extractResults(data));
       } catch {
         setter([]);
       }

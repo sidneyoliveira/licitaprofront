@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults, extractErrorMessage } from "../services/api";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -87,9 +88,9 @@ export default function Fornecedores() {
     setIsLoading(true);
     try {
       const res = await api.get("/fornecedores/");
-      setFornecedores(Array.isArray(res.data) ? res.data : []);
-    } catch {
-      showToast("Erro ao buscar fornecedores.", "error");
+      setFornecedores(extractResults(res.data));
+    } catch (error) {
+      showToast(extractErrorMessage(error, "Erro ao buscar fornecedores."), "error");
     } finally {
       setIsLoading(false);
     }

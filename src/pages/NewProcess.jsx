@@ -16,6 +16,7 @@ import {
 
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults } from "../services/api";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import DadosGeraisForm from "../components/DadosGeraisForm";
 import FornecedorModal from "../components/FornecedorModal";
@@ -610,7 +611,7 @@ export default function NewProcess() {
         const res = await api.get("/orgaos/", {
           params: { entidade: entidadeId },
         });
-        setOrgaos(Array.isArray(res.data) ? res.data : []);
+        setOrgaos(extractResults(res.data));
       } catch {
         showToast("Erro ao carregar órgãos da entidade selecionada.", "error");
         setOrgaos([]);

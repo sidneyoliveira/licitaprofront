@@ -13,6 +13,7 @@ import AuthContext from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Breadcrumb from "./Breadcrumb";
 import useAxios from "../hooks/useAxios";
+import { extractResults } from "../services/api";
 
 import {
   Bell,
@@ -181,9 +182,7 @@ const Header = ({ toggleSidebar }) => {
   const fetchArray = useCallback(async (path, params = {}) => {
     try {
       const r = await api.get(path, { params });
-      if (Array.isArray(r.data)) return r.data;
-      if (Array.isArray(r.data?.results)) return r.data.results;
-      return [];
+      return extractResults(r.data);
     } catch {
       return [];
     }

@@ -1,6 +1,7 @@
 // src/components/AtasSection.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { extractResults } from '../services/api';
 import {
   FileText,
   Plus,
@@ -56,6 +57,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
     data_assinatura: '',
     data_vigencia_inicio: '',
     data_vigencia_fim: '',
+    possibilidade_adesao: false,
     observacao: '',
   });
   const [saving, setSaving] = useState(false);
@@ -69,6 +71,7 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
         data_assinatura: initialData?.data_assinatura || '',
         data_vigencia_inicio: initialData?.data_vigencia_inicio || '',
         data_vigencia_fim: initialData?.data_vigencia_fim || '',
+        possibilidade_adesao: initialData?.possibilidade_adesao ?? false,
         observacao: initialData?.observacao || '',
       }));
     }
@@ -231,6 +234,27 @@ const AtaFormModal = ({ open, onClose, onSave, initialData, processoResumo }) =>
             </div>
           </div>
 
+          {/* Possibilidade de Adesão (obrigatório PNCP) */}
+          <div className="flex items-center gap-3 py-1">
+            <StyledCheckbox
+              checked={form.possibilidade_adesao}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  possibilidade_adesao: e.target.checked,
+                }))
+              }
+            />
+            <div>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                Permite adesão de não participantes
+              </span>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                Indicador obrigatório do PNCP (possibilidadeAdesao).
+              </p>
+            </div>
+          </div>
+
           {/* Observação (opcional) */}
           <div>
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide">
@@ -291,7 +315,7 @@ const AtaDocumentosModal = ({
     if (!ata?.id) return;
     try {
       const { data } = await api.get('/documentos-atas/', { params: { ata: ata.id } });
-      const list = Array.isArray(data) ? data : data.results || [];
+      const list = extractResults(data);
       setDocumentos(list);
     } catch (error) {
       console.error(error);
@@ -727,7 +751,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
       const { data } = await api.get('/atas-registro-precos/', {
         params: { processo: processoId },
       });
-      const list = Array.isArray(data) ? data : data.results || [];
+      const list = extractResults(data);
       setAtas(list);
     } catch (error) {
       console.error(error);
@@ -867,6 +891,30 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
     }
   };
 
+  const handleRetificarAtaPncp = async (ata) => {
+    if (!ata?.id) return;
+    const justificativa = window.prompt(
+      'Informe a justificativa para retificação da ata no PNCP:',
+      'Retificação de Ata de Registro de Preços.'
+    );
+    if (justificativa === null) return; // cancelou o prompt
+    setSavingAtaId(ata.id);
+    try {
+      await api.post(`/atas-registro-precos/${ata.id}/retificar-no-pncp/`, { justificativa });
+      showToast('Ata retificada no PNCP com sucesso!', 'success');
+      await fetchAtas();
+    } catch (error) {
+      console.error(error);
+      const msg =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        'Erro ao retificar ata no PNCP.';
+      showToast(msg, 'error');
+    } finally {
+      setSavingAtaId(null);
+    }
+  };
+
   const handleOpenDocsModal = (ata) => {
     setAtaParaDocs(ata);
     setDocsModalOpen(true);
@@ -995,6 +1043,11 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
                       <div className="font-semibold text-slate-800 dark:text-slate-100">
                         {ata.numero_ata || 'Ata'}{' '}
                         {ata.ano_ata ? `- ${ata.ano_ata}` : ''}
+                        {ata.possibilidade_adesao && (
+                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                            Adesão
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                         Vigência:{' '}
@@ -1084,6 +1137,23 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
                           </button>
                         )}
 
+                        {/* Retificar no PNCP – só aparece APÓS publicado */}
+                        {published && (
+                          <button
+                            type="button"
+                            disabled={isSaving}
+                            onClick={() => handleRetificarAtaPncp(ata)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 hover:border-amber-300 disabled:opacity-60 transition-colors"
+                          >
+                            {isSaving ? (
+                              <Loader2 size={13} className="animate-spin" />
+                            ) : (
+                              <Edit size={13} />
+                            )}
+                            Retificar PNCP
+                          </button>
+                        )}
+
                         {/* Remover do PNCP – botão aparece APÓS publicado */}
                         {published && (
                           <button
@@ -1101,7 +1171,7 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
                           </button>
                         )}
 
-                        {/* Menu ⋮ com editar / apagar local */}
+                        {/* Menu ⋮ com editar / ver no pncp / apagar local */}
                         <div className="relative">
                           <button
                             type="button"
@@ -1121,6 +1191,19 @@ export default function AtasSection({ processoId, api, showToast, processoResumo
                                 onClick={() => setMenuOpenId(null)}
                               />
                               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-20 overflow-hidden text-left">
+                                {/* Ver na PNCP (link externo) */}
+                                {ata.link_pncp && (
+                                  <a
+                                    href={ata.link_pncp}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={() => setMenuOpenId(null)}
+                                    className="w-full flex items-center gap-2 px-4 py-2 text-[11px] text-accent-blue hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                  >
+                                    <Eye size={12} /> Ver na PNCP
+                                  </a>
+                                )}
+
                                 {/* Editar ata */}
                                 <button
                                   type="button"

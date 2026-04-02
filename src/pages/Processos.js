@@ -14,11 +14,14 @@ import {
   X,
   UploadCloud,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults, extractPagination, extractErrorMessage } from "../services/api";
 
 import ProcessoCard from "../components/ProcessoCard";
 import ModalPublicacao from "../components/ModalPublicacao";
@@ -79,6 +82,8 @@ const Processos = () => {
 
   // Estados
   const [processos, setProcessos] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [modals, setModals] = useState({
     delete: null,
@@ -95,6 +100,9 @@ const Processos = () => {
     data_fim: "",
   });
 
+  const PAGE_SIZE = 50;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
   /* --------------------------------------------------------------------- */
   /* FETCH                                                                 */
   /* --------------------------------------------------------------------- */
@@ -107,16 +115,18 @@ const Processos = () => {
         if (value) params.append(key, value);
       });
       params.append("ordering", "-data_processo");
+      params.append("page", currentPage);
 
       const response = await api.get(`/processos/?${params.toString()}`);
-      setProcessos(response.data);
+      setProcessos(extractResults(response.data));
+      setTotalCount(extractPagination(response.data, PAGE_SIZE).count);
     } catch (error) {
       console.error(error);
-      showToast("Erro ao carregar processos.", "error");
+      showToast(extractErrorMessage(error, "Erro ao carregar processos."), "error");
     } finally {
       setIsLoading(false);
     }
-  }, [api, filters, showToast]);
+  }, [api, filters, currentPage, showToast]);
 
   // Debounce dos filtros
   useEffect(() => {
@@ -128,13 +138,16 @@ const Processos = () => {
   /* HANDLERS                                                              */
   /* --------------------------------------------------------------------- */
 
-  const handleFilterChange = (e) =>
+  const handleFilterChange = (e) => {
+    setCurrentPage(1);
     setFilters((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
 
   const clearFilters = () => {
+    setCurrentPage(1);
     setFilters({
       search: "",
       modalidade: "",
@@ -401,6 +414,34 @@ const Processos = () => {
                   <Plus className="w-4 h-4" />
                   Novo Processo
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {totalCount} processo{totalCount !== 1 ? "s" : ""} encontrado{totalCount !== 1 ? "s" : ""}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 min-w-[80px] text-center">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults, extractErrorMessage } from "../services/api";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { EntidadeOrgaoModal } from "../components/EntidadeOrgaoModal";
 import {
@@ -203,10 +204,10 @@ export default function Entidades() {
         api.get("/entidades/"),
         api.get("/orgaos/"),
       ]);
-      setEntidades(Array.isArray(entRes.data) ? entRes.data : []);
-      setOrgaos(Array.isArray(orgRes.data) ? orgRes.data : []);
-    } catch {
-      showToast("Erro ao carregar dados.", "error");
+      setEntidades(extractResults(entRes.data));
+      setOrgaos(extractResults(orgRes.data));
+    } catch (error) {
+      showToast(extractErrorMessage(error, "Erro ao carregar dados."), "error");
     } finally {
       setIsLoading(false);
     }

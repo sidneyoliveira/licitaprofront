@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
@@ -161,9 +162,7 @@ export default function Notificacoes() {
   const fetchArray = useCallback(async (path, params = {}) => {
     try {
       const r = await api.get(path, { params });
-      if (Array.isArray(r.data)) return r.data;
-      if (Array.isArray(r.data?.results)) return r.data.results;
-      return [];
+      return extractResults(r.data);
     } catch {
       return [];
     }

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Loader2, Trash2, Edit, X } from 'lucide-react';
+import { extractResults } from '../services/api';
 
 const TIPOS_CONTRATO = [
   { id: 1, nome: 'Contrato' },
@@ -190,7 +191,7 @@ export default function ContratosSection({ processoId, api, showToast }) {
     setLoading(true);
     try {
       const { data } = await api.get('/contratos/', { params: { processo: processoId } });
-      const list = Array.isArray(data) ? data : data?.results || [];
+      const list = extractResults(data);
       setItems(list);
     } catch (error) {
       console.error(error);

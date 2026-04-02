@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import useAxios from "../hooks/useAxios";
 import { useToast } from "../context/ToastContext";
+import { extractResults } from "../services/api";
 
 // Estilos
 const INPUT_STYLE =
@@ -78,7 +79,7 @@ export default function DadosGeraisForm({
         const res = await api.get("/orgaos/", {
           params: { entidade: entidadeId },
         });
-        setOrgaosList(Array.isArray(res.data) ? res.data : []);
+        setOrgaosList(extractResults(res.data));
       } catch {
         setOrgaosList([]);
         showToast("Erro ao carregar órgãos.", "error");
