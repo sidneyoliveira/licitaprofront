@@ -1571,6 +1571,9 @@ export default function PageProcess() {
                   {activeTab === 'contratos' && (
                     <ContratosSection
                       processoId={processoId}
+                      processo={formData}
+                      fornecedores={fornecedoresDoProcesso}
+                      orgaos={orgaos}
                       api={api}
                       showToast={showToast}
                     />
