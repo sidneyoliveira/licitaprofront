@@ -95,6 +95,7 @@ const Processos = () => {
   const [filters, setFilters] = useState({
     search: "",
     modalidade: "",
+    situacao: "",
     registro_precos: "",
     data_inicio: "",
     data_fim: "",
@@ -151,6 +152,7 @@ const Processos = () => {
     setFilters({
       search: "",
       modalidade: "",
+      situacao: "",
       registro_precos: "",
       data_inicio: "",
       data_fim: "",
@@ -229,7 +231,7 @@ const Processos = () => {
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Gerencie{" "}
                 <span className="font-semibold text-accent-blue dark:text-blue-400">
-                  {processos.length}
+                  {totalCount}
                 </span>{" "}
                 licitações cadastradas.
               </p>
@@ -302,7 +304,7 @@ const Processos = () => {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden pt-4"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                   <select
                     className={inputClass}
                     name="modalidade"
@@ -310,13 +312,32 @@ const Processos = () => {
                     onChange={handleFilterChange}
                   >
                     <option value="">Todas as modalidades</option>
-                    <option value="Pregão Eletrônico">
-                      Pregão Eletrônico
-                    </option>
-                    <option value="Dispensa Eletrônica">
-                      Dispensa Eletrônica
-                    </option>
-                    {/* Adicionar outras opções conforme necessário */}
+                    <option value="Pregão - Eletrônico">Pregão Eletrônico</option>
+                    <option value="Concorrência - Eletrônica">Concorrência Eletrônica</option>
+                    <option value="Dispensa de Licitação">Dispensa de Licitação</option>
+                    <option value="Inexigibilidade">Inexigibilidade</option>
+                    <option value="Pré-Qualificação">Pré-Qualificação</option>
+                    <option value="Credenciamento">Credenciamento</option>
+                  </select>
+
+                  <select
+                    className={inputClass}
+                    name="situacao"
+                    value={filters.situacao}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="">Todas as situações</option>
+                    <option value="Aberto">Aberto</option>
+                    <option value="Em Pesquisa">Em Pesquisa</option>
+                    <option value="Aguardando Publicação">Aguardando Publicação</option>
+                    <option value="Publicado">Publicado</option>
+                    <option value="Em Contratação">Em Contratação</option>
+                    <option value="Adjudicado">Adjudicado</option>
+                    <option value="Homologado">Homologado</option>
+                    <option value="Revogado">Revogado</option>
+                    <option value="Cancelado">Cancelado</option>
+                    <option value="Deserto">Deserto</option>
+                    <option value="Fracassado">Fracassado</option>
                   </select>
 
                   <select
@@ -373,7 +394,7 @@ const Processos = () => {
                     }
                     onView={() =>
                       window.open(
-                        `/processos/visualizar/${proc.id}`,
+                        `/processos/${proc.id}`,
                         "_blank"
                       )
                     }

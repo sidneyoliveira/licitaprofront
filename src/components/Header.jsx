@@ -236,7 +236,7 @@ const Header = ({ toggleSidebar }) => {
         } ${p.created_at ? "criado" : "atualizado"}`,
         data: when,
         severity: "info",
-        href: p?.id ? `/processos/visualizar/${p.id}` : null,
+        href: p?.id ? `/processos/${p.id}` : null,
       });
 
       // Alertas de certame (próximo/atrasado)
@@ -258,7 +258,7 @@ const Header = ({ toggleSidebar }) => {
               } para o certame (${formatDateTime(d)})`,
               data: new Date().toISOString(),
               severity: diff <= 3 ? "error" : "warning",
-              href: p?.id ? `/processos/visualizar/${p.id}` : null,
+              href: p?.id ? `/processos/${p.id}` : null,
             });
           } else if (diff < 0 && Math.abs(diff) <= 5) {
             list.push({
@@ -272,7 +272,7 @@ const Header = ({ toggleSidebar }) => {
               } (${formatDateTime(d)})`,
               data: new Date().toISOString(),
               severity: "error",
-              href: p?.id ? `/processos/visualizar/${p.id}` : null,
+              href: p?.id ? `/processos/${p.id}` : null,
             });
           }
         }
@@ -333,7 +333,7 @@ const Header = ({ toggleSidebar }) => {
     notifsApi.forEach((n) => {
       const tipoAcao = n.tipo_acao || "update";
       const severity = tipoAcao === "delete" ? "warning" : tipoAcao === "check" ? "success" : "info";
-      const href = n.processo ? `/processos/visualizar/${n.processo}` : "/perfil";
+      const href = n.processo ? `/processos/${n.processo}` : "/perfil";
       list.push({
         id: `note-${n.id}`,
         notificationId: n.id,
