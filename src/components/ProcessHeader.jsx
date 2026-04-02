@@ -125,6 +125,12 @@ const extractAnoSequencialFromPath = (urlLike) => {
   };
 };
 
+const extractCnpjFromPath = (urlLike) => {
+  if (!urlLike || typeof urlLike !== "string") return null;
+  const m = urlLike.match(/\/orgaos\/([^/]+)\/compras\//i);
+  return normalizeDigits(m?.[1] || "") || null;
+};
+
 const buildPncpEditalUrl = (formData) => {
   const rawUrl =
     formData?.pncp_link ||
@@ -139,12 +145,17 @@ const buildPncpEditalUrl = (formData) => {
     extractHostFromUrl(formData?.pncp_ultimo_retorno?.compraUri) ||
     "https://treina.pncp.gov.br";
 
+  const cnpjFromPath =
+    extractCnpjFromPath(rawUrl) ||
+    extractCnpjFromPath(formData?.pncp_ultimo_retorno?.compraUri);
+
   const cnpj = normalizeDigits(
     formData?.entidade_obj?.cnpj ||
     formData?.entidade_cnpj ||
     formData?.entidade?.cnpj ||
     formData?.pncp_ultimo_retorno?.orgaoEntidade?.cnpj ||
     formData?.pncp_ultimo_retorno?.cnpj ||
+    cnpjFromPath ||
     ""
   );
 
