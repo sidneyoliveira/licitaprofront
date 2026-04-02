@@ -146,7 +146,7 @@ const RecentActivityItem = ({ process }) => (
         </div>
 
         <Link
-          to={`/processos/editar/${process.id}`}
+          to={`/processos/${process.id}`}
           className="text-xs font-bold text-accent-blue dark:text-blue-400 hover:underline"
         >
           Ver detalhes
